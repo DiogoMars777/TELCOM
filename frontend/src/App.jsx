@@ -21,12 +21,11 @@ import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoSer
 import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
 
-// Iconos de cada Caso de Uso
+// Iconos de cada módulo del panel
 import {
-  Radio, LogIn, LogOut, History, Users, MapPin,
+  Radio, LogOut, History, Users, MapPin,
   UserPlus, Search, Edit3, Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw,
-  Server, Database,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -106,8 +105,22 @@ export default function App() {
     setView('admin');
   };
 
-  const handleLogout = async () => {
-    await authService.logout();
+  // Relee /me para refrescar rol y permisos de la sesión actual (por ejemplo,
+  // después de modificar los permisos del propio rol). El menú y las acciones
+  // visibles se recalculan a partir de `currentUser`.
+  const refreshCurrentUser = async () => {
+    try {
+      const user = await authService.fetchCurrentUser();
+      if (user) {
+        authService.cacheUser(user);
+        setCurrentUser(user);
+      }
+    } catch {
+      // Si la sesión expiró, el interceptor 401 ya gestiona el cierre.
+    }
+  };
+
+  const handleLogout = async () => {    await authService.logout();
     setCurrentUser(null);
     setActiveCU('CU01');
     setCorteServicioSelected(null);
@@ -119,7 +132,6 @@ export default function App() {
     {
       title: 'Seguridad & Auditoría',
       items: [
-        { id: 'CU01', label: 'Mi Sesión', icon: LogIn },
         { id: 'CU02', label: 'Bitácora de Auditoría', icon: History },
         { id: 'CU03', label: 'Usuarios, Roles y Permisos', icon: Users },
       ],
@@ -168,6 +180,14 @@ export default function App() {
     }))
     .filter((section) => section.items.length > 0);
 
+  // Nombre funcional del módulo activo para la barra superior (sin exponer el
+  // código interno del caso de uso). CU01 no está en el menú, por lo que se
+  // usa un rótulo genérico cuando la vista activa es el panel de sesión.
+  const activeSectionLabel =
+    menuSections
+      .flatMap((section) => section.items)
+      .find((item) => item.id === effectiveCu)?.label || 'Panel de Gestión';
+
   const handleIrACorte = (servicio) => {
     setCorteServicioSelected(servicio);
     setActiveCU('CU14');
@@ -179,11 +199,11 @@ export default function App() {
     // se deriva a otro permitido. El backend autoriza de verdad.
     switch (effectiveCu) {
       case 'CU01':
-        return <SesionView user={currentUser} onLogout={handleLogout} />;
+        return <SesionView user={currentUser} />;
       case 'CU02':
         return <AuditoriaView />;
       case 'CU03':
-        return <UsuariosView user={currentUser} />;
+        return <UsuariosView user={currentUser} onPermissionsUpdated={refreshCurrentUser} />;
       case 'CU04':
         return <ZonasCoberturaView user={currentUser} />;
       case 'CU05':
@@ -270,7 +290,6 @@ export default function App() {
                   >
                     <IconComponent size={16} />
                     <span className="nav-item-label">{item.label}</span>
-                    <span className="nav-cu-tag">{item.id}</span>
                   </button>
                 );
               })}
@@ -310,19 +329,7 @@ export default function App() {
             >
               ☰
             </button>
-            <span className="badge badge-primary">Estructura MVC</span>
-            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
-              Caso de Uso Activo: <strong style={{ color: '#fff' }}>{effectiveCu}</strong>
-            </span>
-          </div>
-
-          <div className="top-bar-right">
-            <span className="badge badge-info">
-              <Server size={13} style={{ marginRight: 4 }} /> Laravel API
-            </span>
-            <span className="badge badge-success">
-              <Database size={13} style={{ marginRight: 4 }} /> PostgreSQL
-            </span>
+            <span className="top-bar-title">{activeSectionLabel}</span>
           </div>
         </header>
 

@@ -15,7 +15,7 @@ export default function HistorialPagosView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU11: Consultar Historial de Pagos</h2>
+          <h2>Consultar Historial de Pagos</h2>
           <p className="subtitle">Auditoría de recaudaciones, transacciones bancarias y comprobantes emitidos</p>
         </div>
       </div>

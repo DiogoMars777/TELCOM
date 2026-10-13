@@ -9,7 +9,7 @@ export default function ServiciosCorteView({ onIrACorte }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU13: Consultar Listado de Servicios para Corte</h2>
+          <h2>Consultar Listado de Servicios para Corte</h2>
           <p className="subtitle">Lotes de abonados con mora vencida listos para suspensión técnica</p>
         </div>
         <button className="btn btn-secondary" onClick={reload} disabled={loading}>
@@ -62,7 +62,7 @@ export default function ServiciosCorteView({ onIrACorte }) {
                     className="btn btn-sm btn-danger"
                     onClick={() => onIrACorte && onIrACorte(s)}
                   >
-                    <Scissors size={14} /> Proceder a Corte (CU14)
+                    <Scissors size={14} /> Proceder a Corte
                   </button>
                 </td>
               </tr>

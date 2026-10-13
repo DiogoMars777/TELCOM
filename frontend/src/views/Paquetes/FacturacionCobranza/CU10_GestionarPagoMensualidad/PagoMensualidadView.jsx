@@ -24,7 +24,7 @@ export default function PagoMensualidadView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU10: Gestionar Pago de Mensualidad</h2>
+          <h2>Gestionar Pago de Mensualidad</h2>
           <p className="subtitle">Módulo de ventanilla / pasarela para recaudación y emisión de recibos oficiales</p>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function PagoMensualidadView() {
           <div className="receipt-header">
             <CheckCircle size={36} className="text-success" />
             <h3>¡Pago Registrado Exitosamente!</h3>
-            <p>Se actualizó el estado de la factura en PostgreSQL</p>
+            <p>Se actualizó el estado de la factura</p>
           </div>
           <div className="receipt-body">
             <div className="receipt-row">

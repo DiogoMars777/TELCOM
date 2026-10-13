@@ -55,6 +55,12 @@ export const authService = {
     }
   },
 
+  // Actualiza el usuario en caché (p. ej. tras cambiar los permisos del propio
+  // rol) sin necesidad de volver a iniciar sesión.
+  cacheUser(user) {
+    if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
   clear() {
     authToken.clear();
     localStorage.removeItem(USER_KEY);

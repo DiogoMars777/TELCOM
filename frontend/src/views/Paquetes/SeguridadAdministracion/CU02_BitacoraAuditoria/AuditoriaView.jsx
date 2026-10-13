@@ -18,8 +18,8 @@ export default function AuditoriaView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU02: Consultar Bitácora de Auditoría</h2>
-          <p className="subtitle">Trazabilidad en tiempo real de operaciones críticas en PostgreSQL</p>
+          <h2>Consultar Bitácora de Auditoría</h2>
+          <p className="subtitle">Trazabilidad en tiempo real de operaciones críticas</p>
         </div>
         <button onClick={reload} className="btn btn-secondary" disabled={loading}>
           <RefreshCw size={16} className={loading ? 'spin' : ''} /> Refrescar
@@ -37,11 +37,11 @@ export default function AuditoriaView() {
           <Filter size={16} />
           <select value={moduloFiltro} onChange={(e) => setModuloFiltro(e.target.value)}>
             <option value="">Todos los Módulos</option>
-            <option value="CU01_IniciarCerrarSesion">CU01: Autenticación</option>
-            <option value="CU05_RegistrarCliente">CU05: Clientes</option>
-            <option value="CU08_RegistrarActivarServicio">CU08: Servicios Internet</option>
-            <option value="CU10_GestionarPagoMensualidad">CU10: Pagos</option>
-            <option value="CU14_RegistrarCorteRealizado">CU14: Cortes</option>
+            <option value="CU01_IniciarCerrarSesion">Autenticación</option>
+            <option value="CU05_RegistrarCliente">Clientes</option>
+            <option value="CU08_RegistrarActivarServicio">Servicios Internet</option>
+            <option value="CU10_GestionarPagoMensualidad">Pagos</option>
+            <option value="CU14_RegistrarCorteRealizado">Cortes</option>
           </select>
         </div>
         <div className="filter-item">

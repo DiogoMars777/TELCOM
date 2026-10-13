@@ -105,14 +105,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  /* La barra permanece funcional pero invisible (rueda, táctil y teclado). */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .sidebar-nav::-webkit-scrollbar {
-  width: 5px;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  display: none;
 }
 
 .nav-group-title {
@@ -152,20 +151,6 @@ body {
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.4);
   font-weight: 600;
-}
-
-.nav-cu-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.06);
-  color: var(--text-muted);
-}
-
-.nav-item.active .nav-cu-tag {
-  background-color: #0284c7;
-  color: #fff;
 }
 
 .sidebar-footer {
@@ -220,12 +205,17 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
 }
 
-.top-bar-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.top-bar-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .content-body {
@@ -385,6 +375,37 @@ body {
   grid-column: span 2;
 }
 
+/* Requisitos de contraseña (formulario de usuarios) */
+.password-requirements {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+}
+
+.password-requirements li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  line-height: 1.25;
+  transition: color 0.2s;
+}
+
+.password-requirements li svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.password-requirements li.is-pending {
+  color: #94a3b8;
+}
+
+.password-requirements li.is-met {
+  color: #34d399;
+}
+
 label {
   font-size: 0.8rem;
   font-weight: 600;
@@ -401,6 +422,7 @@ input, select, textarea {
   font-size: 0.85rem;
   outline: none;
   transition: border-color 0.2s;
+  max-width: 100%;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -538,6 +560,191 @@ input:focus, select:focus, textarea:focus {
 .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #34d399; }
 .alert-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #f87171; }
 .alert-warning { background: rgba(245, 158, 11, 0.15); border: 1px solid var(--warning); color: #fbbf24; }
+
+/* Pestañas internas (Usuarios / Roles y Permisos) */
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  /* Barra funcional pero invisible, igual que el menú lateral. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab-btn:hover {
+  color: var(--text-primary);
+}
+.tab-btn.active {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+}
+
+/* Matriz editable de permisos por rol */
+.permissions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.permissions-toolbar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.permissions-rol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 220px;
+}
+
+.permissions-rol-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  padding-bottom: 0.55rem;
+}
+
+.permissions-matrix {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.permission-module {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.permission-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.permission-module-header h3 {
+  font-size: 0.88rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.permission-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.permission-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.permission-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.permission-item-name {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.permission-item-slug {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-family: 'Space Grotesk', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Las casillas anulan el estilo base de los campos de texto. */
+.permission-item input[type="checkbox"],
+.permission-select-all input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  padding: 0;
+  margin-top: 0.15rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.permission-item input[type="checkbox"]:focus,
+.permission-select-all input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.permissions-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+  padding: 0.85rem 0;
+  background: linear-gradient(to top, var(--bg-main) 60%, transparent);
+}
+
+.permissions-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
 
 /* Receipt Card */
 .receipt-card {
@@ -706,7 +913,6 @@ input:focus, select:focus, textarea:focus {
   .brand-title,
   .brand-subtitle,
   .nav-item-label,
-  .nav-cu-tag,
   .nav-group-title,
   .user-mini-info {
     display: none;
@@ -720,9 +926,6 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
-  .top-bar-right {
-    display: none;
-  }
   .sidebar-toggle {
     display: inline-flex;
   }
@@ -774,9 +977,6 @@ input:focus, select:focus, textarea:focus {
   .nav-item-label {
     display: inline;
   }
-  .nav-cu-tag {
-    display: inline-block;
-  }
 
   .form-grid {
     grid-template-columns: 1fr;
@@ -793,6 +993,62 @@ input:focus, select:focus, textarea:focus {
   }
   .content-body {
     padding: 1rem;
+  }
+
+  /* Matriz de permisos: una columna y controles apilados */
+  .permissions-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .permissions-rol {
+    min-width: 0;
+  }
+  .permissions-matrix {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-header h2 {
+    font-size: 1.2rem;
+  }
+  .grid-cards {
+    grid-template-columns: 1fr;
+  }
+  .form-card,
+  .receipt-card {
+    padding: 1.25rem;
+  }
+  .modal-card {
+    padding: 1.25rem;
+    max-width: calc(100vw - 1.5rem);
+  }
+  .form-actions-split {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .filters-bar {
+    padding: 0.75rem;
+  }
+  .top-bar {
+    padding: 0 0.75rem;
+  }
+  .content-body {
+    padding: 0.85rem;
+  }
+
+  /* Guardar / Cancelar siempre visibles y sin desbordar */
+  .permissions-actions {
+    flex-direction: column-reverse;
+  }
+  .permissions-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.6rem 0.5rem;
   }
 }
 

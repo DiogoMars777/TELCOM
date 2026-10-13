@@ -22,7 +22,7 @@ export default function ZonasCoberturaView({ user }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU04: Gestionar Zonas de Cobertura</h2>
+          <h2>Gestionar Zonas de Cobertura</h2>
           <p className="subtitle">Mapeo de infraestructura de fibra y nodos para telecomunicaciones</p>
         </div>
         <button

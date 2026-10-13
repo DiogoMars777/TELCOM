@@ -15,38 +15,34 @@ TELCOM_PROYECTO/
 ├── backend/                                   # Backend Laravel (API & MVC)
 │   ├── app/
 │   │   ├── Http/
-│   │   │   └── Controllers/                   # Controladores agrupados por CU
-│   │   │       ├── CU01_IniciarCerrarSesion/
-│   │   │       ├── CU02_BitacoraAuditoria/
-│   │   │       ├── CU03_UsuariosRolesPermisos/
-│   │   │       ├── CU04_ZonasCobertura/
-│   │   │       ├── CU05_RegistrarCliente/
-│   │   │       ├── CU06_ConsultarBuscarClientes/
-│   │   │       ├── CU07_ActualizarBajaCliente/
-│   │   │       ├── CU08_RegistrarActivarServicio/
-│   │   │       ├── CU09_GenerarMensualidades/
-│   │   │       ├── CU10_GestionarPagoMensualidad/
-│   │   │       ├── CU11_ConsultarHistorialPagos/
-│   │   │       ├── CU12_VisualizarAlertasVencimiento/
-│   │   │       ├── CU13_ListadoServiciosCorte/
-│   │   │       ├── CU14_RegistrarCorteRealizado/
-│   │   │       └── CU15_ListaRegistroReactivaciones/
-│   │   └── Models/                            # Modelos Eloquent agrupados por CU
-│   │       ├── CU01_IniciarCerrarSesion/
-│   │       ├── CU02_BitacoraAuditoria/
-│   │       ├── CU03_UsuariosRolesPermisos/
-│   │       ├── CU04_ZonasCobertura/
-│   │       ├── CU05_RegistrarCliente/
-│   │       ├── CU06_ConsultarBuscarClientes/
-│   │       ├── CU07_ActualizarBajaCliente/
-│   │       ├── CU08_RegistrarActivarServicio/
-│   │       ├── CU09_GenerarMensualidades/
-│   │       ├── CU10_GestionarPagoMensualidad/
-│   │       ├── CU11_ConsultarHistorialPagos/
-│   │       ├── CU12_VisualizarAlertasVencimiento/
-│   │       ├── CU13_ListadoServiciosCorte/
-│   │       ├── CU14_RegistrarCorteRealizado/
-│   │       └── CU15_ListaRegistroReactivaciones/
+│   │   │   └── Controllers/
+│   │   │       └── Paquetes/                  # Controladores por paquete funcional
+│   │   │           ├── SeguridadAdministracion/       # CU01-CU03
+│   │   │           │   ├── CU01_IniciarCerrarSesion/
+│   │   │           │   ├── CU02_BitacoraAuditoria/
+│   │   │           │   └── CU03_UsuariosRolesPermisos/
+│   │   │           ├── GestionClientesZonas/          # CU04-CU07
+│   │   │           │   ├── CU04_ZonasCobertura/
+│   │   │           │   ├── CU05_RegistrarCliente/
+│   │   │           │   ├── CU06_ConsultarBuscarClientes/
+│   │   │           │   └── CU07_ActualizarBajaCliente/
+│   │   │           ├── ServiciosPlanes/               # CU08, CU13-CU15 y Planes
+│   │   │           │   ├── CU08_RegistrarActivarServicio/
+│   │   │           │   ├── CU13_ListadoServiciosCorte/
+│   │   │           │   ├── CU14_RegistrarCorteRealizado/
+│   │   │           │   ├── CU15_ListaRegistroReactivaciones/
+│   │   │           │   └── Planes/
+│   │   │           └── FacturacionCobranza/           # CU09-CU12
+│   │   │               ├── CU09_GenerarMensualidades/
+│   │   │               ├── CU10_GestionarPagoMensualidad/
+│   │   │               ├── CU11_ConsultarHistorialPagos/
+│   │   │               └── CU12_VisualizarAlertasVencimiento/
+│   │   └── Models/
+│   │       └── Paquetes/                      # Modelos Eloquent por paquete funcional
+│   │           ├── SeguridadAdministracion/   # CU01-CU03
+│   │           ├── GestionClientesZonas/      # CU04-CU07
+│   │           ├── ServiciosPlanes/           # CU08, CU13-CU15 y Planes
+│   │           └── FacturacionCobranza/       # CU09-CU12
 │   ├── resources/
 │   │   └── views/                             # Vistas Blade agrupadas por CU
 │   │       ├── CU01_IniciarCerrarSesion/
@@ -62,22 +58,18 @@ TELCOM_PROYECTO/
 │
 └── frontend/                                  # Frontend React (Vite)
     └── src/
-        ├── controllers/                       # Hooks controladores por CU
-        │   ├── CU01_IniciarCerrarSesion/
-        │   ├── CU02_BitacoraAuditoria/
-        │   ├── CU03_UsuariosRolesPermisos/
-        │   ├── ... (CU04 al CU15)
-        ├── models/                            # Modelos de datos y servicios API por CU
-        │   ├── CU01_IniciarCerrarSesion/
-        │   ├── CU02_BitacoraAuditoria/
-        │   ├── CU03_UsuariosRolesPermisos/
-        │   ├── ... (CU04 al CU15)
-        ├── views/                             # Componentes visuales UI por CU
-        │   ├── CU01_IniciarCerrarSesion/
-        │   ├── CU02_BitacoraAuditoria/
-        │   ├── CU03_UsuariosRolesPermisos/
-        │   ├── ... (CU04 al CU15)
+        ├── controllers/                       # Hooks controladores
+        │   └── Paquetes/                      # Agrupados por paquete funcional
+        │       └── <Paquete>/CUxx_.../
+        ├── models/                            # Modelos de datos y servicios API
+        │   └── Paquetes/
+        │       └── <Paquete>/CUxx_.../
+        ├── views/                             # Componentes visuales UI
+        │   ├── Paquetes/
+        │   │   └── <Paquete>/CUxx_.../
+        │   └── Public/                        # Landing y páginas públicas
         ├── services/                          # Cliente HTTP base (apiClient.js)
+        ├── config/                            # Permisos (access.js), planes, sitio
         ├── App.jsx                            # Dashboard y navegador interactivo
         └── index.css                          # Sistema de diseño moderno
 ```
@@ -186,9 +178,9 @@ destructiva** (no se eliminan columnas antiguas de `servicios_internet`):
 
 | Entidad UML | Tabla | Modelo |
 | --- | --- | --- |
-| `EstadoServicio` | `estados_servicio` | `App\Models\CU08_RegistrarActivarServicio\EstadoServicio` |
-| `PlanInternet` | `planes_internet` | `App\Models\Planes\PlanInternet` |
-| `AsignacionPlan` | `asignaciones_plan` | `App\Models\Planes\AsignacionPlan` |
+| `EstadoServicio` | `estados_servicio` | `App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\EstadoServicio` |
+| `PlanInternet` | `planes_internet` | `App\Models\Paquetes\ServiciosPlanes\Planes\PlanInternet` |
+| `AsignacionPlan` | `asignaciones_plan` | `App\Models\Paquetes\ServiciosPlanes\Planes\AsignacionPlan` |
 
 Relaciones implementadas (según el UML):
 - `EstadoServicio [1] → ServicioInternet [0..*]` (columna nueva `estado_servicio_id`).

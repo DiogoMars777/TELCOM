@@ -19,7 +19,7 @@ export default function ClienteRegistroView({ onClienteCreated }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU05: Registrar Nuevo Cliente</h2>
+          <h2>Registrar Nuevo Cliente</h2>
           <p className="subtitle">Formulario de afiliación e ingreso de abonado al sistema de telecomunicaciones</p>
         </div>
       </div>

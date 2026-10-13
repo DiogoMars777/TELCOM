@@ -22,7 +22,7 @@ export default function ReactivacionesView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU15: Gestionar Lista y Registro de Reactivaciones</h2>
+          <h2>Gestionar Lista y Registro de Reactivaciones</h2>
           <p className="subtitle">Reposición de enlace para clientes normalizados y control de cobro de reconexión</p>
         </div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>

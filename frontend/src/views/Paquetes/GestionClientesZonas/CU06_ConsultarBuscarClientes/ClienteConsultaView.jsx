@@ -17,7 +17,7 @@ export default function ClienteConsultaView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU06: Consultar y Buscar Clientes</h2>
+          <h2>Consultar y Buscar Clientes</h2>
           <p className="subtitle">Búsqueda rápida por CI, código, nombres o contacto</p>
         </div>
       </div>

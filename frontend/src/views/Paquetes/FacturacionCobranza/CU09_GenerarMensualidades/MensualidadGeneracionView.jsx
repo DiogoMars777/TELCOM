@@ -22,7 +22,7 @@ export default function MensualidadGeneracionView({ user }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU09: Generar Mensualidades de Servicios</h2>
+          <h2>Generar Mensualidades de Servicios</h2>
           <p className="subtitle">Motor de facturación periódica recurrente y emisión de deudas por contrato</p>
         </div>
       </div>

@@ -41,11 +41,27 @@ class UsuarioController extends Controller
             'name'           => 'required|string|max:255',
             'nombre_usuario' => 'nullable|string|max:100|unique:users,nombre_usuario',
             'email'          => 'required|email|unique:users,email',
-            'password'       => 'required|string|min:8',
+            // Política de contraseñas: mínimo 8 caracteres, al menos una
+            // mayúscula, una minúscula, un número y un carácter especial
+            // (! @ # $ % & *). Debe coincidir con el frontend
+            // (`config/passwordPolicy.js`).
+            'password'       => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%&*]).+$/',
+            ],
             'telefono'       => 'nullable|string|max:50',
             'activo'         => 'sometimes|boolean',
             'rol_id'         => 'required_without:role|nullable|integer|exists:roles,id',
             'role'           => 'required_without:rol_id|nullable|string|exists:roles,nombre',
+        ], [
+            'password.required'       => 'La contraseña es obligatoria.',
+            'password.min'            => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.regex'          => 'La contraseña debe incluir al menos una letra mayúscula, una minúscula, un número y un carácter especial (! @ # $ % & *).',
+            'rol_id.required_without' => 'Debes seleccionar un rol.',
+            'rol_id.exists'           => 'El rol seleccionado no existe.',
+            'role.exists'             => 'El rol seleccionado no existe.',
         ]);
 
         // Resolver el rol: por id o, como respaldo, por nombre.
@@ -56,16 +72,6 @@ class UsuarioController extends Controller
         if (! $rol) {
             return $this->error('El rol indicado no existe.', 422);
         }
-
-        $usuario = User::create([
-            'name'           => $validated['name'],
-            'nombre_usuario' => $validated['nombre_usuario'] ?? null,
-            'email'          => $validated['email'],
-            'password'       => Hash::make($validated['password']),
-            'telefono'       => $validated['telefono'] ?? null,
-            'activo'         => $validated['activo'] ?? true,
-            'rol_id'         => $rol->id,
-        ]);
 
         $usuario = User::create([
             'name'           => $validated['name'],

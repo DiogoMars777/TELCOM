@@ -25,7 +25,7 @@ export default function CorteRegistroView({ initialServicio }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU14: Registrar Corte Realizado</h2>
+          <h2>Registrar Corte Realizado</h2>
           <p className="subtitle">Ejecución y registro de orden técnica de corte (Lógico / Físico)</p>
         </div>
       </div>
@@ -47,7 +47,7 @@ export default function CorteRegistroView({ initialServicio }) {
           <div className="receipt-header">
             <CheckCircle2 size={36} className="text-danger" />
             <h3>¡Corte Registrado y Efectuado!</h3>
-            <p>El servicio ha sido suspendido en el sistema y guardado en PostgreSQL</p>
+            <p>El servicio ha sido suspendido y el corte quedó registrado en el sistema</p>
           </div>
           <div className="receipt-body">
             <div className="receipt-row">

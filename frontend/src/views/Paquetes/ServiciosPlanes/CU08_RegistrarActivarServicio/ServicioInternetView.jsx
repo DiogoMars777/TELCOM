@@ -34,7 +34,7 @@ export default function ServicioInternetView({ user }) {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU08: Registrar / Activar Servicio</h2>
+          <h2>Registrar / Activar Servicio</h2>
           <p className="subtitle">Contratación de planes de fibra y activación técnica de equipos en red</p>
         </div>
         <button

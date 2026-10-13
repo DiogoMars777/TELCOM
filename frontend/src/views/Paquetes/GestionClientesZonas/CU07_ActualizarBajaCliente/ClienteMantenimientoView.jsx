@@ -22,7 +22,7 @@ export default function ClienteMantenimientoView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU07: Actualizar Datos y Dar Baja Lógica a Cliente</h2>
+          <h2>Actualizar Datos y Dar Baja Lógica a Cliente</h2>
           <p className="subtitle">Mantenimiento de información de abonados y borrado seguro (Soft Delete)</p>
         </div>
       </div>
@@ -150,7 +150,7 @@ export default function ClienteMantenimientoView() {
           <div className="modal-card">
             <h3>Confirmar Baja Lógica del Cliente</h3>
             <p className="text-warning">
-              Esta acción marcará el registro como inactivo y conservará el historial contable y legal en PostgreSQL.
+              Esta acción marcará el registro como inactivo y conservará el historial contable y legal del cliente.
             </p>
             <div className="form-group">
               <label>Motivo de la Baja Lógica</label>

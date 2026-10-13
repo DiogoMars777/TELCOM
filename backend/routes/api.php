@@ -8,6 +8,7 @@ use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesi
 use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\AuditoriaController;
 // CU03: Gestionar usuarios internos, roles y permisos
 use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\UsuarioController;
+use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\RolController;
 // CU04: Gestionar zonas de cobertura
 use App\Http\Controllers\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCoberturaController;
 // CU05: Registrar nuevo cliente
@@ -69,6 +70,10 @@ Route::prefix('cu03')->middleware(['auth:sanctum', 'permission:usuarios.manage']
     Route::post('/usuarios', [UsuarioController::class, 'store']);
     Route::put('/usuarios/{id}/rol', [UsuarioController::class, 'updateRoles']);
     Route::put('/usuarios/{id}', [UsuarioController::class, 'update'])->whereNumber('id');
+
+    // Matriz editable de roles -> permisos.
+    Route::get('/roles', [RolController::class, 'index']);
+    Route::put('/roles/{id}/permisos', [RolController::class, 'updatePermisos'])->whereNumber('id');
 });
 
 // CU04: Gestionar zonas de cobertura (solo administrador)

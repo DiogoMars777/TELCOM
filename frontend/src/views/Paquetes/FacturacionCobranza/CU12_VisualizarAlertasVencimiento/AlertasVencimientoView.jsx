@@ -15,7 +15,7 @@ export default function AlertasVencimientoView() {
     <div className="view-panel">
       <div className="view-header">
         <div>
-          <h2>CU12: Visualizar Alertas de Vencimiento</h2>
+          <h2>Visualizar Alertas de Vencimiento</h2>
           <p className="subtitle">Monitoreo predictivo de mora y facturas impagas para prevención de corte</p>
         </div>
       </div>
