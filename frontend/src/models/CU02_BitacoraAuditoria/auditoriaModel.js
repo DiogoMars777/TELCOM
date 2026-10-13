@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockAuditoriaLogs = [
   {
     id: 1,
@@ -32,7 +34,8 @@ export const mockAuditoriaLogs = [
 
 export const auditoriaService = {
   async fetchLogs(filters = {}) {
+    if (isDemoMode()) return mockAuditoriaLogs;
     const res = await apiClient.get('/cu02/auditoria', filters);
-    return res?.data?.data || mockAuditoriaLogs;
+    return res?.data?.data ?? [];
   }
 };

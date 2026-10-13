@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { auditoriaService, mockAuditoriaLogs } from '../../models/CU02_BitacoraAuditoria/auditoriaModel';
+import { auditoriaService } from '../../models/CU02_BitacoraAuditoria/auditoriaModel';
+import { describeApiError } from '../../services/apiClient';
 
 export function useAuditoriaController() {
-  const [logs, setLogs] = useState(mockAuditoriaLogs);
+  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [moduloFiltro, setModuloFiltro] = useState('');
   const [accionFiltro, setAccionFiltro] = useState('');
 
   const loadLogs = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await auditoriaService.fetchLogs({
         modulo: moduloFiltro,
@@ -16,7 +19,8 @@ export function useAuditoriaController() {
       });
       setLogs(data);
     } catch (err) {
-      console.error('Error cargando bitácora:', err);
+      setLogs([]);
+      setError(describeApiError(err));
     } finally {
       setLoading(false);
     }
@@ -29,6 +33,7 @@ export function useAuditoriaController() {
   return {
     logs,
     loading,
+    error,
     moduloFiltro,
     setModuloFiltro,
     accionFiltro,

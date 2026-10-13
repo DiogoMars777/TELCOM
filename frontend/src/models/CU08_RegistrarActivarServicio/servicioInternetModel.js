@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockServiciosList = [
   {
     id: 1,
@@ -27,10 +29,43 @@ export const mockServiciosList = [
   },
 ];
 
+export const mockClientesCu08 = [
+  { id: 1, codigo_cliente: 'CLI-10001', nombres: 'Carlos Andrés', apellidos: 'Mendoza Paredes', direccion: 'Av. Siempre Viva #742' },
+  { id: 2, codigo_cliente: 'CLI-10002', nombres: 'Valeria', apellidos: 'Rojas Silva', direccion: 'Calle Los Pinos #12' },
+];
+
+export const mockPlanesCu08 = [
+  { id: 1, nombre_plan: 'Plan Básico 30 Mbps', velocidad_mbps: 30, precio_mensual: 130.00, descripcion: 'Hogar básico', activo: true },
+  { id: 2, nombre_plan: 'Plan Hogar Plus 50 Mbps', velocidad_mbps: 50, precio_mensual: 160.00, descripcion: 'Hogar plus', activo: true },
+  { id: 3, nombre_plan: 'Plan Fibra Ultra 100 Mbps', velocidad_mbps: 100, precio_mensual: 220.00, descripcion: 'Fibra ultra', activo: true },
+];
+
+// La API entrega la relación `cliente`; la vista usa `cliente_nombre`.
+function nombreCliente(servicio) {
+  if (servicio.cliente_nombre) return servicio.cliente_nombre;
+  if (servicio.cliente) {
+    return `${servicio.cliente.nombres ?? ''} ${servicio.cliente.apellidos ?? ''}`.trim();
+  }
+  return null;
+}
+
 export const servicioInternetService = {
   async fetchServicios() {
+    if (isDemoMode()) return mockServiciosList;
     const res = await apiClient.get('/cu08/servicios');
-    return res?.data?.data || mockServiciosList;
+    return (res?.data?.data ?? []).map((s) => ({ ...s, cliente_nombre: nombreCliente(s) }));
+  },
+
+  async fetchClientes() {
+    if (isDemoMode()) return mockClientesCu08;
+    const res = await apiClient.get('/cu06/clientes');
+    return res?.data?.data ?? [];
+  },
+
+  async fetchPlanes() {
+    if (isDemoMode()) return mockPlanesCu08;
+    const res = await apiClient.get('/planes');
+    return res?.data?.planes ?? [];
   },
 
   async registrarServicio(data) {

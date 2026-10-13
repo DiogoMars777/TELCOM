@@ -1,11 +1,12 @@
 import React from 'react';
 import { useHistorialPagosController } from '../../controllers/CU11_ConsultarHistorialPagos/useHistorialPagosController';
-import { History, Filter, Receipt, Calendar } from 'lucide-react';
+import { History, Filter, Receipt, Calendar, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function HistorialPagosView() {
   const {
     pagos,
     loading,
+    error,
     metodoFiltro,
     setMetodoFiltro,
   } = useHistorialPagosController();
@@ -18,6 +19,12 @@ export default function HistorialPagosView() {
           <p className="subtitle">Auditoría de recaudaciones, transacciones bancarias y comprobantes emitidos</p>
         </div>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo cargar el historial de pagos: {error}
+        </div>
+      )}
 
       <div className="filters-bar">
         <div className="filter-item">
@@ -47,6 +54,18 @@ export default function HistorialPagosView() {
             </tr>
           </thead>
           <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <RefreshCw size={16} className="spin" /> Cargando historial…
+                </td>
+              </tr>
+            )}
+            {!loading && pagos.length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>Sin registros</td>
+              </tr>
+            )}
             {pagos.map((p) => (
               <tr key={p.id}>
                 <td><strong>{p.codigo_recibo}</strong></td>

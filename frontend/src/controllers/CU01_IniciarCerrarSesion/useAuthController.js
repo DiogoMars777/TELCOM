@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { authService, initialAuthCredentials } from '../../models/CU01_IniciarCerrarSesion/authModel';
 
+/**
+ * Controlador del inicio de sesión (CU01).
+ * Realiza la autenticación real contra Laravel Sanctum.
+ */
 export function useAuthController(onLoginSuccess) {
   const [credentials, setCredentials] = useState(initialAuthCredentials);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(authService.getCurrentUser());
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCredentials(prev => ({ ...prev, [name]: value }));
+    setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -18,35 +21,26 @@ export function useAuthController(onLoginSuccess) {
     setError(null);
 
     try {
-      const result = await authService.login(credentials);
-      if (result && result.success !== false) {
-        const loggedUser = authService.getCurrentUser();
-        setUser(loggedUser);
-        if (onLoginSuccess) onLoginSuccess(loggedUser);
-      } else {
-        setError(result?.message || 'Error al iniciar sesión.');
-      }
+      const user = await authService.login(credentials);
+      if (onLoginSuccess) onLoginSuccess(user);
     } catch (err) {
-      setError(err.message || 'Error de conexión con el servidor.');
+      if (err.status === 401) {
+        setError('Correo o contraseña incorrectos.');
+      } else if (err.status === 422) {
+        setError('Revisa el correo y la contraseña ingresados.');
+      } else {
+        setError('No se pudo conectar con el servidor. Intenta nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLogout = async () => {
-    setLoading(true);
-    await authService.logout();
-    setUser(null);
-    setLoading(false);
   };
 
   return {
     credentials,
     loading,
     error,
-    user,
     handleChange,
     handleSubmit,
-    handleLogout,
   };
 }

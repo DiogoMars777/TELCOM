@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockAlertas = [
   {
     mensualidad_id: 1,
@@ -25,7 +27,8 @@ export const mockAlertas = [
 
 export const alertasService = {
   async fetchAlertas() {
+    if (isDemoMode()) return mockAlertas;
     const res = await apiClient.get('/cu12/alertas');
-    return res?.data?.alertas || mockAlertas;
+    return res?.data?.alertas ?? [];
   }
 };

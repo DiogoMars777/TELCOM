@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockMensualidades = [
   {
     id: 1,
@@ -25,10 +27,22 @@ export const mockMensualidades = [
   },
 ];
 
+// La API devuelve las relaciones `cliente` y `servicio`; se aplanan para la vista.
+function normalizeMensualidad(m) {
+  const cliente = m.cliente;
+  return {
+    ...m,
+    cliente_nombre: m.cliente_nombre
+      || (cliente ? `${cliente.nombres ?? ''} ${cliente.apellidos ?? ''}`.trim() : null),
+    servicio_codigo: m.servicio_codigo || m.servicio?.codigo_servicio || null,
+  };
+}
+
 export const mensualidadService = {
   async fetchMensualidades(periodo) {
+    if (isDemoMode()) return mockMensualidades;
     const res = await apiClient.get('/cu09/mensualidades', { periodo });
-    return res?.data?.data || mockMensualidades;
+    return (res?.data?.data ?? []).map(normalizeMensualidad);
   },
 
   async generarMensualidades(periodo) {

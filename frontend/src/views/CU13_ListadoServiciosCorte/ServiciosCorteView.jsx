@@ -3,7 +3,7 @@ import { useServiciosCorteController } from '../../controllers/CU13_ListadoServi
 import { Scissors, AlertCircle, RefreshCw, Send } from 'lucide-react';
 
 export default function ServiciosCorteView({ onIrACorte }) {
-  const { servicios, loading, reload } = useServiciosCorteController();
+  const { servicios, loading, error, reload } = useServiciosCorteController();
 
   return (
     <div className="view-panel">
@@ -16,6 +16,12 @@ export default function ServiciosCorteView({ onIrACorte }) {
           <RefreshCw size={16} className={loading ? 'spin' : ''} /> Actualizar
         </button>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo cargar el listado de servicios para corte: {error}
+        </div>
+      )}
 
       <div className="table-responsive">
         <table className="data-table">
@@ -31,14 +37,26 @@ export default function ServiciosCorteView({ onIrACorte }) {
             </tr>
           </thead>
           <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <RefreshCw size={16} className="spin" /> Cargando servicios…
+                </td>
+              </tr>
+            )}
+            {!loading && servicios.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', color: '#94a3b8' }}>Sin registros</td>
+              </tr>
+            )}
             {servicios.map((s) => (
               <tr key={s.id}>
                 <td><strong>{s.codigo_servicio}</strong></td>
                 <td>{s.cliente_nombre}</td>
                 <td>{s.plan_nombre}</td>
                 <td><code>{s.ip_asignada}</code></td>
-                <td><strong className="text-danger">{s.dias_mora} días</strong></td>
-                <td><strong className="text-danger">Bs. {s.monto_deuda}</strong></td>
+                <td><strong className="text-danger">{s.dias_mora ?? '—'} días</strong></td>
+                <td><strong className="text-danger">{s.monto_deuda != null ? `Bs. ${s.monto_deuda}` : '—'}</strong></td>
                 <td>
                   <button
                     className="btn btn-sm btn-danger"

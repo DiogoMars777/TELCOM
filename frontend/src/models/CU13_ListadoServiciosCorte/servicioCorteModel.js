@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockServiciosParaCorte = [
   {
     id: 1,
@@ -23,9 +25,20 @@ export const mockServiciosParaCorte = [
   },
 ];
 
+// La API devuelve la relación `cliente`; se aplana para la vista.
+function normalizeServicio(s) {
+  const cliente = s.cliente;
+  return {
+    ...s,
+    cliente_nombre: s.cliente_nombre
+      || (cliente ? `${cliente.nombres ?? ''} ${cliente.apellidos ?? ''}`.trim() : null),
+  };
+}
+
 export const serviciosCorteService = {
   async fetchServiciosCorte() {
+    if (isDemoMode()) return mockServiciosParaCorte;
     const res = await apiClient.get('/cu13/servicios-corte');
-    return res?.data?.data || mockServiciosParaCorte;
+    return (res?.data?.data ?? []).map(normalizeServicio);
   }
 };

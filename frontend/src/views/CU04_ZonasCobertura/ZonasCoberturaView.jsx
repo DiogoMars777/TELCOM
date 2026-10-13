@@ -1,17 +1,22 @@
 import React from 'react';
 import { useZonaCoberturaController } from '../../controllers/CU04_ZonasCobertura/useZonaCoberturaController';
-import { MapPin, Plus, Radio, Cpu } from 'lucide-react';
+import { hasPermission } from '../../config/access.js';
+import { MapPin, Plus, Radio, Cpu, AlertCircle, RefreshCw } from 'lucide-react';
 
-export default function ZonasCoberturaView() {
+export default function ZonasCoberturaView({ user }) {
   const {
     zonas,
     loading,
+    error,
+    formError,
     showModal,
     setShowModal,
     newZona,
     setNewZona,
     handleCreate,
   } = useZonaCoberturaController();
+
+  const puedeGestionar = hasPermission(user, 'zonas.manage');
 
   return (
     <div className="view-panel">
@@ -20,17 +25,40 @@ export default function ZonasCoberturaView() {
           <h2>CU04: Gestionar Zonas de Cobertura</h2>
           <p className="subtitle">Mapeo de infraestructura de fibra y nodos para telecomunicaciones</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowModal(true)}
+          disabled={!puedeGestionar}
+          title={puedeGestionar ? undefined : 'No tienes permiso zonas.manage'}
+        >
           <Plus size={16} /> Nueva Zona
         </button>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudieron cargar las zonas de cobertura: {error}
+        </div>
+      )}
+
+      {loading && (
+        <p className="text-muted" style={{ padding: '0.5rem 0' }}>
+          <RefreshCw size={16} className="spin" /> Cargando zonas…
+        </p>
+      )}
+
+      {!loading && zonas.length === 0 && (
+        <p className="text-muted" style={{ padding: '0.5rem 0' }}>Sin registros</p>
+      )}
 
       <div className="grid-cards">
         {zonas.map((z) => (
           <div key={z.id} className="card-item">
             <div className="card-item-header">
               <span className="badge badge-info">{z.codigo}</span>
-              <span className="badge badge-success">Activo</span>
+              <span className={`badge badge-${z.activo ? 'success' : 'danger'}`}>
+                {z.activo ? 'Activo' : 'Inactivo'}
+              </span>
             </div>
             <h3>{z.nombre}</h3>
             <p className="location-text"><MapPin size={14} /> {z.ciudad}</p>
@@ -96,6 +124,11 @@ export default function ZonasCoberturaView() {
                   onChange={(e) => setNewZona({ ...newZona, capacidad_nodos: parseInt(e.target.value) || 0 })}
                 />
               </div>
+              {formError && (
+                <div className="alert alert-danger" role="alert">
+                  <AlertCircle size={18} /> {formError}
+                </div>
+              )}
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary" disabled={loading}>Guardar Zona</button>

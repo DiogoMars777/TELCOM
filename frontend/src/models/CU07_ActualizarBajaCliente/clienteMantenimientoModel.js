@@ -1,4 +1,4 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
 
 export const clienteMantenimientoService = {
   async updateCliente(id, data) {

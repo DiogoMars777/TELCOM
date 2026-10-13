@@ -1,11 +1,12 @@
 import React from 'react';
 import { useClienteConsultaController } from '../../controllers/CU06_ConsultarBuscarClientes/useClienteConsultaController';
-import { Search, UserCheck, Phone, Mail, MapPin, Filter } from 'lucide-react';
+import { Search, UserCheck, Phone, Mail, MapPin, Filter, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function ClienteConsultaView() {
   const {
     clientes,
     loading,
+    error,
     busqueda,
     setBusqueda,
     estadoFiltro,
@@ -20,6 +21,12 @@ export default function ClienteConsultaView() {
           <p className="subtitle">Búsqueda rápida por CI, código, nombres o contacto</p>
         </div>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo consultar los clientes: {error}
+        </div>
+      )}
 
       <div className="filters-bar">
         <div className="search-box">
@@ -56,6 +63,18 @@ export default function ClienteConsultaView() {
             </tr>
           </thead>
           <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <RefreshCw size={16} className="spin" /> Cargando clientes…
+                </td>
+              </tr>
+            )}
+            {!loading && clientes.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#94a3b8' }}>Sin registros</td>
+              </tr>
+            )}
             {clientes.map((c) => (
               <tr key={c.id}>
                 <td><strong>{c.codigo_cliente}</strong></td>
@@ -69,7 +88,7 @@ export default function ClienteConsultaView() {
                 </td>
                 <td>
                   <div><MapPin size={12} /> {c.direccion}</div>
-                  <small className="text-muted">{c.zona_nombre || 'Zona Norte'}</small>
+                  <small className="text-muted">{c.zona_nombre || '—'}</small>
                 </td>
                 <td>
                   <span className={`badge badge-${c.estado === 'ACTIVO' ? 'success' : 'warning'}`}>

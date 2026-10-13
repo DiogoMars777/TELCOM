@@ -1,13 +1,18 @@
 import React from 'react';
 import { useReactivacionesController } from '../../controllers/CU15_ListaRegistroReactivaciones/useReactivacionesController';
-import { RefreshCw, Play, CheckCircle2, DollarSign } from 'lucide-react';
+import { RefreshCw, Play, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function ReactivacionesView() {
   const {
     reactivaciones,
     loading,
+    error,
+    formError,
     showModal,
     setShowModal,
+    serviciosCortados,
+    loadingServicios,
+    serviciosError,
     formReactivacion,
     setFormReactivacion,
     handleCrear,
@@ -25,6 +30,12 @@ export default function ReactivacionesView() {
         </button>
       </div>
 
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo cargar la lista de reactivaciones: {error}
+        </div>
+      )}
+
       <div className="table-responsive">
         <table className="data-table">
           <thead>
@@ -40,6 +51,18 @@ export default function ReactivacionesView() {
             </tr>
           </thead>
           <tbody>
+            {loading && (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                  <RefreshCw size={16} className="spin" /> Cargando reactivaciones…
+                </td>
+              </tr>
+            )}
+            {!loading && reactivaciones.length === 0 && (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>Sin registros</td>
+              </tr>
+            )}
             {reactivaciones.map((r) => (
               <tr key={r.id}>
                 <td><strong>{r.codigo_reactivacion}</strong></td>
@@ -50,8 +73,8 @@ export default function ReactivacionesView() {
                 <td>{r.operador_nombre}</td>
                 <td>{r.observaciones}</td>
                 <td>
-                  <span className="badge badge-success">
-                    <CheckCircle2 size={12} /> REACTIVADO
+                  <span className={`badge badge-${r.estado_servicio === 'ACTIVO' ? 'success' : 'warning'}`}>
+                    {r.estado_servicio === 'ACTIVO' && <CheckCircle2 size={12} />} {r.estado_servicio || '—'}
                   </span>
                 </td>
               </tr>
@@ -64,15 +87,36 @@ export default function ReactivacionesView() {
         <div className="modal-backdrop">
           <div className="modal-card">
             <h3>Registrar Reactivación de Servicio</h3>
+
+            {serviciosError && (
+              <div className="alert alert-danger" role="alert">
+                <AlertCircle size={18} /> No se pudieron cargar los servicios: {serviciosError}
+              </div>
+            )}
+
+            {!loadingServicios && !serviciosError && serviciosCortados.length === 0 && (
+              <div className="alert alert-warning" role="alert">
+                <AlertCircle size={18} /> No hay servicios en estado CORTADO para reactivar.
+              </div>
+            )}
+
             <form onSubmit={handleCrear}>
               <div className="form-group">
                 <label>Servicio a Reactivar</label>
                 <select
+                  required
                   value={formReactivacion.servicio_id}
-                  onChange={(e) => setFormReactivacion({ ...formReactivacion, servicio_id: parseInt(e.target.value) || 1 })}
+                  disabled={loadingServicios || serviciosCortados.length === 0}
+                  onChange={(e) => setFormReactivacion({ ...formReactivacion, servicio_id: e.target.value })}
                 >
-                  <option value={1}>SRV-88201 - Fernando Torres (Cortado por Mora)</option>
-                  <option value={2}>SRV-88204 - Juan Pablo Camacho (Cortado)</option>
+                  <option value="">
+                    {loadingServicios ? 'Cargando servicios…' : 'Seleccione un servicio cortado'}
+                  </option>
+                  {serviciosCortados.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.codigo_servicio} — {s.cliente_nombre || 'Sin cliente'}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -80,8 +124,9 @@ export default function ReactivacionesView() {
                 <label>Costo de Reconexión (Bs.)</label>
                 <input
                   type="number"
+                  required
                   value={formReactivacion.costo_reactivacion}
-                  onChange={(e) => setFormReactivacion({ ...formReactivacion, costo_reactivacion: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) => setFormReactivacion({ ...formReactivacion, costo_reactivacion: e.target.value })}
                 />
               </div>
 
@@ -94,9 +139,20 @@ export default function ReactivacionesView() {
                 />
               </div>
 
+              {formError && (
+                <div className="alert alert-danger" role="alert">
+                  <AlertCircle size={18} /> {formError}
+                </div>
+              )}
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={loading}>Confirmar Reactivación</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading || !formReactivacion.servicio_id}
+                >
+                  Confirmar Reactivación
+                </button>
               </div>
             </form>
           </div>

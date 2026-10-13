@@ -1,10 +1,11 @@
 import React from 'react';
 import { useCorteRegistroController } from '../../controllers/CU14_RegistrarCorteRealizado/useCorteRegistroController';
-import { mockServiciosParaCorte } from '../../models/CU13_ListadoServiciosCorte/servicioCorteModel';
-import { Scissors, AlertOctagon, CheckCircle2 } from 'lucide-react';
+import { Scissors, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function CorteRegistroView({ initialServicio }) {
   const {
+    servicios,
+    servicesError,
     selectedServicio,
     setSelectedServicio,
     tipoCorte,
@@ -14,6 +15,7 @@ export default function CorteRegistroView({ initialServicio }) {
     observaciones,
     setObservaciones,
     loading,
+    error,
     corteSuccess,
     setCorteSuccess,
     handleSubmit,
@@ -27,6 +29,18 @@ export default function CorteRegistroView({ initialServicio }) {
           <p className="subtitle">Ejecución y registro de orden técnica de corte (Lógico / Físico)</p>
         </div>
       </div>
+
+      {servicesError && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo cargar el listado de servicios: {servicesError}
+        </div>
+      )}
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> {error}
+        </div>
+      )}
 
       {corteSuccess ? (
         <div className="receipt-card border-danger">
@@ -64,15 +78,20 @@ export default function CorteRegistroView({ initialServicio }) {
               <div className="form-group full-width">
                 <label>Servicio a Cortar</label>
                 <select
-                  value={selectedServicio.id}
+                  value={selectedServicio?.id ?? ''}
                   onChange={(e) => {
-                    const found = mockServiciosParaCorte.find(s => s.id === parseInt(e.target.value));
+                    const found = servicios.find(s => s.id === parseInt(e.target.value));
                     if (found) setSelectedServicio(found);
                   }}
                 >
-                  {mockServiciosParaCorte.map(s => (
+                  {selectedServicio == null && (
+                    <option value="">— No hay servicios disponibles —</option>
+                  )}
+                  {servicios.map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.codigo_servicio} - {s.cliente_nombre} - Mora: {s.dias_mora} días (Bs. {s.monto_deuda})
+                      {s.codigo_servicio} - {s.cliente_nombre || '—'}
+                      {s.dias_mora != null ? ` - Mora: ${s.dias_mora} días` : ''}
+                      {s.monto_deuda != null ? ` (Bs. ${s.monto_deuda})` : ''}
                     </option>
                   ))}
                 </select>
@@ -108,7 +127,7 @@ export default function CorteRegistroView({ initialServicio }) {
             </div>
 
             <div className="form-footer">
-              <button type="submit" className="btn btn-danger" disabled={loading}>
+              <button type="submit" className="btn btn-danger" disabled={loading || !selectedServicio}>
                 <Scissors size={18} /> {loading ? 'Ejecutando Corte...' : 'Confirmar y Ejecutar Corte'}
               </button>
             </div>

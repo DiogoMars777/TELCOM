@@ -8,6 +8,9 @@ export default function ClienteRegistroView({ onClienteCreated }) {
     loading,
     successMsg,
     errorMsg,
+    zonas,
+    loadingZonas,
+    zonasError,
     handleChange,
     handleSubmit,
   } = useClienteRegistroController(onClienteCreated);
@@ -30,6 +33,12 @@ export default function ClienteRegistroView({ onClienteCreated }) {
       {errorMsg && (
         <div className="alert alert-danger">
           <AlertCircle size={18} /> {errorMsg}
+        </div>
+      )}
+
+      {zonasError && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudieron cargar las zonas de cobertura: {zonasError}
         </div>
       )}
 
@@ -119,10 +128,13 @@ export default function ClienteRegistroView({ onClienteCreated }) {
 
             <div className="form-group">
               <label>Zona de Cobertura</label>
-              <select name="zona_id" value={cliente.zona_id} onChange={handleChange}>
-                <option value={1}>Zona Norte - Fibra Troncal</option>
-                <option value={2}>Zona Sur - Anillo Metropolitano</option>
-                <option value={3}>Zona Central - Casco Viejo</option>
+              <select name="zona_id" value={cliente.zona_id} onChange={handleChange} required disabled={loadingZonas}>
+                <option value="">{loadingZonas ? 'Cargando zonas…' : 'Seleccione una zona'}</option>
+                {zonas.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.nombre}{z.ciudad ? ` — ${z.ciudad}` : ''}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
   --bg-main: #090d16;
@@ -641,4 +641,166 @@ input:focus, select:focus, textarea:focus {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Boot screen (validación de sesión) */
+.boot-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background-color: var(--bg-main);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Botón de menú y capa para móviles (ocultos en escritorio) */
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* =====================================================================
+   Responsive del panel administrativo
+   ===================================================================== */
+@media (max-width: 1180px) {
+  .sidebar {
+    width: 260px;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Barra lateral compacta (solo iconos) */
+  .sidebar {
+    width: 84px;
+  }
+  .sidebar-header {
+    justify-content: center;
+    padding: 1.25rem 0.5rem;
+  }
+  .sidebar-nav {
+    padding: 1rem 0.5rem;
+  }
+  .nav-item {
+    justify-content: center;
+    padding: 0.7rem 0.5rem;
+  }
+  .sidebar-footer {
+    justify-content: center;
+  }
+  .brand-title,
+  .brand-subtitle,
+  .nav-item-label,
+  .nav-cu-tag,
+  .nav-group-title,
+  .user-mini-info {
+    display: none;
+  }
+  .top-bar {
+    padding: 0 1.25rem;
+  }
+  .content-body {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-bar-right {
+    display: none;
+  }
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+
+  /* Barra lateral deslizante */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 264px;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 60;
+    box-shadow: var(--shadow-lg);
+  }
+  .app-container.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  .app-container.sidebar-open .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 55;
+  }
+
+  /* Restaurar etiquetas dentro del menú deslizante */
+  .sidebar-header {
+    justify-content: flex-start;
+    padding: 1.25rem 1.25rem;
+  }
+  .sidebar-nav {
+    padding: 1rem 0.75rem;
+  }
+  .nav-item {
+    justify-content: flex-start;
+    padding: 0.6rem 0.75rem;
+  }
+  .sidebar-footer {
+    justify-content: space-between;
+  }
+  .brand-title,
+  .brand-subtitle,
+  .user-mini-info,
+  .nav-group-title {
+    display: block;
+  }
+  .nav-item-label {
+    display: inline;
+  }
+  .nav-cu-tag {
+    display: inline-block;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+  .view-header,
+  .filters-bar {
+    flex-wrap: wrap;
+  }
+  .top-bar {
+    padding: 0 1rem;
+  }
+  .content-body {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+  .sidebar {
+    transition: none;
+  }
 }

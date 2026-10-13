@@ -1,11 +1,12 @@
 import React from 'react';
 import { useAlertasVencimientoController } from '../../controllers/CU12_VisualizarAlertasVencimiento/useAlertasVencimientoController';
-import { AlertTriangle, Bell, ShieldAlert, Clock, UserX } from 'lucide-react';
+import { AlertTriangle, Bell, ShieldAlert, Clock, UserX, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function AlertasVencimientoView() {
   const {
     alertas,
     loading,
+    error,
     severidadFiltro,
     setSeveridadFiltro,
   } = useAlertasVencimientoController();
@@ -19,6 +20,12 @@ export default function AlertasVencimientoView() {
         </div>
       </div>
 
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudieron cargar las alertas: {error}
+        </div>
+      )}
+
       <div className="filters-bar">
         <div className="filter-item">
           <select value={severidadFiltro} onChange={(e) => setSeveridadFiltro(e.target.value)}>
@@ -29,6 +36,16 @@ export default function AlertasVencimientoView() {
           </select>
         </div>
       </div>
+
+      {loading && (
+        <p className="text-muted" style={{ padding: '0.5rem 0' }}>
+          <RefreshCw size={16} className="spin" /> Cargando alertas…
+        </p>
+      )}
+
+      {!loading && alertas.length === 0 && (
+        <p className="text-muted" style={{ padding: '0.5rem 0' }}>Sin registros</p>
+      )}
 
       <div className="grid-cards">
         {alertas.map((a, idx) => (

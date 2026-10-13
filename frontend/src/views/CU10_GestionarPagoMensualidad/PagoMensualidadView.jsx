@@ -1,10 +1,10 @@
 import React from 'react';
 import { usePagoMensualidadController } from '../../controllers/CU10_GestionarPagoMensualidad/usePagoMensualidadController';
-import { mockMensualidades } from '../../models/CU09_GenerarMensualidades/mensualidadModel';
-import { CreditCard, QrCode, Banknote, CheckCircle, Receipt, ArrowRight } from 'lucide-react';
+import { Receipt, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function PagoMensualidadView() {
   const {
+    facturas,
     selectedFactura,
     setSelectedFactura,
     metodoPago,
@@ -14,6 +14,7 @@ export default function PagoMensualidadView() {
     observaciones,
     setObservaciones,
     loading,
+    error,
     reciboGenerado,
     setReciboGenerado,
     handleSubmit,
@@ -27,6 +28,12 @@ export default function PagoMensualidadView() {
           <p className="subtitle">Módulo de ventanilla / pasarela para recaudación y emisión de recibos oficiales</p>
         </div>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> {error}
+        </div>
+      )}
 
       {reciboGenerado ? (
         <div className="receipt-card">
@@ -68,15 +75,18 @@ export default function PagoMensualidadView() {
               <div className="form-group full-width">
                 <label>Seleccionar Factura / Mensualidad Pendiente</label>
                 <select
-                  value={selectedFactura.id}
+                  value={selectedFactura?.id ?? ''}
                   onChange={(e) => {
-                    const f = mockMensualidades.find(m => m.id === parseInt(e.target.value));
+                    const f = facturas.find(m => m.id === parseInt(e.target.value));
                     if (f) setSelectedFactura(f);
                   }}
                 >
-                  {mockMensualidades.map(m => (
+                  {selectedFactura == null && (
+                    <option value="">— No hay facturas pendientes —</option>
+                  )}
+                  {facturas.map(m => (
                     <option key={m.id} value={m.id}>
-                      {m.codigo_factura} - {m.cliente_nombre} - Período: {m.periodo} - Bs. {m.monto} ({m.estado_pago})
+                      {m.codigo_factura} - {m.cliente_nombre || '—'} - Período: {m.periodo} - Bs. {m.monto} ({m.estado_pago})
                     </option>
                   ))}
                 </select>
@@ -84,7 +94,7 @@ export default function PagoMensualidadView() {
 
               <div className="form-group">
                 <label>Monto a Cobrar</label>
-                <input type="text" value={`Bs. ${selectedFactura.monto}`} disabled />
+                <input type="text" value={selectedFactura ? `Bs. ${selectedFactura.monto}` : '—'} disabled />
               </div>
 
               <div className="form-group">
@@ -119,7 +129,7 @@ export default function PagoMensualidadView() {
             </div>
 
             <div className="form-footer">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
+              <button type="submit" className="btn btn-primary" disabled={loading || !selectedFactura}>
                 <Receipt size={18} /> {loading ? 'Procesando Pago...' : 'Confirmar Cobro y Emitir Recibo'}
               </button>
             </div>

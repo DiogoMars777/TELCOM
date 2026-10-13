@@ -1,5 +1,7 @@
-import { apiClient } from '../../services/apiClient';
+import { apiClient } from '../../services/apiClient.js';
+import { isDemoMode } from '../../config/appConfig.js';
 
+// Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockClientesList = [
   {
     id: 1,
@@ -41,7 +43,8 @@ export const mockClientesList = [
 
 export const clienteConsultaService = {
   async fetchClientes(params = {}) {
+    if (isDemoMode()) return mockClientesList;
     const res = await apiClient.get('/cu06/clientes', params);
-    return res?.data?.data || mockClientesList;
+    return res?.data?.data ?? [];
   }
 };

@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { serviciosCorteService, mockServiciosParaCorte } from '../../models/CU13_ListadoServiciosCorte/servicioCorteModel';
+import { serviciosCorteService } from '../../models/CU13_ListadoServiciosCorte/servicioCorteModel';
+import { describeApiError } from '../../services/apiClient';
 
 export function useServiciosCorteController() {
-  const [servicios, setServicios] = useState(mockServiciosParaCorte);
+  const [servicios, setServicios] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const loadServicios = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await serviciosCorteService.fetchServiciosCorte();
       setServicios(data);
     } catch (e) {
-      console.error(e);
+      setServicios([]);
+      setError(describeApiError(e));
     } finally {
       setLoading(false);
     }
@@ -24,6 +28,7 @@ export function useServiciosCorteController() {
   return {
     servicios,
     loading,
+    error,
     reload: loadServicios,
   };
 }

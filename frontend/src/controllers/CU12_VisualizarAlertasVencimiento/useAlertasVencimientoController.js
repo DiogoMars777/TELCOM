@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
-import { alertasService, mockAlertas } from '../../models/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel';
+import { alertasService } from '../../models/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel';
+import { describeApiError } from '../../services/apiClient';
 
 export function useAlertasVencimientoController() {
-  const [alertas, setAlertas] = useState(mockAlertas);
+  const [alertas, setAlertas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [severidadFiltro, setSeveridadFiltro] = useState('');
 
   const loadAlertas = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await alertasService.fetchAlertas();
       const filtered = data.filter(a => !severidadFiltro || a.severidad === severidadFiltro);
       setAlertas(filtered);
     } catch (e) {
-      console.error(e);
+      setAlertas([]);
+      setError(describeApiError(e));
     } finally {
       setLoading(false);
     }
@@ -26,6 +30,7 @@ export function useAlertasVencimientoController() {
   return {
     alertas,
     loading,
+    error,
     severidadFiltro,
     setSeveridadFiltro,
     reload: loadAlertas,

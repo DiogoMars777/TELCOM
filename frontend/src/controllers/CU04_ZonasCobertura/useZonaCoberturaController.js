@@ -1,25 +1,32 @@
 import { useState, useEffect } from 'react';
-import { zonaService, mockZonas } from '../../models/CU04_ZonasCobertura/zonaCoberturaModel';
+import { zonaService } from '../../models/CU04_ZonasCobertura/zonaCoberturaModel';
+import { describeApiError } from '../../services/apiClient';
+
+const emptyZona = {
+  codigo: '',
+  nombre: '',
+  ciudad: 'La Paz',
+  tecnologia: 'FTTH GPON',
+  capacidad_nodos: 100,
+};
 
 export function useZonaCoberturaController() {
-  const [zonas, setZonas] = useState(mockZonas);
+  const [zonas, setZonas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);       // Error de carga del listado
+  const [formError, setFormError] = useState(null); // Error al crear una zona
   const [showModal, setShowModal] = useState(false);
-  const [newZona, setNewZona] = useState({
-    codigo: '',
-    nombre: '',
-    ciudad: 'La Paz',
-    tecnologia: 'FTTH GPON',
-    capacidad_nodos: 100,
-  });
+  const [newZona, setNewZona] = useState(emptyZona);
 
   const loadZonas = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await zonaService.fetchZonas();
       setZonas(data);
     } catch (e) {
-      console.error(e);
+      setZonas([]);
+      setError(describeApiError(e));
     } finally {
       setLoading(false);
     }
@@ -32,13 +39,15 @@ export function useZonaCoberturaController() {
   const handleCreate = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFormError(null);
     try {
       await zonaService.createZona(newZona);
-      setZonas(prev => [...prev, { ...newZona, id: Date.now(), activo: true }]);
+      // Solo se cierra el modal y se recarga cuando el backend confirmó.
       setShowModal(false);
-      setNewZona({ codigo: '', nombre: '', ciudad: 'La Paz', tecnologia: 'FTTH GPON', capacidad_nodos: 100 });
+      setNewZona(emptyZona);
+      await loadZonas();
     } catch (err) {
-      alert(err.message);
+      setFormError(describeApiError(err));
     } finally {
       setLoading(false);
     }
@@ -47,6 +56,8 @@ export function useZonaCoberturaController() {
   return {
     zonas,
     loading,
+    error,
+    formError,
     showModal,
     setShowModal,
     newZona,

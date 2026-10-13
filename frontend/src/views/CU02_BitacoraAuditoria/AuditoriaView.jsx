@@ -1,11 +1,12 @@
 import React from 'react';
 import { useAuditoriaController } from '../../controllers/CU02_BitacoraAuditoria/useAuditoriaController';
-import { History, Filter, RefreshCw, ShieldAlert, MonitorCheck } from 'lucide-react';
+import { History, Filter, RefreshCw, ShieldAlert, MonitorCheck, AlertCircle } from 'lucide-react';
 
 export default function AuditoriaView() {
   const {
     logs,
     loading,
+    error,
     moduloFiltro,
     setModuloFiltro,
     accionFiltro,
@@ -24,6 +25,12 @@ export default function AuditoriaView() {
           <RefreshCw size={16} className={loading ? 'spin' : ''} /> Refrescar
         </button>
       </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudo cargar la bitácora: {error}
+        </div>
+      )}
 
       <div className="filters-bar">
         <div className="filter-item">

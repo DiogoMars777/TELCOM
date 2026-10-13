@@ -134,3 +134,93 @@ npm install
 npm run dev
 ```
 La aplicación React se ejecutará en: `http://localhost:5173`
+
+### 3. Usuarios de demostración (SOLO entorno local)
+
+Para comparar visualmente el menú y los permisos de cada rol (Administrador,
+Secretaría y Técnico) existe un seeder **separado y condicionado al entorno**:
+
+- **No** se ejecuta en producción (`APP_ENV=production`).
+- **No** forma parte de `DatabaseSeeder`, por lo que nunca corre de forma
+  automática con `php artisan migrate --seed`.
+- **No** sobrescribe la contraseña de un usuario existente.
+
+Crear (o reapuntar) las cuentas:
+
+```bash
+cd backend
+php artisan db:seed --class=DemoUsersSeeder
+```
+
+| Rol | Correo |
+| --- | --- |
+| Administrador | `admin.demo@telcom.local` |
+| Secretaría | `secretaria.demo@telcom.local` |
+| Técnico | `tecnico.demo@telcom.local` |
+
+La contraseña se toma de la variable de entorno `TELCOM_DEMO_PASSWORD`. Si no
+se define, se usa el valor de desarrollo `Demo123456!`. Para usar una
+contraseña propia sin dejarla en el repositorio, defínela en `backend/.env`:
+
+```env
+TELCOM_DEMO_PASSWORD=MiClaveLocalSegura
+```
+
+Restablecer la contraseña de cuentas demo ya existentes (no toca a otros
+usuarios):
+
+```bash
+# Con TELCOM_DEMO_RESET_PASSWORD=true definido en backend/.env
+php artisan db:seed --class=DemoUsersSeeder
+```
+
+> ⚠️ Estas cuentas son **solo para desarrollo local**. No deben usarse como
+> cuentas de operación reales ni publicarse. El menú de la interfaz se filtra
+> con los permisos que el backend devuelve en `GET /api/cu01/me`; el backend
+> sigue siendo el que autoriza cada operación (HTTP 401/403).
+
+### 4. Planes de Internet y estados de servicio
+
+Se incorporan tres entidades del modelo StarUML, de forma **incremental y no
+destructiva** (no se eliminan columnas antiguas de `servicios_internet`):
+
+| Entidad UML | Tabla | Modelo |
+| --- | --- | --- |
+| `EstadoServicio` | `estados_servicio` | `App\Models\CU08_RegistrarActivarServicio\EstadoServicio` |
+| `PlanInternet` | `planes_internet` | `App\Models\Planes\PlanInternet` |
+| `AsignacionPlan` | `asignaciones_plan` | `App\Models\Planes\AsignacionPlan` |
+
+Relaciones implementadas (según el UML):
+- `EstadoServicio [1] → ServicioInternet [0..*]` (columna nueva `estado_servicio_id`).
+- `ServicioInternet [1] → AsignacionPlan [1..*]` (historial; nunca se sobrescribe).
+- `PlanInternet [1] → AsignacionPlan [0..*]`.
+- `Usuario [1] → AsignacionPlan [0..*]` (asociación `registra`).
+
+Migración de datos:
+- Los estados base (`PENDIENTE_INSTALACION`, `ACTIVO`, `SUSPENDIDO`, `CORTADO`)
+  se crean a partir de los valores que ya usa el código.
+- Cada combinación `(plan_nombre, velocidad_mbps)` existente genera un
+  `PlanInternet`; el precio exacto de cada servicio se conserva en
+  `AsignacionPlan.precio_aplicado`, por lo que **no se pierde ningún precio
+  histórico**.
+- Los servicios históricos **no registran quién asignó el plan**, por lo que
+  `asignaciones_plan.user_id` queda `NULL` (no se inventa el dato). **Toda
+  asignación nueva** sí exige usuario (se toma del usuario autenticado). Cuando
+  se decida completar el historial, puede hacerse un backfill manual y luego
+  endurecer la columna a `NOT NULL`.
+
+Endpoints (reutilizan los permisos RBAC ya existentes `planes.view` /
+`planes.assign`; el Técnico no los tiene → HTTP 403):
+
+| Método | Ruta | Permiso |
+| --- | --- | --- |
+| `GET` | `/api/planes` | `planes.view` |
+| `GET` | `/api/planes/{id}` | `planes.view` |
+| `GET` | `/api/cu08/servicios/{id}/planes` | `planes.view` |
+| `POST` | `/api/cu08/servicios/{id}/planes` | `planes.assign` |
+
+El `POST` valida el plan en el backend (debe existir y estar **activo**),
+cierra la asignación vigente (`fecha_fin`) sin borrarla y registra la nueva con
+el usuario autenticado.
+
+

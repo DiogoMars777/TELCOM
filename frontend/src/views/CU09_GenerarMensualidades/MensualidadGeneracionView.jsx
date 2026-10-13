@@ -1,16 +1,22 @@
 import React from 'react';
 import { useMensualidadGeneracionController } from '../../controllers/CU09_GenerarMensualidades/useMensualidadGeneracionController';
-import { Calendar, RefreshCw, PlayCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { hasPermission } from '../../config/access.js';
+import { Calendar, PlayCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 
-export default function MensualidadGeneracionView() {
+export default function MensualidadGeneracionView({ user }) {
   const {
     mensualidades,
     periodo,
     setPeriodo,
     loading,
+    error,
     resultMsg,
     handleGenerar,
   } = useMensualidadGeneracionController();
+
+  // La consulta (`mensualidades.view`) sigue visible; la ejecución masiva
+  // solo se ofrece a quien posee `mensualidades.generate`.
+  const puedeGenerar = hasPermission(user, 'mensualidades.generate');
 
   return (
     <div className="view-panel">
@@ -21,8 +27,14 @@ export default function MensualidadGeneracionView() {
         </div>
       </div>
 
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <AlertCircle size={18} /> No se pudieron cargar las mensualidades: {error}
+        </div>
+      )}
+
       {resultMsg && (
-        <div className={`alert alert-${resultMsg.type}`}>
+        <div className={`alert alert-${resultMsg.type}`} role="alert">
           {resultMsg.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           {resultMsg.text}
         </div>
@@ -37,7 +49,12 @@ export default function MensualidadGeneracionView() {
             onChange={(e) => setPeriodo(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary" onClick={handleGenerar} disabled={loading}>
+        <button
+          className="btn btn-primary"
+          onClick={handleGenerar}
+          disabled={loading || !puedeGenerar}
+          title={puedeGenerar ? undefined : 'No tienes permiso mensualidades.generate'}
+        >
           <PlayCircle size={18} /> {loading ? 'Ejecutando...' : 'Ejecutar Facturación Masiva'}
         </button>
       </div>
