@@ -21,7 +21,11 @@ class ClienteConsultaController extends Controller
         $estado   = $request->input('estado');
         $zonaId   = $request->input('zona_id');
 
-        $query = ClienteConsulta::buscar($busqueda);
+        // `withTrashed()` incluye a los clientes dados de baja lógica: al
+        // darlos de baja se marca estado=INACTIVO y se guarda `deleted_at`
+        // (SoftDeletes), así que sin esto la consulta los ocultaría. El
+        // registro, sus relaciones y el historial se conservan intactos.
+        $query = ClienteConsulta::withTrashed()->buscar($busqueda);
 
         if ($estado) {
             $query->where('estado', $estado);
@@ -41,7 +45,8 @@ class ClienteConsultaController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $cliente = ClienteConsulta::findOrFail($id);
+        // Incluye también a los clientes con baja lógica (INACTIVO).
+        $cliente = ClienteConsulta::withTrashed()->findOrFail($id);
         return $this->success($cliente, 'Detalle de cliente obtenido.');
     }
 }

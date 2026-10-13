@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
+import { runAuthBootstrap } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authBootstrap';
 import { canAccessCu, firstAllowedCu } from './config/access';
 
 export default function App() {
@@ -46,32 +47,15 @@ export default function App() {
   // Al iniciar: validar un token guardado (protección de rutas)
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      if (authService.getToken()) {
-        try {
-          const user = await authService.fetchCurrentUser();
-          if (mounted && user) {
-            setCurrentUser(user);
-            setView('admin');
-          } else {
-            authService.clear();
-          }
-        } catch (err) {
-          if (err?.status === 401) {
-            // Token inválido/expirado
-            authService.clear();
-          } else {
-            // Sin conexión: conservar la sesión en caché para no expulsar al usuario.
-            const cached = authService.getCurrentUser();
-            if (mounted && cached) {
-              setCurrentUser(cached);
-              setView('admin');
-            }
-          }
-        }
-      }
-      if (mounted) setBooting(false);
-    })();
+    runAuthBootstrap({
+      isMounted: () => mounted,
+      authService,
+      onAuthenticated: (user) => {
+        setCurrentUser(user);
+        setView('admin');
+      },
+      onBooted: () => setBooting(false),
+    });
     return () => {
       mounted = false;
     };

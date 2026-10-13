@@ -45,6 +45,11 @@ export const clienteConsultaService = {
   async fetchClientes(params = {}) {
     if (isDemoMode()) return mockClientesList;
     const res = await apiClient.get('/cu06/clientes', params);
-    return res?.data?.data ?? [];
+    // La API responde { success, message, data: <paginator> }: el arreglo de
+    // clientes viene en `data.data` (paginación de Laravel). Se admite además
+    // `data` como arreglo directo por si el endpoint no estuviera paginado.
+    const payload = res?.data;
+    if (Array.isArray(payload)) return payload;
+    return payload?.data ?? [];
   }
 };

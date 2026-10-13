@@ -18,7 +18,9 @@ class ClienteMantenimientoController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
-        $cliente = ClienteBajaLogica::findOrFail($id);
+        // `withTrashed()` permite actualizar también a un cliente ya dado de
+        // baja (INACTIVO), que ahora aparece en el listado de CU06/CU07.
+        $cliente = ClienteBajaLogica::withTrashed()->findOrFail($id);
 
         $validated = $request->validate([
             'nombres'   => 'sometimes|string|max:150',
@@ -49,7 +51,7 @@ class ClienteMantenimientoController extends Controller
      */
     public function bajaLogica(Request $request, int $id): JsonResponse
     {
-        $cliente = ClienteBajaLogica::findOrFail($id);
+        $cliente = ClienteBajaLogica::withTrashed()->findOrFail($id);
 
         $validated = $request->validate([
             'motivo_baja' => 'required|string|max:255',

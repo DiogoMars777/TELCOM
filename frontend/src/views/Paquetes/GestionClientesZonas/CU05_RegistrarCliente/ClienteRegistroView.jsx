@@ -1,6 +1,9 @@
 import React from 'react';
 import { useClienteRegistroController } from '../../../../controllers/Paquetes/GestionClientesZonas/CU05_RegistrarCliente/useClienteRegistroController';
 import { UserPlus, CheckCircle2, AlertCircle, Save } from 'lucide-react';
+// Estilos acotados a esta pantalla (incluye ocultar la barra vertical sin
+// desactivar el desplazamiento). Ver ClienteRegistroView.css.
+import './ClienteRegistroView.css';
 
 export default function ClienteRegistroView({ onClienteCreated }) {
   const {
@@ -11,12 +14,24 @@ export default function ClienteRegistroView({ onClienteCreated }) {
     zonas,
     loadingZonas,
     zonasError,
+    reloadZonas,
     handleChange,
     handleSubmit,
   } = useClienteRegistroController(onClienteCreated);
 
+  // Estado del catálogo de zonas: distingue carga, error y lista vacía para no
+  // mostrar una lista vacía como si la carga hubiera tenido éxito.
+  const zonasVacias = !loadingZonas && !zonasError && zonas.length === 0;
+  const textoOpcionZona = loadingZonas
+    ? 'Cargando zonas…'
+    : zonasError
+      ? 'No se pudieron cargar las zonas'
+      : zonasVacias
+        ? 'No hay zonas disponibles'
+        : 'Seleccione una zona';
+
   return (
-    <div className="view-panel">
+    <div className="view-panel cu05-view">
       <div className="view-header">
         <div>
           <h2>Registrar Nuevo Cliente</h2>
@@ -38,7 +53,11 @@ export default function ClienteRegistroView({ onClienteCreated }) {
 
       {zonasError && (
         <div className="alert alert-danger" role="alert">
-          <AlertCircle size={18} /> No se pudieron cargar las zonas de cobertura: {zonasError}
+          <AlertCircle size={18} />
+          <span>No se pudieron cargar las zonas de cobertura: {zonasError}</span>
+          <button type="button" className="btn btn-secondary btn-sm cu05-retry" onClick={reloadZonas}>
+            Reintentar
+          </button>
         </div>
       )}
 
@@ -127,15 +146,33 @@ export default function ClienteRegistroView({ onClienteCreated }) {
             </div>
 
             <div className="form-group">
-              <label>Zona de Cobertura</label>
-              <select name="zona_id" value={cliente.zona_id} onChange={handleChange} required disabled={loadingZonas}>
-                <option value="">{loadingZonas ? 'Cargando zonas…' : 'Seleccione una zona'}</option>
+              <label htmlFor="cu05-zona">Zona de Cobertura</label>
+              <select
+                id="cu05-zona"
+                name="zona_id"
+                value={cliente.zona_id}
+                onChange={handleChange}
+                required
+                disabled={loadingZonas}
+                aria-busy={loadingZonas}
+              >
+                <option value="">{textoOpcionZona}</option>
                 {zonas.map((z) => (
                   <option key={z.id} value={z.id}>
                     {z.nombre}{z.ciudad ? ` — ${z.ciudad}` : ''}
                   </option>
                 ))}
               </select>
+
+              {(loadingZonas || zonasVacias || (!zonasError && zonas.length > 0)) && (
+                <p className="cu05-hint" role="status">
+                  {loadingZonas
+                    ? 'Cargando zonas de cobertura…'
+                    : zonasVacias
+                      ? 'Aún no hay zonas de cobertura registradas. Crea una en «Zonas de Cobertura» antes de dar de alta a un cliente.'
+                      : (zonas.length === 1 ? '1 zona disponible.' : `${zonas.length} zonas disponibles.`)}
+                </p>
+              )}
             </div>
           </div>
 

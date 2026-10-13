@@ -23,7 +23,11 @@ export const clienteRegistroService = {
   async fetchZonas() {
     if (isDemoMode()) return mockZonasCu05;
     const res = await apiClient.get('/cu05/zonas');
-    return res?.data?.data ?? [];
+    // La API responde { success, message, data: [...] }: el catálogo de zonas
+    // viene directamente en `data` (igual que CU04). Se admite además la forma
+    // `data.data` por si el endpoint pasara a devolver un listado paginado.
+    const data = res?.data;
+    return Array.isArray(data) ? data : (data?.data ?? []);
   },
 
   async registerCliente(data) {
