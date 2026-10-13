@@ -3,38 +3,38 @@
 use Illuminate\Support\Facades\Route;
 
 // CU01: Iniciar y cerrar sesión
-use App\Http\Controllers\CU01_IniciarCerrarSesion\AuthController;
+use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\AuthController;
 // CU02: Consultar bitácora de auditoría
-use App\Http\Controllers\CU02_BitacoraAuditoria\AuditoriaController;
+use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\AuditoriaController;
 // CU03: Gestionar usuarios internos, roles y permisos
-use App\Http\Controllers\CU03_UsuariosRolesPermisos\UsuarioController;
+use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\UsuarioController;
 // CU04: Gestionar zonas de cobertura
-use App\Http\Controllers\CU04_ZonasCobertura\ZonaCoberturaController;
+use App\Http\Controllers\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCoberturaController;
 // CU05: Registrar nuevo cliente
-use App\Http\Controllers\CU05_RegistrarCliente\ClienteRegistroController;
+use App\Http\Controllers\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\ClienteRegistroController;
 // CU06: Consultar y buscar clientes
-use App\Http\Controllers\CU06_ConsultarBuscarClientes\ClienteConsultaController;
+use App\Http\Controllers\Paquetes\GestionClientesZonas\CU06_ConsultarBuscarClientes\ClienteConsultaController;
 // CU07: Actualizar datos y dar baja lógica a cliente
-use App\Http\Controllers\CU07_ActualizarBajaCliente\ClienteMantenimientoController;
+use App\Http\Controllers\Paquetes\GestionClientesZonas\CU07_ActualizarBajaCliente\ClienteMantenimientoController;
 // CU08: Registrar y activar servicio de Internet
-use App\Http\Controllers\CU08_RegistrarActivarServicio\ServicioInternetController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternetController;
 // CU09: Generar mensualidades de servicios
-use App\Http\Controllers\CU09_GenerarMensualidades\MensualidadGeneracionController;
+use App\Http\Controllers\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadGeneracionController;
 // CU10: Gestionar pago de mensualidad
-use App\Http\Controllers\CU10_GestionarPagoMensualidad\PagoMensualidadController;
+use App\Http\Controllers\Paquetes\FacturacionCobranza\CU10_GestionarPagoMensualidad\PagoMensualidadController;
 // CU11: Consultar historial de pagos
-use App\Http\Controllers\CU11_ConsultarHistorialPagos\HistorialPagosController;
+use App\Http\Controllers\Paquetes\FacturacionCobranza\CU11_ConsultarHistorialPagos\HistorialPagosController;
 // CU12: Visualizar alertas de vencimiento
-use App\Http\Controllers\CU12_VisualizarAlertasVencimiento\AlertasVencimientoController;
+use App\Http\Controllers\Paquetes\FacturacionCobranza\CU12_VisualizarAlertasVencimiento\AlertasVencimientoController;
 // CU13: Consultar listado de servicios para corte
-use App\Http\Controllers\CU13_ListadoServiciosCorte\ServiciosCorteController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU13_ListadoServiciosCorte\ServiciosCorteController;
 // CU14: Registrar corte realizado
-use App\Http\Controllers\CU14_RegistrarCorteRealizado\CorteRegistroController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
 // CU15: Gestionar lista y registro de reactivaciones
-use App\Http\Controllers\CU15_ListaRegistroReactivaciones\ReactivacionesController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionesController;
 // Planes: catálogo de planes y asignación a servicios (entidades UML)
-use App\Http\Controllers\Planes\PlanInternetController;
-use App\Http\Controllers\Planes\AsignacionPlanController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\PlanInternetController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\AsignacionPlanController;
 
 /*
 |--------------------------------------------------------------------------

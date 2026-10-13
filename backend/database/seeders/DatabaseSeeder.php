@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\CU03_UsuariosRolesPermisos\Permiso;
-use App\Models\CU03_UsuariosRolesPermisos\Rol;
-use App\Models\CU04_ZonasCobertura\ZonaCobertura;
-use App\Models\CU05_RegistrarCliente\Cliente;
-use App\Models\CU08_RegistrarActivarServicio\EstadoServicio;
-use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
-use App\Models\Planes\AsignacionPlan;
-use App\Models\Planes\PlanInternet;
+use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Permiso;
+use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
+use App\Models\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCobertura;
+use App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente;
+use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\EstadoServicio;
+use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Models\Paquetes\ServiciosPlanes\Planes\AsignacionPlan;
+use App\Models\Paquetes\ServiciosPlanes\Planes\PlanInternet;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;

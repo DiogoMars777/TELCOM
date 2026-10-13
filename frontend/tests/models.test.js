@@ -22,10 +22,10 @@ globalThis.Event = class Event { constructor(type) { this.type = type; } };
 globalThis.window = { dispatchEvent: () => {} };
 
 const { isDemoMode } = await import('../src/config/appConfig.js');
-const { zonaService, mockZonas } = await import('../src/models/CU04_ZonasCobertura/zonaCoberturaModel.js');
-const { clienteConsultaService } = await import('../src/models/CU06_ConsultarBuscarClientes/clienteConsultaModel.js');
-const { mensualidadService } = await import('../src/models/CU09_GenerarMensualidades/mensualidadModel.js');
-const { alertasService } = await import('../src/models/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
+const { zonaService, mockZonas } = await import('../src/models/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/zonaCoberturaModel.js');
+const { clienteConsultaService } = await import('../src/models/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/clienteConsultaModel.js');
+const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
+const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };

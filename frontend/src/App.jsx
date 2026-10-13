@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react';
 
 // Vistas públicas
 import LandingView from './views/Public/LandingView';
-import LoginView from './views/CU01_IniciarCerrarSesion/LoginView';
-import SesionView from './views/CU01_IniciarCerrarSesion/SesionView';
+import LoginView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/LoginView';
+import SesionView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
 
 // Vistas de los 15 Casos de Uso (módulos administrativos)
-import AuditoriaView from './views/CU02_BitacoraAuditoria/AuditoriaView';
-import UsuariosView from './views/CU03_UsuariosRolesPermisos/UsuariosView';
-import ZonasCoberturaView from './views/CU04_ZonasCobertura/ZonasCoberturaView';
-import ClienteRegistroView from './views/CU05_RegistrarCliente/ClienteRegistroView';
-import ClienteConsultaView from './views/CU06_ConsultarBuscarClientes/ClienteConsultaView';
-import ClienteMantenimientoView from './views/CU07_ActualizarBajaCliente/ClienteMantenimientoView';
-import ServicioInternetView from './views/CU08_RegistrarActivarServicio/ServicioInternetView';
-import MensualidadGeneracionView from './views/CU09_GenerarMensualidades/MensualidadGeneracionView';
-import PagoMensualidadView from './views/CU10_GestionarPagoMensualidad/PagoMensualidadView';
-import HistorialPagosView from './views/CU11_ConsultarHistorialPagos/HistorialPagosView';
-import AlertasVencimientoView from './views/CU12_VisualizarAlertasVencimiento/AlertasVencimientoView';
-import ServiciosCorteView from './views/CU13_ListadoServiciosCorte/ServiciosCorteView';
-import CorteRegistroView from './views/CU14_RegistrarCorteRealizado/CorteRegistroView';
-import ReactivacionesView from './views/CU15_ListaRegistroReactivaciones/ReactivacionesView';
+import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
+import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
+import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
+import ClienteRegistroView from './views/Paquetes/GestionClientesZonas/CU05_RegistrarCliente/ClienteRegistroView';
+import ClienteConsultaView from './views/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/ClienteConsultaView';
+import ClienteMantenimientoView from './views/Paquetes/GestionClientesZonas/CU07_ActualizarBajaCliente/ClienteMantenimientoView';
+import ServicioInternetView from './views/Paquetes/ServiciosPlanes/CU08_RegistrarActivarServicio/ServicioInternetView';
+import MensualidadGeneracionView from './views/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/MensualidadGeneracionView';
+import PagoMensualidadView from './views/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PagoMensualidadView';
+import HistorialPagosView from './views/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/HistorialPagosView';
+import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/AlertasVencimientoView';
+import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
+import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
+import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
 
 // Iconos de cada Caso de Uso
 import {
@@ -29,7 +29,7 @@ import {
   Server, Database,
 } from 'lucide-react';
 
-import { authService } from './models/CU01_IniciarCerrarSesion/authModel';
+import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
 import { canAccessCu, firstAllowedCu } from './config/access';
 
 export default function App() {

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\CU03_UsuariosRolesPermisos\Permiso;
-use App\Models\CU03_UsuariosRolesPermisos\Rol;
-use App\Models\CU05_RegistrarCliente\Cliente;
-use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
-use App\Models\CU09_GenerarMensualidades\MensualidadFacturacion;
+use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Permiso;
+use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
+use App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente;
+use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Models\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadFacturacion;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,7 +163,7 @@ class AuthorizationRbacTest extends TestCase
     public function test_secretaria_puede_registrar_cliente(): void
     {
         $secretaria = $this->usuarioConRol('secretaria');
-        $zona = \App\Models\CU04_ZonasCobertura\ZonaCobertura::firstOrFail();
+        $zona = \App\Models\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCobertura::firstOrFail();
 
         $this->withHeaders($this->bearer($secretaria))
             ->postJson('/api/cu05/clientes', [
