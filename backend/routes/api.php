@@ -56,11 +56,19 @@ Route::prefix('cu01')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+
+    // Cambiar la contraseña del usuario AUTENTICADO. Todos los roles internos
+    // (Administrador, Secretaría y Soporte Técnico) poseen `auth.login`, por lo
+    // que pueden usar esta operación; el controlador actúa SIEMPRE sobre el
+    // usuario de la sesión e ignora cualquier id del cuerpo.
+    Route::post('/cambiar-password', [AuthController::class, 'changePassword'])
+        ->middleware(['auth:sanctum', 'permission:auth.login']);
 });
 
 // CU02: Consultar bitácora de auditoría (solo administrador)
 Route::prefix('cu02')->middleware(['auth:sanctum', 'permission:auditoria.view'])->group(function () {
     Route::get('/auditoria', [AuditoriaController::class, 'index']);
+    Route::get('/auditoria/usuarios', [AuditoriaController::class, 'usuarios']);
 });
 
 // CU03: Gestionar usuarios internos, roles y permisos (solo administrador)

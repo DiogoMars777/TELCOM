@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import LandingView from './views/Public/LandingView';
 import LoginView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/LoginView';
 import SesionView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
+import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/CambiarPasswordView';
 
 // Vistas de los 15 Casos de Uso (módulos administrativos)
 import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
@@ -25,7 +26,7 @@ import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegis
 import {
   Radio, LogOut, History, Users, MapPin,
   UserPlus, Search, Edit3, Wifi, Calendar,
-  CreditCard, Clock, AlertTriangle, Scissors, RefreshCw,
+  CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -169,6 +170,12 @@ export default function App() {
         { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
       ],
     },
+    {
+      title: 'Mi Cuenta',
+      items: [
+        { id: 'CU01_PASSWORD', label: 'Cambiar contraseña', icon: Lock },
+      ],
+    },
   ];
 
   // Solo se muestran los módulos para los que el usuario posee permiso real.
@@ -200,6 +207,8 @@ export default function App() {
     switch (effectiveCu) {
       case 'CU01':
         return <SesionView user={currentUser} />;
+      case 'CU01_PASSWORD':
+        return <CambiarPasswordView />;
       case 'CU02':
         return <AuditoriaView />;
       case 'CU03':
@@ -298,21 +307,15 @@ export default function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="user-mini">
-            <div className="user-avatar">
-              {(currentUser?.name || 'U').charAt(0).toUpperCase()}
-            </div>
-            <div className="user-mini-info">
-              <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{currentUser?.name}</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{currentUser?.email}</div>
-            </div>
-          </div>
           <button
-            title="Cerrar Sesión"
-            className="btn btn-sm btn-secondary"
+            type="button"
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+            className="btn btn-secondary sidebar-logout"
             onClick={handleLogout}
           >
-            <LogOut size={14} />
+            <LogOut size={16} />
+            <span className="sidebar-logout-label">Cerrar sesión</span>
           </button>
         </div>
       </aside>
@@ -330,6 +333,18 @@ export default function App() {
               ☰
             </button>
             <span className="top-bar-title">{activeSectionLabel}</span>
+          </div>
+
+          <div className="top-bar-right">
+            <div className="top-bar-user">
+              <div className="user-avatar" aria-hidden="true">
+                {(currentUser?.name || 'U').charAt(0).toUpperCase()}
+              </div>
+              <div className="top-bar-user-info">
+                <span className="top-bar-user-name">{currentUser?.name}</span>
+                <span className="top-bar-user-email">{currentUser?.email}</span>
+              </div>
+            </div>
           </div>
         </header>
 

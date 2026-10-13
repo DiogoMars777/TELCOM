@@ -488,6 +488,44 @@ class CiclosUnoDosTest extends TestCase
         $this->assertGreaterThanOrEqual(1, count($res->json('data.data')));
     }
 
+    public function test_cu02_filtra_por_usuario_y_lista_usuarios_de_bitacora(): void
+    {
+        $admin = $this->usuarioConRol('admin');
+        $sinActividad = $this->usuarioConRol('admin', ['email' => 'sin.actividad@telcom.com']);
+        $headers = $this->bearer($admin);
+
+        // Una operación del administrador deja registro en la bitácora.
+        $this->withHeaders($headers)->postJson('/api/cu04/zonas', [
+            'codigo'          => 'ZON-AUD2',
+            'nombre'          => 'Zona Usuario',
+            'ciudad'          => 'La Paz',
+            'tecnologia'      => 'FTTH',
+            'capacidad_nodos' => 10,
+        ])->assertStatus(201);
+
+        // El filtro por usuario devuelve solo los registros de ese usuario.
+        $res = $this->withHeaders($headers)
+            ->getJson('/api/cu02/auditoria?user_id=' . $admin->id);
+        $res->assertStatus(200);
+        $filas = $res->json('data.data');
+        $this->assertNotEmpty($filas);
+        foreach ($filas as $fila) {
+            $this->assertSame($admin->id, $fila['user_id']);
+        }
+
+        // Un usuario sin actividad no devuelve registros.
+        $resVacio = $this->withHeaders($headers)
+            ->getJson('/api/cu02/auditoria?user_id=' . $sinActividad->id);
+        $this->assertCount(0, $resVacio->json('data.data'));
+
+        // El listado de usuarios ofrece al usuario con actividad y no al resto.
+        $resUsuarios = $this->withHeaders($headers)->getJson('/api/cu02/auditoria/usuarios');
+        $resUsuarios->assertStatus(200);
+        $ids = collect($resUsuarios->json('data'))->pluck('id')->all();
+        $this->assertContains($admin->id, $ids);
+        $this->assertNotContains($sinActividad->id, $ids);
+    }
+
     // ------------------------------------------------------------------
     // CU03 - Activar/desactivar usuario interno
     // ------------------------------------------------------------------

@@ -17,6 +17,9 @@
  */
 export const CU_PERMISSIONS = {
   CU01: null,
+  // Cambiar la contraseña propia: cualquier rol interno con `auth.login`
+  // (Administrador, Secretaría y Soporte Técnico) puede usarlo.
+  CU01_PASSWORD: 'auth.login',
   CU02: 'auditoria.view',
   CU03: 'usuarios.manage',
   CU04: 'zonas.manage',

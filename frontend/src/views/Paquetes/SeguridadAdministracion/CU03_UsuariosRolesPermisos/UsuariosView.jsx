@@ -4,6 +4,7 @@ import { hasPermission } from '../../../../config/access.js';
 import { evaluatePassword, isPasswordValid } from '../../../../config/passwordPolicy.js';
 import RolesPermisosPanel from './RolesPermisosPanel';
 import { UserPlus, Shield, CheckCircle2, AlertCircle, RefreshCw, UserCheck, UserX, Circle } from 'lucide-react';
+import './UsuariosView.css';
 
 export default function UsuariosView({ user, onPermissionsUpdated }) {
   const [activeTab, setActiveTab] = useState('usuarios');
@@ -31,6 +32,46 @@ export default function UsuariosView({ user, onPermissionsUpdated }) {
   // Requisitos de contraseña evaluados en vivo para el formulario.
   const passwordChecks = evaluatePassword(newUser.password);
   const passwordOk = isPasswordValid(newUser.password);
+
+  // Controles reutilizados por la tabla (computadoras/tablets) y las
+  // tarjetas (celulares): misma lógica, distinto contenedor visual.
+  const renderRol = (u) => (
+    puedeGestionar && roles.length > 0 ? (
+      <select
+        value={u.rol_id ?? u.rol?.id ?? ''}
+        disabled={actingId === u.id}
+        onChange={(e) => cambiarRol(u, e.target.value)}
+      >
+        <option value="">Sin rol</option>
+        {roles.map((r) => (
+          <option key={r.id} value={r.id}>{r.nombre}</option>
+        ))}
+      </select>
+    ) : (
+      <span className="badge badge-primary">
+        <Shield size={12} /> {u.rol?.nombre || u.role || 'Sin rol'}
+      </span>
+    )
+  );
+
+  const renderEstado = (u) => (
+    <span className={`badge badge-${u.activo ? 'success' : 'danger'}`}>
+      {u.activo ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />} {u.activo ? 'Activo' : 'Inactivo'}
+    </span>
+  );
+
+  const renderAccion = (u) => (
+    puedeGestionar && (
+      <button
+        className={`btn btn-sm ${u.activo ? 'btn-danger' : 'btn-success'}`}
+        disabled={actingId === u.id}
+        onClick={() => toggleActivo(u)}
+      >
+        {u.activo ? <UserX size={14} /> : <UserCheck size={14} />}
+        {u.activo ? ' Desactivar' : ' Activar'}
+      </button>
+    )
+  );
 
   return (
     <div className="view-panel">
@@ -81,16 +122,16 @@ export default function UsuariosView({ user, onPermissionsUpdated }) {
             </div>
           )}
 
-          <div className="table-responsive">
-            <table className="data-table">
+          <div className="table-responsive users-table-wrap">
+            <table className="data-table users-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nombre Completo</th>
-                  <th>Correo Electrónico</th>
-                  <th>Rol Asignado</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+                  <th className="col-id">ID</th>
+                  <th className="col-name">Nombre Completo</th>
+                  <th className="col-email">Correo Electrónico</th>
+                  <th className="col-role">Rol Asignado</th>
+                  <th className="col-status">Estado</th>
+                  <th className="col-actions">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,48 +149,58 @@ export default function UsuariosView({ user, onPermissionsUpdated }) {
                 )}
                 {usuarios.map((u) => (
                   <tr key={u.id}>
-                    <td>#{u.id}</td>
-                    <td><strong>{u.name}</strong></td>
-                    <td>{u.email}</td>
-                    <td>
-                      {puedeGestionar && roles.length > 0 ? (
-                        <select
-                          value={u.rol_id ?? u.rol?.id ?? ''}
-                          disabled={actingId === u.id}
-                          onChange={(e) => cambiarRol(u, e.target.value)}
-                        >
-                          <option value="">Sin rol</option>
-                          {roles.map((r) => (
-                            <option key={r.id} value={r.id}>{r.nombre}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="badge badge-primary">
-                          <Shield size={12} /> {u.rol?.nombre || u.role || 'Sin rol'}
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`badge badge-${u.activo ? 'success' : 'danger'}`}>
-                        {u.activo ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />} {u.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                    <td>
-                      {puedeGestionar && (
-                        <button
-                          className={`btn btn-sm ${u.activo ? 'btn-danger' : 'btn-success'}`}
-                          disabled={actingId === u.id}
-                          onClick={() => toggleActivo(u)}
-                        >
-                          {u.activo ? <UserX size={14} /> : <UserCheck size={14} />}
-                          {u.activo ? ' Desactivar' : ' Activar'}
-                        </button>
-                      )}
-                    </td>
+                    <td className="col-id">#{u.id}</td>
+                    <td className="col-name"><strong>{u.name}</strong></td>
+                    <td className="col-email">{u.email}</td>
+                    <td className="col-role">{renderRol(u)}</td>
+                    <td className="col-status">{renderEstado(u)}</td>
+                    <td className="col-actions">{renderAccion(u)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Celulares: cada usuario como tarjeta con etiquetas claras */}
+          {(loading || usuarios.length === 0) && (
+            <div className="users-mobile-status" role="status">
+              {loading
+                ? <><RefreshCw size={16} className="spin" /> Cargando usuarios…</>
+                : 'Sin registros'}
+            </div>
+          )}
+
+          <div className="users-cards">
+            {usuarios.map((u) => (
+              <article className="user-card" key={u.id}>
+                <div className="user-card-head">
+                  <span className="user-card-id">ID #{u.id}</span>
+                </div>
+                <div className="user-card-fields">
+                  <div className="user-card-field">
+                    <span className="user-card-label">Nombre completo</span>
+                    <span className="user-card-value">{u.name}</span>
+                  </div>
+                  <div className="user-card-field">
+                    <span className="user-card-label">Correo electrónico</span>
+                    <span className="user-card-value">{u.email}</span>
+                  </div>
+                  <div className="user-card-field">
+                    <span className="user-card-label">Rol asignado</span>
+                    <span className="user-card-value">{renderRol(u)}</span>
+                  </div>
+                  <div className="user-card-field">
+                    <span className="user-card-label">Estado</span>
+                    <span className="user-card-value">{renderEstado(u)}</span>
+                  </div>
+                </div>
+                {puedeGestionar && (
+                  <div className="user-card-actions">
+                    {renderAccion(u)}
+                  </div>
+                )}
+              </article>
+            ))}
           </div>
         </>
       ) : (

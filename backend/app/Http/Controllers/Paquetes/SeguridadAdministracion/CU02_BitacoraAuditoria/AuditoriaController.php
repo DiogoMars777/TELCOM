@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Paquetes\SeguridadAdministracion\CU02_BitacoraAud
 
 use App\Http\Controllers\Controller;
 use App\Models\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\BitacoraAuditoria;
+use App\Models\User;
 use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +20,12 @@ class AuditoriaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = BitacoraAuditoria::with('user:id,name,email');
+
+        // Filtro por usuario: permite consultar la bitácora de un usuario
+        // concreto usando su id real (los ofrecidos por `usuarios()`).
+        if ($request->filled('user_id')) {
+            $query->where('user_id', (int) $request->input('user_id'));
+        }
 
         if ($request->filled('modulo')) {
             $query->where('modulo', $request->input('modulo'));
@@ -39,6 +46,28 @@ class AuditoriaController extends Controller
         $logs = $query->latest()->paginate(20);
 
         return $this->success($logs, 'Bitácora de auditoría consultada correctamente.');
+    }
+
+    /**
+     * CU02 - Usuarios reales que aparecen en la bitácora.
+     *
+     * Alimenta el filtro por usuario del frontend con las cuentas que
+     * realmente registran operaciones (id, nombre y correo), evitando
+     * ofrecer usuarios sin actividad.
+     */
+    public function usuarios(): JsonResponse
+    {
+        $ids = BitacoraAuditoria::query()
+            ->whereNotNull('user_id')
+            ->distinct()
+            ->pluck('user_id');
+
+        $usuarios = User::query()
+            ->whereIn('id', $ids)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        return $this->success($usuarios, 'Usuarios de la bitácora consultados correctamente.');
     }
 
     /**

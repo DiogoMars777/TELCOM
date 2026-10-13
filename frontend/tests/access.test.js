@@ -112,6 +112,14 @@ test('Módulo desconocido nunca es accesible', () => {
   assert.equal(canAccessCu(admin, 'CU99'), false);
 });
 
+test('Administrador, Secretaría y Soporte Técnico pueden cambiar su contraseña', () => {
+  assert.equal(canAccessCu(admin, 'CU01_PASSWORD'), true);
+  assert.equal(canAccessCu(secretaria, 'CU01_PASSWORD'), true);
+  assert.equal(canAccessCu(tecnico, 'CU01_PASSWORD'), true);
+  // La opción exige estar dentro del sistema (rol con auth.login).
+  assert.equal(canAccessCu(sinPermisos, 'CU01_PASSWORD'), false);
+});
+
 test('hasPermission exige el permiso exacto', () => {
   assert.equal(hasPermission(secretaria, 'pagos.register'), true);
   assert.equal(hasPermission(secretaria, 'usuarios.manage'), false);

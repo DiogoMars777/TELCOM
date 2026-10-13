@@ -41,6 +41,16 @@ export const authService = {
     return res?.data ?? null;
   },
 
+  // Cambia la contraseña del usuario AUTENTICADO (CU01). El backend opera
+  // siempre sobre el usuario de la sesión: no se envía ningún id de usuario.
+  async cambiarPassword({ currentPassword, newPassword, newPasswordConfirmation }) {
+    return await apiClient.post('/cu01/cambiar-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+      new_password_confirmation: newPasswordConfirmation,
+    }, { throwOnError: true });
+  },
+
   getToken() {
     return authToken.get();
   },

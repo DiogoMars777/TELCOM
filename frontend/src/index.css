@@ -153,19 +153,21 @@ body {
   font-weight: 600;
 }
 
+/* Pie del menú lateral: solo el botón «Cerrar sesión».
+   No se encoge para que quede anclado abajo aunque el menú haga scroll. */
 .sidebar-footer {
+  flex-shrink: 0;
   padding: 1rem 1.25rem;
   border-top: 1px solid var(--border-color);
   background: rgba(11, 17, 32, 0.6);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
 }
 
-.user-mini {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
+.sidebar-logout {
+  width: 100%;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .user-avatar {
@@ -173,6 +175,7 @@ body {
   height: 34px;
   border-radius: 50%;
   background: #334155;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,6 +216,45 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Perfil del usuario en la barra superior (diseño compartido) */
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.top-bar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.top-bar-user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.top-bar-user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-bar-user-email {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -404,6 +446,75 @@ body {
 
 .password-requirements li.is-met {
   color: #34d399;
+}
+
+/* Cambiar contraseña: campos con botón mostrar/ocultar */
+.password-card {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.password-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-with-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-toggle input {
+  width: 100%;
+  padding-right: 2.75rem;
+}
+
+.input-toggle {
+  position: absolute;
+  right: 0.3rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.input-toggle:hover {
+  color: var(--text-primary);
+  background: rgba(148, 163, 184, 0.15);
+}
+
+.field-error {
+  margin-top: -0.4rem;
+  color: #f87171;
+  font-size: 0.78rem;
+}
+
+.password-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.password-hint svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #38bdf8;
 }
 
 label {
@@ -907,18 +1018,38 @@ input:focus, select:focus, textarea:focus {
     justify-content: center;
     padding: 0.7rem 0.5rem;
   }
-  .sidebar-footer {
-    justify-content: center;
-  }
   .brand-title,
   .brand-subtitle,
   .nav-item-label,
-  .nav-group-title,
-  .user-mini-info {
+  .nav-group-title {
+    display: none;
+  }
+  /* Menú lateral compacto: «Cerrar sesión» solo con icono */
+  .sidebar-footer {
+    padding: 0.75rem 0.5rem;
+    align-items: center;
+  }
+  .sidebar-logout {
+    width: auto;
+    padding: 0.6rem;
+  }
+  .sidebar-logout-label {
     display: none;
   }
   .top-bar {
     padding: 0 1.25rem;
+  }
+  .top-bar-right {
+    gap: 0.6rem;
+  }
+  .top-bar-user {
+    gap: 0.5rem;
+  }
+  .top-bar-user-name {
+    font-size: 0.78rem;
+  }
+  .top-bar-user-email {
+    font-size: 0.68rem;
   }
   .content-body {
     padding: 1.25rem;
@@ -965,16 +1096,24 @@ input:focus, select:focus, textarea:focus {
     justify-content: flex-start;
     padding: 0.6rem 0.75rem;
   }
-  .sidebar-footer {
-    justify-content: space-between;
-  }
   .brand-title,
   .brand-subtitle,
-  .user-mini-info,
   .nav-group-title {
     display: block;
   }
   .nav-item-label {
+    display: inline;
+  }
+
+  /* Panel deslizante: «Cerrar sesión» con texto al pie */
+  .sidebar-footer {
+    padding: 1rem 0.75rem;
+    align-items: stretch;
+  }
+  .sidebar-logout {
+    width: 100%;
+  }
+  .sidebar-logout-label {
     display: inline;
   }
 
@@ -1049,6 +1188,29 @@ input:focus, select:focus, textarea:focus {
     flex: 1;
     text-align: center;
     padding: 0.6rem 0.5rem;
+  }
+}
+
+/* Celulares: el perfil se acomoda debajo del título; si falta espacio,
+   se oculta solo el correo y se conserva avatar/nombre. */
+@media (max-width: 640px) {
+  .top-bar {
+    height: auto;
+    min-height: 60px;
+    flex-wrap: wrap;
+    padding: 0.6rem 0.75rem;
+    row-gap: 0.5rem;
+  }
+  .top-bar-left {
+    flex: 1 1 100%;
+  }
+  .top-bar-right {
+    flex: 1 1 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .top-bar-user-email {
+    display: none;
   }
 }
 

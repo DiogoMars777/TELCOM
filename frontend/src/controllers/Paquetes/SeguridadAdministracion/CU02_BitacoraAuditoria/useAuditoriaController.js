@@ -4,9 +4,10 @@ import { describeApiError } from '../../../../services/apiClient';
 
 export function useAuditoriaController() {
   const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [moduloFiltro, setModuloFiltro] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
+  const [usuarioFiltro, setUsuarioFiltro] = useState('');
   const [accionFiltro, setAccionFiltro] = useState('');
 
   const loadLogs = async () => {
@@ -14,7 +15,7 @@ export function useAuditoriaController() {
     setError(null);
     try {
       const data = await auditoriaService.fetchLogs({
-        modulo: moduloFiltro,
+        user_id: usuarioFiltro,
         accion: accionFiltro,
       });
       setLogs(data);
@@ -26,16 +27,34 @@ export function useAuditoriaController() {
     }
   };
 
+  // Lista de usuarios reales de la bitácora (para el primer filtro).
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        const data = await auditoriaService.fetchUsuarios();
+        if (activo) setUsuarios(data);
+      } catch {
+        // Si el listado falla, el filtro queda solo con "Todos los usuarios".
+        if (activo) setUsuarios([]);
+      }
+    })();
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   useEffect(() => {
     loadLogs();
-  }, [moduloFiltro, accionFiltro]);
+  }, [usuarioFiltro, accionFiltro]);
 
   return {
     logs,
     loading,
     error,
-    moduloFiltro,
-    setModuloFiltro,
+    usuarios,
+    usuarioFiltro,
+    setUsuarioFiltro,
     accionFiltro,
     setAccionFiltro,
     reload: loadLogs,

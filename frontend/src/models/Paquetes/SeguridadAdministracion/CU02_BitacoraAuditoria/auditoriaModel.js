@@ -37,5 +37,21 @@ export const auditoriaService = {
     if (isDemoMode()) return mockAuditoriaLogs;
     const res = await apiClient.get('/cu02/auditoria', filters);
     return res?.data?.data ?? [];
+  },
+
+  // Usuarios reales que aparecen en la bitácora (para el filtro por usuario).
+  async fetchUsuarios() {
+    if (isDemoMode()) {
+      const vistos = new Map();
+      mockAuditoriaLogs.forEach((log) => {
+        const u = log.user;
+        if (u && !vistos.has(u.email)) {
+          vistos.set(u.email, { id: vistos.size + 1, name: u.name, email: u.email });
+        }
+      });
+      return [...vistos.values()];
+    }
+    const res = await apiClient.get('/cu02/auditoria/usuarios');
+    return res?.data ?? [];
   }
 };

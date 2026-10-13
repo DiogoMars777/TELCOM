@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -102,6 +103,67 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         return $this->success($this->presentUser($request->user()), 'Datos de usuario actual.');
+    }
+
+    /**
+     * CU01 - Cambiar la contraseña del usuario AUTENTICADO.
+     *
+     * Reglas:
+     *  - Exige la contraseña actual correcta (`Hash::check`).
+     *  - La nueva contraseña cumple EXACTAMENTE la misma política que el alta de
+     *    usuarios (`UsuarioController::store`) y que el frontend
+     *    (`config/passwordPolicy.js`): mínimo 8 caracteres, una mayúscula, una
+     *    minúscula, un número y un carácter especial (! @ # $ % & *).
+     *  - La confirmación (`new_password_confirmation`) debe coincidir.
+     *  - La operación afecta SOLO a `$request->user()`. Cualquier `id`, `user_id`
+     *    o `email` que venga en el cuerpo se ignora: un usuario no puede cambiar
+     *    la contraseña de otro.
+     *  - Nunca se registra la contraseña (ni la actual ni la nueva) en la
+     *    bitácora ni se devuelve en la respuesta.
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password'     => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%&*]).+$/',
+                'confirmed',
+            ],
+        ], [
+            'current_password.required' => 'Debes ingresar tu contraseña actual.',
+            'new_password.required'     => 'La nueva contraseña es obligatoria.',
+            'new_password.min'          => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'new_password.regex'        => 'La nueva contraseña debe incluir al menos una letra mayúscula, una minúscula, un número y un carácter especial (! @ # $ % & *).',
+            'new_password.confirmed'    => 'La confirmación no coincide con la nueva contraseña.',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            // No se modifica nada si la contraseña actual es incorrecta.
+            throw ValidationException::withMessages([
+                'current_password' => 'La contraseña actual es incorrecta.',
+            ]);
+        }
+
+        // Solo el usuario de la sesión cambia su propia contraseña.
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        // Bitácora SIN contraseñas: solo el hecho del cambio.
+        AuditLogger::log(
+            'CU01',
+            'CAMBIAR_PASSWORD',
+            "El usuario {$user->email} cambió su contraseña.",
+            null,
+            null,
+            $user->id
+        );
+
+        return $this->success(null, 'Contraseña actualizada correctamente.');
     }
 
     /**

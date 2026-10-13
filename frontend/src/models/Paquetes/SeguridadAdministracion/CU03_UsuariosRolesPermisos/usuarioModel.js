@@ -3,7 +3,7 @@ import { isDemoMode } from '../../../../config/appConfig.js';
 
 // Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockUsuarios = [
-  { id: 1, name: 'Administrador Senior TELCOM', email: 'admin@telcom.com', role: 'Administrador de Sistema', activo: true },
+  { id: 1, name: 'Administrador Senior TELCOM', email: 'admin@telcom.com', role: 'Administrador', activo: true },
   { id: 2, name: 'Beatriz Morales', email: 'caja1@telcom.com', role: 'Secretaría', activo: true },
   { id: 3, name: 'Marcos Quiroga', email: 'tecnico1@telcom.com', role: 'Soporte Técnico', activo: true },
 ];
@@ -18,7 +18,7 @@ export const mockPermisos = [
 ];
 
 export const mockRoles = [
-  { id: 1, nombre: 'Administrador de Sistema', slug: 'admin', permisos: mockPermisos },
+  { id: 1, nombre: 'Administrador', slug: 'admin', permisos: mockPermisos },
   { id: 2, nombre: 'Secretaría', slug: 'secretaria', permisos: mockPermisos.filter((p) => [3, 4, 5].includes(p.id)) },
   { id: 3, nombre: 'Soporte Técnico', slug: 'tecnico', permisos: mockPermisos.filter((p) => [1, 4, 6].includes(p.id)) },
 ];
