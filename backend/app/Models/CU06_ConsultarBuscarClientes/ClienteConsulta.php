@@ -15,13 +15,18 @@ class ClienteConsulta extends Cliente
             return $query;
         }
 
-        return $query->where(function ($q) use ($termino) {
-            $q->where('codigo_cliente', 'ILIKE', "%{$termino}%")
-              ->orWhere('documento_identidad', 'ILIKE', "%{$termino}%")
-              ->orWhere('nombres', 'ILIKE', "%{$termino}%")
-              ->orWhere('apellidos', 'ILIKE', "%{$termino}%")
-              ->orWhere('email', 'ILIKE', "%{$termino}%")
-              ->orWhere('telefono', 'ILIKE', "%{$termino}%");
+        // `whereLike(..., caseSensitive: false)` se traduce a ILIKE en
+        // PostgreSQL y a LIKE (insensible en ASCII) en SQLite, por lo que la
+        // búsqueda funciona igual en producción y en las pruebas.
+        $patron = '%' . $termino . '%';
+
+        return $query->where(function ($q) use ($patron) {
+            $q->whereLike('codigo_cliente', $patron, caseSensitive: false)
+              ->orWhereLike('documento_identidad', $patron, caseSensitive: false)
+              ->orWhereLike('nombres', $patron, caseSensitive: false)
+              ->orWhereLike('apellidos', $patron, caseSensitive: false)
+              ->orWhereLike('email', $patron, caseSensitive: false)
+              ->orWhereLike('telefono', $patron, caseSensitive: false);
         });
     }
 }

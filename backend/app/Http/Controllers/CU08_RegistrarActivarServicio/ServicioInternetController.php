@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\CU08_RegistrarActivarServicio;
 
 use App\Http\Controllers\Controller;
+use App\Models\CU08_RegistrarActivarServicio\EstadoServicio;
 use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,9 +45,20 @@ class ServicioInternetController extends Controller
 
         $validated['codigo_servicio'] = 'SRV-' . strtoupper(Str::random(6));
         $validated['estado_servicio'] = 'PENDIENTE_INSTALACION';
+        // Mantiene sincronizada la relación nueva (UML "define") sin alterar
+        // el comportamiento previo basado en `estado_servicio`.
+        $validated['estado_servicio_id'] = EstadoServicio::where('nombre_estado', 'PENDIENTE_INSTALACION')->value('id');
         $validated['fecha_instalacion'] = now();
 
         $servicio = ServicioInternet::create($validated);
+
+        AuditLogger::log(
+            'CU08',
+            'REGISTRAR_SERVICIO',
+            "Servicio {$servicio->codigo_servicio} registrado para el cliente {$servicio->cliente_id}.",
+            null,
+            ['id' => $servicio->id, 'codigo_servicio' => $servicio->codigo_servicio, 'estado_servicio' => $servicio->estado_servicio]
+        );
 
         return $this->success($servicio, 'Servicio de Internet registrado exitosamente.', 201);
     }
@@ -67,7 +80,16 @@ class ServicioInternetController extends Controller
             'mac_router'       => $validated['mac_router'],
             'fecha_activacion' => now(),
             'estado_servicio'  => 'ACTIVO',
+            'estado_servicio_id' => EstadoServicio::where('nombre_estado', 'ACTIVO')->value('id'),
         ]);
+
+        AuditLogger::log(
+            'CU08',
+            'ACTIVAR_SERVICIO',
+            "Servicio {$servicio->codigo_servicio} activado.",
+            null,
+            ['id' => $servicio->id, 'estado_servicio' => 'ACTIVO', 'ip_asignada' => $servicio->ip_asignada]
+        );
 
         return $this->success($servicio, 'Servicio de Internet activado exitosamente.');
     }

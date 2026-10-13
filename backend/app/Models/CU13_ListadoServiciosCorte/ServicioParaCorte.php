@@ -12,9 +12,9 @@ class ServicioParaCorte extends ServicioInternet
     public function scopeElegiblesParaCorte($query, int $diasTolerancia = 5)
     {
         return $query->where('estado_servicio', 'ACTIVO')
-            ->whereHas('mensualidad', function ($q) use ($diasTolerancia) {
+            ->whereHas('mensualidades', function ($q) use ($diasTolerancia) {
                 $q->where('estado_pago', '!=', 'PAGADO')
-                  ->where('fecha_vencimiento', '<=', now()->subDays($diasTolerancia));
+                  ->whereDate('fecha_vencimiento', '<=', now()->subDays($diasTolerancia)->toDateString());
             });
     }
 }

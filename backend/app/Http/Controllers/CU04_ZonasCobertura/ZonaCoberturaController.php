@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CU04_ZonasCobertura;
 
 use App\Http\Controllers\Controller;
 use App\Models\CU04_ZonasCobertura\ZonaCobertura;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,10 @@ class ZonaCoberturaController extends Controller
 
         $zona = ZonaCobertura::create($validated);
 
+        AuditLogger::log('CU04', 'CREAR_ZONA', "Zona {$zona->codigo} registrada.", null, [
+            'id' => $zona->id, 'codigo' => $zona->codigo, 'nombre' => $zona->nombre,
+        ]);
+
         return $this->success($zona, 'Zona de cobertura registrada exitosamente.', 201);
     }
 
@@ -47,6 +52,7 @@ class ZonaCoberturaController extends Controller
         $zona = ZonaCobertura::findOrFail($id);
 
         $validated = $request->validate([
+            'codigo'          => 'sometimes|string|unique:zonas_cobertura,codigo,' . $zona->id,
             'nombre'          => 'sometimes|string|max:150',
             'ciudad'          => 'sometimes|string|max:100',
             'tecnologia'      => 'sometimes|string',
@@ -54,7 +60,11 @@ class ZonaCoberturaController extends Controller
             'activo'          => 'sometimes|boolean',
         ]);
 
+        $previos = $zona->only(['nombre', 'ciudad', 'tecnologia', 'capacidad_nodos', 'activo']);
+
         $zona->update($validated);
+
+        AuditLogger::log('CU04', 'ACTUALIZAR_ZONA', "Zona {$zona->codigo} actualizada.", $previos, $zona->only(['nombre', 'ciudad', 'tecnologia', 'capacidad_nodos', 'activo']));
 
         return $this->success($zona, 'Zona de cobertura actualizada exitosamente.');
     }

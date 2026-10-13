@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\CU15_ListaRegistroReactivaciones;
 
 use App\Http\Controllers\Controller;
+use App\Models\CU08_RegistrarActivarServicio\EstadoServicio;
 use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\CU15_ListaRegistroReactivaciones\ReactivacionServicio;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,23 +41,39 @@ class ReactivacionesController extends Controller
             'observaciones'      => 'nullable|string|max:500',
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $servicio = ServicioInternet::findOrFail($validated['servicio_id']);
+        return DB::transaction(function () use ($validated, $request) {
+            $servicio = ServicioInternet::lockForUpdate()->findOrFail($validated['servicio_id']);
+
+            if ($servicio->estado_servicio !== 'CORTADO') {
+                return $this->error(
+                    'Solo se puede reactivar un servicio CORTADO. Estado actual: '.$servicio->estado_servicio.'.',
+                    422
+                );
+            }
 
             $reactivacion = ReactivacionServicio::create([
                 'codigo_reactivacion' => 'REA-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
                 'servicio_id'         => $servicio->id,
                 'pago_id'             => $validated['pago_id'] ?? null,
-                'user_id'             => auth()->id() ?? 1,
+                'user_id'             => $request->user()->id,
                 'fecha_reactivacion'  => now(),
                 'costo_reactivacion'  => $validated['costo_reactivacion'] ?? 0.00,
                 'observaciones'       => $validated['observaciones'] ?? null,
             ]);
 
-            // Reactivar servicio
+            // Reactivar servicio (columna heredada + relación UML).
             $servicio->update([
-                'estado_servicio' => 'ACTIVO',
+                'estado_servicio'    => 'ACTIVO',
+                'estado_servicio_id' => EstadoServicio::where('nombre_estado', 'ACTIVO')->value('id'),
             ]);
+
+            AuditLogger::log(
+                'CU15',
+                'REACTIVAR_SERVICIO',
+                "Servicio {$servicio->codigo_servicio} reactivado ({$reactivacion->codigo_reactivacion}).",
+                ['estado_servicio' => 'CORTADO'],
+                ['estado_servicio' => 'ACTIVO', 'costo_reactivacion' => $reactivacion->costo_reactivacion]
+            );
 
             return $this->success([
                 'reactivacion' => $reactivacion,

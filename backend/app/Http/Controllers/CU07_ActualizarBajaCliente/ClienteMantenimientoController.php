@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CU07_ActualizarBajaCliente;
 
 use App\Http\Controllers\Controller;
 use App\Models\CU07_ActualizarBajaCliente\ClienteBajaLogica;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,10 +26,20 @@ class ClienteMantenimientoController extends Controller
             'telefono'  => 'sometimes|string|max:30',
             'email'     => 'sometimes|email|unique:clientes,email,' . $cliente->id,
             'direccion' => 'sometimes|string|max:255',
-            'zona_id'   => 'sometimes|integer',
+            'zona_id'   => 'sometimes|integer|exists:zonas_cobertura,id',
         ]);
 
+        $previos = $cliente->only(array_keys($validated));
+
         $cliente->update($validated);
+
+        AuditLogger::log(
+            'CU07',
+            'ACTUALIZAR_CLIENTE',
+            "Datos del cliente {$cliente->codigo_cliente} actualizados.",
+            $previos,
+            $cliente->only(array_keys($validated))
+        );
 
         return $this->success($cliente, 'Datos del cliente actualizados exitosamente.');
     }
@@ -52,6 +63,14 @@ class ClienteMantenimientoController extends Controller
 
         // Realizar baja lógica
         $cliente->delete();
+
+        AuditLogger::log(
+            'CU07',
+            'BAJA_CLIENTE',
+            "Baja lógica del cliente {$cliente->codigo_cliente}: {$validated['motivo_baja']}",
+            ['estado' => 'ACTIVO'],
+            ['estado' => 'INACTIVO', 'motivo_baja' => $validated['motivo_baja']]
+        );
 
         return $this->success($cliente, 'Cliente dado de baja lógica exitosamente.');
     }

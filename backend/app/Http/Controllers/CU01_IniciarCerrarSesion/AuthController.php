@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CU01_IniciarCerrarSesion;
 use App\Http\Controllers\Controller;
 use App\Models\CU01_IniciarCerrarSesion\UserSession;
 use App\Models\User;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,10 @@ class AuthController extends Controller
             return $this->error('Credenciales incorrectas.', 401);
         }
 
+        if (! $user->activo) {
+            return $this->error('Tu cuenta está desactivada. Contacta al administrador.', 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // Registrar sesión activa
@@ -42,8 +47,17 @@ class AuthController extends Controller
             'is_active'  => true,
         ]);
 
+        AuditLogger::log(
+            'CU01',
+            'INICIAR_SESION',
+            "El usuario {$user->email} inició sesión.",
+            null,
+            ['user_id' => $user->id],
+            $user->id
+        );
+
         return $this->success([
-            'user'  => $user,
+            'user'  => $this->presentUser($user),
             'token' => $token,
         ], 'Inicio de sesión exitoso.');
     }
@@ -68,6 +82,15 @@ class AuthController extends Controller
                     'logout_at' => now(),
                     'is_active' => false,
                 ]);
+
+            AuditLogger::log(
+                'CU01',
+                'CERRAR_SESION',
+                "El usuario {$user->email} cerró sesión.",
+                null,
+                ['user_id' => $user->id],
+                $user->id
+            );
         }
 
         return $this->success(null, 'Sesión finalizada exitosamente.');
@@ -78,6 +101,36 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->success($request->user(), 'Datos de usuario actual.');
+        return $this->success($this->presentUser($request->user()), 'Datos de usuario actual.');
+    }
+
+    /**
+     * Representación pública del usuario para el frontend.
+     *
+     * Incluye el rol y los slugs de permisos EFECTIVOS (resueltos por el
+     * backend desde `roles` + `rol_permiso`), de modo que el cliente pueda
+     * filtrar menús sin adivinar permisos. Nunca expone la contraseña ni
+     * atributos ocultos del modelo.
+     */
+    private function presentUser(User $user): array
+    {
+        $user->loadMissing('rol');
+
+        return [
+            'id'             => $user->id,
+            'name'           => $user->name,
+            'nombre_usuario' => $user->nombre_usuario,
+            'email'          => $user->email,
+            'telefono'       => $user->telefono,
+            'activo'         => (bool) $user->activo,
+            'rol_id'         => $user->rol_id,
+            'rol'            => $user->rol ? [
+                'id'     => $user->rol->id,
+                'slug'   => $user->rol->slug,
+                'nombre' => $user->rol->nombre,
+                'activo' => (bool) $user->rol->activo,
+            ] : null,
+            'permisos'       => $user->permisosSlugs(),
+        ];
     }
 }

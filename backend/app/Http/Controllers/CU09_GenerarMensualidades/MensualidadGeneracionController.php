@@ -5,10 +5,12 @@ namespace App\Http\Controllers\CU09_GenerarMensualidades;
 use App\Http\Controllers\Controller;
 use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\CU09_GenerarMensualidades\MensualidadFacturacion;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MensualidadGeneracionController extends Controller
@@ -43,13 +45,20 @@ class MensualidadGeneracionController extends Controller
         $serviciosActivos = ServicioInternet::where('estado_servicio', 'ACTIVO')->get();
         $generadas = 0;
 
-        foreach ($serviciosActivos as $servicio) {
-            // Evitar duplicados para el mismo período
-            $existe = MensualidadFacturacion::where('servicio_id', $servicio->id)
-                ->where('periodo', $periodo)
-                ->exists();
+        DB::transaction(function () use ($serviciosActivos, $periodo, &$generadas) {
+            foreach ($serviciosActivos as $servicio) {
+                // Evitar duplicados para el mismo período. Se bloquea la fila
+                // existente (si la hay) para que dos ejecuciones concurrentes
+                // no generen la misma mensualidad dos veces.
+                $existe = MensualidadFacturacion::where('servicio_id', $servicio->id)
+                    ->where('periodo', $periodo)
+                    ->lockForUpdate()
+                    ->exists();
 
-            if (! $existe) {
+                if ($existe) {
+                    continue;
+                }
+
                 $fechaVencimiento = Carbon::createFromFormat('Y-m', $periodo)
                     ->setDay(min($servicio->dia_corte, 28));
 
@@ -65,7 +74,11 @@ class MensualidadGeneracionController extends Controller
                 ]);
                 $generadas++;
             }
-        }
+        });
+
+        AuditLogger::log('CU09', 'GENERAR_MENSUALIDADES', "Se generaron {$generadas} mensualidades para el período {$periodo}.", null, [
+            'periodo' => $periodo, 'generadas' => $generadas,
+        ]);
 
         return $this->success([
             'periodo'   => $periodo,

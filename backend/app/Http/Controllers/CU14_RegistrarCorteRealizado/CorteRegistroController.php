@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\CU14_RegistrarCorteRealizado;
 
 use App\Http\Controllers\Controller;
+use App\Models\CU08_RegistrarActivarServicio\EstadoServicio;
 use App\Models\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\CU14_RegistrarCorteRealizado\RegistroCorte;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,23 +29,39 @@ class CorteRegistroController extends Controller
             'observaciones' => 'nullable|string|max:500',
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $servicio = ServicioInternet::findOrFail($validated['servicio_id']);
+        return DB::transaction(function () use ($validated, $request) {
+            $servicio = ServicioInternet::lockForUpdate()->findOrFail($validated['servicio_id']);
+
+            if ($servicio->estado_servicio !== 'ACTIVO') {
+                return $this->error(
+                    'Solo se puede cortar un servicio ACTIVO. Estado actual: '.$servicio->estado_servicio.'.',
+                    422
+                );
+            }
 
             $corte = RegistroCorte::create([
                 'codigo_orden_corte' => 'COR-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
                 'servicio_id'        => $servicio->id,
-                'tecnico_user_id'    => auth()->id() ?? 1,
+                'tecnico_user_id'    => $request->user()->id,
                 'tipo_corte'         => $validated['tipo_corte'],
                 'motivo'             => $validated['motivo'],
                 'fecha_corte'        => now(),
                 'observaciones'      => $validated['observaciones'] ?? null,
             ]);
 
-            // Actualizar estado del servicio a CORTADO
+            // Actualizar estado del servicio (columna heredada + relación UML).
             $servicio->update([
-                'estado_servicio' => 'CORTADO',
+                'estado_servicio'    => 'CORTADO',
+                'estado_servicio_id' => EstadoServicio::where('nombre_estado', 'CORTADO')->value('id'),
             ]);
+
+            AuditLogger::log(
+                'CU14',
+                'REGISTRAR_CORTE',
+                "Corte {$corte->codigo_orden_corte} del servicio {$servicio->codigo_servicio} ({$validated['tipo_corte']}).",
+                ['estado_servicio' => 'ACTIVO'],
+                ['estado_servicio' => 'CORTADO', 'tipo_corte' => $validated['tipo_corte']]
+            );
 
             return $this->success([
                 'corte'    => $corte,

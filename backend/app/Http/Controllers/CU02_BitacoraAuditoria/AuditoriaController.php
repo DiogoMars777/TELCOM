@@ -4,6 +4,7 @@ namespace App\Http\Controllers\CU02_BitacoraAuditoria;
 
 use App\Http\Controllers\Controller;
 use App\Models\CU02_BitacoraAuditoria\BitacoraAuditoria;
+use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,18 +42,13 @@ class AuditoriaController extends Controller
     }
 
     /**
-     * Registrar entrada en bitácora (método estático auxiliar)
+     * Registrar entrada en bitácora (método estático auxiliar).
+     *
+     * Delegado en {@see AuditLogger} para que exista una única vía de
+     * escritura en todos los casos de uso.
      */
     public static function registrar(string $modulo, string $accion, string $detalles, ?array $previos = null, ?array $nuevos = null): void
     {
-        BitacoraAuditoria::create([
-            'user_id'       => auth()->id(),
-            'modulo'        => $modulo,
-            'accion'        => $accion,
-            'detalles'      => $detalles,
-            'ip_origen'     => request()->ip(),
-            'datos_previos' => $previos,
-            'datos_nuevos'  => $nuevos,
-        ]);
+        AuditLogger::log($modulo, $accion, $detalles, $previos, $nuevos);
     }
 }

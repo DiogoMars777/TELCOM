@@ -21,8 +21,11 @@ class Rol extends Model
         return $this->belongsToMany(Permiso::class, 'rol_permiso');
     }
 
+    /**
+     * Usuarios que tienen este rol (UML: Rol [1] -> Usuario [0..*]).
+     */
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class, 'rol_id');
     }
 }

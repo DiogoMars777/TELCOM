@@ -28,7 +28,7 @@ class AlertasVencimientoController extends Controller
             ->orderBy('fecha_vencimiento', 'asc')
             ->get()
             ->map(function ($fac) use ($hoy) {
-                $dias = $hoy->diffInDays(Carbon::parse($fac->fecha_vencimiento));
+                $dias = (int) $hoy->diffInDays(Carbon::parse($fac->fecha_vencimiento));
                 return [
                     'mensualidad_id'    => $fac->id,
                     'codigo_factura'    => $fac->codigo_factura,
