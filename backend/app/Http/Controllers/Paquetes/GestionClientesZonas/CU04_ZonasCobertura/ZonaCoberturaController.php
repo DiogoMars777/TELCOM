@@ -85,8 +85,8 @@ class ZonaCoberturaController extends Controller
 
         return $request->validate([
             'codigo' => $esCreacion
-                ? 'required|string|max:50|unique:zonas_cobertura,codigo'
-                : 'sometimes|string|max:50|unique:zonas_cobertura,codigo,' . $zona->id,
+                ? 'required|string|max:50|unique:Zona,codigo'
+                : 'sometimes|string|max:50|unique:Zona,codigo,' . $zona->idZona . ',idZona',
             'nombre'           => $req . '|string|max:150',
             'ciudad'           => $req . '|string|max:100',
             'barrio'           => 'nullable|string|max:150',

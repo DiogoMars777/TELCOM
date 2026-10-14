@@ -6,28 +6,22 @@ use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioIn
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * AsignacionPlan (UML):
- *  - idAsignacionPlan -> id
- *  - fechaInicio      -> fecha_inicio
- *  - fechaFin         -> fecha_fin
- *  - precioAplicado   -> precio_aplicado
- *  - motivoCambio     -> motivo_cambio
- *
- * Relaciones UML:
- *  - "posee":      ServicioInternet [1]  -> AsignacionPlan [1..*]
- *  - "corresponde": PlanInternet    [1]  -> AsignacionPlan [0..*]
- *  - "registra":   Usuario          [1]  -> AsignacionPlan [0..*]
- *
- * `user_id` es NULLABLE porque los servicios históricos no registran quién
- * originó la asignación y no se inventa el dato. Toda asignación nueva lo
- * exige (se toma del usuario autenticado).
- */
 class AsignacionPlan extends Model
 {
-    protected $table = 'asignaciones_plan';
+    protected $table = 'AsignacionPlan';
+    protected $primaryKey = 'idAsignacionPlan';
+    public $timestamps = false;
 
     protected $fillable = [
+        'idAsignacionPlan',
+        'fechaInicio',
+        'fechaFin',
+        'precioAplicado',
+        'motivoCambio',
+        'idServicio',
+        'idPlan',
+        'idUsuario',
+        // alias
         'servicio_id',
         'plan_id',
         'user_id',
@@ -37,35 +31,164 @@ class AsignacionPlan extends Model
         'motivo_cambio',
     ];
 
-    protected $casts = [
-        'servicio_id'     => 'integer',
-        'plan_id'         => 'integer',
-        'user_id'         => 'integer',
-        'fecha_inicio'    => 'date',
-        'fecha_fin'       => 'date',
-        'precio_aplicado' => 'decimal:2',
+    protected $appends = [
+        'servicio_id',
+        'plan_id',
+        'user_id',
+        'fecha_inicio',
+        'fecha_fin',
+        'precio_aplicado',
+        'motivo_cambio',
     ];
+
+    public function newEloquentBuilder($query)
+    {
+        return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            public function where($column, $operator = null, $value = null, $boolean = 'and')
+            {
+                if (is_string($column)) {
+                    $column = match ($column) {
+                        'servicio_id' => 'idServicio',
+                        'plan_id' => 'idPlan',
+                        'user_id' => 'idUsuario',
+                        'fecha_inicio' => 'fechaInicio',
+                        'fecha_fin' => 'fechaFin',
+                        'precio_aplicado' => 'precioAplicado',
+                        'motivo_cambio' => 'motivoCambio',
+                        default => $column,
+                    };
+                }
+                return parent::where($column, $operator, $value, $boolean);
+            }
+
+            public function whereNull($columns, $boolean = 'and', $not = false)
+            {
+                if ($columns === 'fecha_fin') {
+                    $columns = 'fechaFin';
+                }
+                return parent::whereNull($columns, $boolean, $not);
+            }
+
+            public function update(array $values)
+            {
+                $mapped = [];
+                foreach ($values as $key => $val) {
+                    if ($key === 'updated_at' || $key === 'created_at') {
+                        continue;
+                    }
+                    $k = match ($key) {
+                        'fecha_fin' => 'fechaFin',
+                        'fecha_inicio' => 'fechaInicio',
+                        'precio_aplicado' => 'precioAplicado',
+                        'motivo_cambio' => 'motivoCambio',
+                        'servicio_id' => 'idServicio',
+                        'plan_id' => 'idPlan',
+                        'user_id' => 'idUsuario',
+                        default => $key,
+                    };
+                    $mapped[$k] = $val;
+                }
+                return parent::update($mapped);
+            }
+        };
+    }
 
     public function servicio()
     {
-        return $this->belongsTo(ServicioInternet::class, 'servicio_id');
+        return $this->belongsTo(ServicioInternet::class, 'idServicio', 'idServicio');
     }
 
     public function plan()
     {
-        return $this->belongsTo(PlanInternet::class, 'plan_id');
+        return $this->belongsTo(PlanInternet::class, 'idPlan', 'idPlan');
     }
 
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'idUsuario', 'idUsuario');
     }
 
-    /**
-     * Una asignación sin fecha de fin es la vigente para su servicio.
-     */
     public function estaVigente(): bool
     {
-        return $this->fecha_fin === null;
+        return $this->fechaFin === null;
+    }
+
+    public function getIdAttribute(): ?int
+    {
+        return isset($this->attributes['idAsignacionPlan']) ? (int) $this->attributes['idAsignacionPlan'] : null;
+    }
+
+    public function getServicioIdAttribute(): ?int
+    {
+        return isset($this->attributes['idServicio']) ? (int) $this->attributes['idServicio'] : null;
+    }
+
+    public function setServicioIdAttribute(?int $value): void
+    {
+        $this->attributes['idServicio'] = $value;
+    }
+
+    public function getPlanIdAttribute(): ?int
+    {
+        return isset($this->attributes['idPlan']) ? (int) $this->attributes['idPlan'] : null;
+    }
+
+    public function setPlanIdAttribute(?int $value): void
+    {
+        $this->attributes['idPlan'] = $value;
+    }
+
+    public function getUserIdAttribute(): ?int
+    {
+        return isset($this->attributes['idUsuario']) ? (int) $this->attributes['idUsuario'] : null;
+    }
+
+    public function setUserIdAttribute(?int $value): void
+    {
+        $this->attributes['idUsuario'] = $value;
+    }
+
+    public function getFechaInicioAttribute(): ?string
+    {
+        return $this->attributes['fechaInicio'] ?? null;
+    }
+
+    public function setFechaInicioAttribute(?string $value): void
+    {
+        $this->attributes['fechaInicio'] = $value;
+    }
+
+    public function getFechaFinAttribute(): ?string
+    {
+        return $this->attributes['fechaFin'] ?? null;
+    }
+
+    public function setFechaFinAttribute(?string $value): void
+    {
+        $this->attributes['fechaFin'] = $value;
+    }
+
+    public function getPrecioAplicadoAttribute(): ?string
+    {
+        $val = $this->attributes['precioAplicado'] ?? null;
+        if ($val !== null && is_numeric($val)) {
+            return number_format((float) $val, 2, '.', '');
+        }
+        return isset($this->attributes['precioAplicado']) ? (string) $this->attributes['precioAplicado'] : null;
+    }
+
+    public function setPrecioAplicadoAttribute($value): void
+    {
+        $this->attributes['precioAplicado'] = $value;
+    }
+
+    public function getMotivoCambioAttribute(): ?string
+    {
+        return $this->attributes['motivoCambio'] ?? null;
+    }
+
+    public function setMotivoCambioAttribute(?string $value): void
+    {
+        $this->attributes['motivoCambio'] = $value;
     }
 }

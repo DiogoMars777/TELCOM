@@ -64,14 +64,14 @@ class DemoUsersSeeder extends Seeder
                 continue;
             }
 
-            $user = User::where('email', $cuenta['email'])->first();
+            $user = User::where('correo', $cuenta['email'])->first();
 
             if ($user) {
                 // Nunca se sobrescribe una contraseña existente salvo petición explícita.
                 $atributos = [
-                    'name'   => $cuenta['name'],
-                    'rol_id' => $rol->id,
-                    'activo' => true,
+                    'nombreCompleto' => $cuenta['name'],
+                    'idRol'          => $rol->idRol,
+                    'activo'         => true,
                 ];
 
                 if ($resetPassword) {
@@ -83,11 +83,12 @@ class DemoUsersSeeder extends Seeder
                 $this->command?->info("Actualizado: {$cuenta['email']} ({$cuenta['slug']})");
             } else {
                 User::create([
-                    'name'     => $cuenta['name'],
-                    'email'    => $cuenta['email'],
-                    'password' => $password, // el cast 'hashed' lo cifra
-                    'rol_id'   => $rol->id,
-                    'activo'   => true,
+                    'nombreUsuario'  => explode('@', $cuenta['email'])[0],
+                    'nombreCompleto' => $cuenta['name'],
+                    'correo'         => $cuenta['email'],
+                    'password'       => $password, // el cast 'hashed' o mutator lo cifra
+                    'idRol'          => $rol->idRol,
+                    'activo'         => true,
                 ]);
 
                 $this->command?->info("Creado: {$cuenta['email']} ({$cuenta['slug']})");

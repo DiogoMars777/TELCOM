@@ -54,6 +54,7 @@ class CorteRegistroController extends Controller
                 'estado_servicio'    => 'CORTADO',
                 'estado_servicio_id' => EstadoServicio::where('nombre_estado', 'CORTADO')->value('id'),
             ]);
+            $servicio->refresh();
 
             AuditLogger::log(
                 'CU14',

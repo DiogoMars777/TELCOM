@@ -35,7 +35,15 @@ import { canAccessCu, firstAllowedCu } from './config/access';
 
 export default function App() {
   // 'landing' | 'login' | 'admin'
-  const [view, setView] = useState('landing');
+  const [view, setView] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get('view') === 'recuperar' || q.get('codigo') || q.get('token')) {
+        return 'login';
+      }
+    }
+    return 'landing';
+  });
   const [currentUser, setCurrentUser] = useState(null);
   const [booting, setBooting] = useState(true);
   const [activeCU, setActiveCU] = useState('CU06');

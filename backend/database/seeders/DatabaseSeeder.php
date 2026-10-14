@@ -41,18 +41,19 @@ class DatabaseSeeder extends Seeder
 
         // 2. Usuario Administrador Principal - con rol válido asignado
         $admin = User::firstOrCreate(
-            ['email' => 'admin@telcom.com'],
+            ['correo' => 'admin@telcom.com'],
             [
-                'name'     => 'Administrador Senior TELCOM',
-                'password' => Hash::make('password123'),
-                'rol_id'   => $rolAdmin->id,
-                'activo'   => true,
+                'nombreUsuario'  => 'admin',
+                'nombreCompleto' => 'Administrador Senior TELCOM',
+                'passwordHash'   => Hash::make('password123'),
+                'idRol'          => $rolAdmin->idRol,
+                'activo'         => true,
             ]
         );
 
         // Garantiza el rol aunque el usuario ya existiera de una ejecución previa
-        if ($admin->rol_id === null) {
-            $admin->rol_id = $rolAdmin->id;
+        if ($admin->idRol === null) {
+            $admin->idRol = $rolAdmin->idRol;
             $admin->save();
         }
 
@@ -170,86 +171,70 @@ class DatabaseSeeder extends Seeder
 
         // 6. Clientes iniciales (CU05)
         $cliente1 = Cliente::firstOrCreate(
-            ['documento_identidad' => '8492019'],
+            ['ci' => '8492019'],
             [
-                'codigo_cliente'      => 'CLI-10001',
-                'tipo_documento'      => 'CI',
-                'nombres'             => 'Carlos Andrés',
-                'apellidos'           => 'Mendoza Paredes',
-                'telefono'            => '+591 76543210',
-                'email'               => 'carlos.mendoza@email.com',
+                'codigoCliente'       => 'CLI-10001',
+                'nombreCompleto'      => 'Carlos Andrés Mendoza Paredes',
+                'telefonoPrincipal'   => '+591 76543210',
+                'correo'              => 'carlos.mendoza@email.com',
                 'direccion'           => 'Av. Siempre Viva #742',
-                'zona_id'             => $zonaNorte->id,
-                'estado'              => 'ACTIVO',
+                'idZona'              => $zonaNorte->idZona,
+                'estadoCliente'       => 'ACTIVO',
             ]
         );
 
-        // 7. Servicio de Internet inicial (CU08)
-        $servicio = ServicioInternet::firstOrCreate(
-            ['codigo_servicio' => 'SRV-88201'],
-            [
-                'cliente_id'            => $cliente1->id,
-                'plan_nombre'           => 'Fibra 200 Mbps',
-                'velocidad_mbps'        => 200,
-                'precio_mensual'        => 250.00,
-                'ip_asignada'           => '10.10.0.15',
-                'mac_router'            => 'AA:BB:CC:DD:EE:01',
-                'direccion_instalacion' => 'Av. Siempre Viva #742',
-                'fecha_instalacion'     => now()->subMonths(3)->toDateString(),
-                'fecha_activacion'      => now()->subMonths(3)->toDateString(),
-                'estado_servicio'       => 'ACTIVO',
-                'dia_corte'             => 10,
-            ]
-        );
-
-        // 8. Catálogo de estados de servicio (UML EstadoServicio).
-        //    La migración de datos también los crea; aquí se refuerza para que
-        //    un entorno recién sembrado quede completo.
+        // 7. Catálogo de estados de servicio (UML EstadoServicio)
         $estadosServicio = [
             'PENDIENTE_INSTALACION' => 'Servicio registrado, pendiente de instalación/verificación técnica.',
             'ACTIVO'                => 'Servicio habilitado y en funcionamiento.',
             'SUSPENDIDO'            => 'Servicio suspendido temporalmente.',
             'CORTADO'               => 'Servicio cortado por falta de pago u otra causa.',
         ];
+        $estadosCreados = [];
         foreach ($estadosServicio as $nombre => $descripcion) {
-            EstadoServicio::firstOrCreate(
-                ['nombre_estado' => $nombre],
+            $estadosCreados[$nombre] = EstadoServicio::firstOrCreate(
+                ['nombreEstado' => $nombre],
                 ['descripcion' => $descripcion]
             );
         }
 
-        // Enlaza el servicio sembrado con su EstadoServicio (UML "define").
-        if ($servicio->estado_servicio_id === null) {
-            $servicio->estado_servicio_id = EstadoServicio::where('nombre_estado', $servicio->estado_servicio)->value('id');
-            $servicio->save();
-        }
-
-        // 9. Plan de Internet y asignación inicial del servicio (UML).
-        //    El precio del plan se toma del propio servicio sembrado, no de los
-        //    datos de demostración del sitio público.
+        // 8. Plan de Internet (UML)
         $plan = PlanInternet::firstOrCreate(
             [
-                'nombre_plan'    => $servicio->plan_nombre,
-                'velocidad_mbps' => $servicio->velocidad_mbps,
+                'nombrePlan'    => 'Fibra 200 Mbps',
+                'velocidadMbps' => 200,
             ],
             [
-                'precio_mensual' => $servicio->precio_mensual,
-                'descripcion'    => 'Plan inicial de datos de ejemplo.',
-                'activo'         => true,
+                'precioMensual' => 250.00,
+                'descripcion'   => 'Plan inicial de datos de ejemplo.',
+                'activo'        => true,
+            ]
+        );
+
+        // 9. Servicio de Internet inicial (CU08)
+        $servicio = ServicioInternet::firstOrCreate(
+            ['codigoServicio' => 'SRV-88201'],
+            [
+                'idCliente'         => $cliente1->idCliente,
+                'idEstadoServicio'  => $estadosCreados['ACTIVO']->idEstadoServicio,
+                'idZona'            => $zonaNorte->idZona,
+                'ipAsignada'        => '10.10.0.15',
+                'macRouter'         => 'AA:BB:CC:DD:EE:01',
+                'direccion'         => 'Av. Siempre Viva #742',
+                'fechaActivacion'   => now()->subMonths(3)->toDateString(),
+                'diaCorte'          => 10,
             ]
         );
 
         if ($servicio->asignacionesPlan()->doesntExist()) {
             AsignacionPlan::create([
-                'servicio_id'     => $servicio->id,
-                'plan_id'         => $plan->id,
-                'user_id'         => null, // No se inventa el autor de datos de ejemplo.
-                'fecha_inicio'    => $servicio->fecha_activacion?->toDateString()
-                    ?? $servicio->fecha_instalacion?->toDateString()
-                    ?? now()->toDateString(),
-                'fecha_fin'       => null,
-                'precio_aplicado' => $servicio->precio_mensual,
-                'motivo_cambio'   => 'Carga inicial de datos de ejemplo.',
+                'idServicio'     => $servicio->idServicio,
+                'idPlan'         => $plan->idPlan,
+                'idUsuario'      => null, // No se inventa el autor de datos de ejemplo.
+                'fechaInicio'    => $servicio->fechaActivacion ?? now()->toDateString(),
+                'fechaFin'       => null,
+                'precioAplicado' => $plan->precioMensual,
+                'motivoCambio'   => 'Carga inicial de datos de ejemplo.',
             ]);
         }
     }

@@ -63,9 +63,9 @@ class AuditoriaController extends Controller
             ->pluck('user_id');
 
         $usuarios = User::query()
-            ->whereIn('id', $ids)
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
+            ->whereIn('idUsuario', $ids)
+            ->orderBy('nombreCompleto')
+            ->get();
 
         return $this->success($usuarios, 'Usuarios de la bitácora consultados correctamente.');
     }

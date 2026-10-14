@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 // CU01: Iniciar y cerrar sesión
 use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\AuthController;
+use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\RecuperarPasswordController;
 // CU02: Consultar bitácora de auditoría
 use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\AuditoriaController;
 // CU03: Gestionar usuarios internos, roles y permisos
@@ -63,6 +64,13 @@ Route::prefix('cu01')->group(function () {
     // usuario de la sesión e ignora cualquier id del cuerpo.
     Route::post('/cambiar-password', [AuthController::class, 'changePassword'])
         ->middleware(['auth:sanctum', 'permission:auth.login']);
+
+    // Recuperación de contraseña por correo (público con limitación de tasa)
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::post('/recuperar-password/solicitar', [RecuperarPasswordController::class, 'solicitar']);
+        Route::post('/recuperar-password/verificar-codigo', [RecuperarPasswordController::class, 'verificarCodigo']);
+        Route::post('/recuperar-password/restablecer', [RecuperarPasswordController::class, 'restablecer']);
+    });
 });
 
 // CU02: Consultar bitácora de auditoría (solo administrador)

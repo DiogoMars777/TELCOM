@@ -2,80 +2,253 @@
 
 namespace App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCobertura;
 use App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente;
 use App\Models\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadFacturacion;
 use App\Models\Paquetes\ServiciosPlanes\Planes\AsignacionPlan;
+use Illuminate\Database\Eloquent\Model;
 
 class ServicioInternet extends Model
 {
-    protected $table = 'servicios_internet';
+    protected $table = 'ServicioInternet';
+    protected $primaryKey = 'idServicio';
+    public $timestamps = false;
 
     protected $fillable = [
-        'codigo_servicio',
+        'idServicio',
+        'fechaActivacion',
+        'fechaCorteBase',
+        'usuarioWinbox',
+        'direccion',
+        'referencia',
+        'latitud',
+        'longitud',
+        'observacion',
+        'idCliente',
+        'idEstadoServicio',
+        'idZona',
+        'codigoServicio',
+        'ipAsignada',
+        'macRouter',
+        'diaCorte',
+        // alias de compatibilidad
         'cliente_id',
+        'estado_servicio_id',
+        'codigo_servicio',
+        'direccion_instalacion',
+        'fecha_activacion',
+        'dia_corte',
         'plan_nombre',
         'velocidad_mbps',
         'precio_mensual',
-        'ip_asignada',
-        'mac_router',
-        'direccion_instalacion',
-        'fecha_instalacion',
-        'fecha_activacion',
-        'estado_servicio', // PENDIENTE_INSTALACION, ACTIVO, SUSPENDIDO, CORTADO
-        'estado_servicio_id', // Relación nueva hacia el catálogo EstadoServicio
-        'dia_corte',
     ];
 
-    protected $casts = [
-        'cliente_id'         => 'integer',
-        'velocidad_mbps'     => 'integer',
-        'precio_mensual'     => 'decimal:2',
-        'fecha_instalacion'  => 'date',
-        'fecha_activacion'   => 'date',
-        'estado_servicio_id' => 'integer',
-        'dia_corte'          => 'integer',
+    protected $appends = [
+        'id',
+        'cliente_id',
+        'estado_servicio_id',
+        'codigo_servicio',
+        'direccion_instalacion',
+        'fecha_activacion',
+        'dia_corte',
+        'plan_nombre',
+        'velocidad_mbps',
+        'precio_mensual',
+        'estado_servicio',
     ];
+
+    public function newEloquentBuilder($query)
+    {
+        return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            public function where($column, $operator = null, $value = null, $boolean = 'and')
+            {
+                if (is_string($column)) {
+                    if ($column === 'estado_servicio') {
+                        $target = $value ?? $operator;
+                        $estadoId = EstadoServicio::where('nombreEstado', $target)->value('idEstadoServicio');
+                        $column = 'idEstadoServicio';
+                        if ($value !== null) {
+                            return parent::where($column, $operator, $estadoId, $boolean);
+                        }
+                        return parent::where($column, '=', $estadoId, $boolean);
+                    }
+                    $column = match ($column) {
+                        'cliente_id' => 'idCliente',
+                        'estado_servicio_id' => 'idEstadoServicio',
+                        'codigo_servicio' => 'codigoServicio',
+                        'zona_id' => 'idZona',
+                        'dia_corte' => 'diaCorte',
+                        'fecha_activacion' => 'fechaActivacion',
+                        'direccion_instalacion' => 'direccion',
+                        default => $column,
+                    };
+                }
+                return parent::where($column, $operator, $value, $boolean);
+            }
+        };
+    }
 
     public function cliente()
     {
-        return $this->belongsTo(Cliente::class, 'cliente_id');
+        return $this->belongsTo(Cliente::class, 'idCliente', 'idCliente');
     }
 
-    /**
-     * Mensualidades (facturas) emitidas para este servicio.
-     * Necesaria para CU12 (alertas) y CU13 (elegibilidad a corte por mora).
-     */
-    public function mensualidades()
-    {
-        return $this->hasMany(MensualidadFacturacion::class, 'servicio_id');
-    }
-
-    /**
-     * Relación UML "define": ServicioInternet pertenece a un EstadoServicio.
-     * La columna antigua `estado_servicio` se mantiene por compatibilidad
-     * con CU08-CU15 y no se elimina en esta etapa.
-     */
     public function estado()
     {
-        return $this->belongsTo(EstadoServicio::class, 'estado_servicio_id');
+        return $this->belongsTo(EstadoServicio::class, 'idEstadoServicio', 'idEstadoServicio');
     }
 
-    /**
-     * Relación UML "posee": ServicioInternet [1] -> AsignacionPlan [1..*].
-     * Se conserva todo el historial; una asignación no se sobrescribe.
-     */
+    public function zona()
+    {
+        return $this->belongsTo(ZonaCobertura::class, 'idZona', 'idZona');
+    }
+
+    public function mensualidades()
+    {
+        return $this->hasMany(MensualidadFacturacion::class, 'idServicio', 'idServicio');
+    }
+
     public function asignacionesPlan()
     {
-        return $this->hasMany(AsignacionPlan::class, 'servicio_id');
+        return $this->hasMany(AsignacionPlan::class, 'idServicio', 'idServicio');
     }
 
-    /**
-     * Asignación vigente del servicio (fecha_fin NULL). Hay a lo sumo una
-     * gracias al índice parcial único de la migración.
-     */
     public function asignacionPlanActual()
     {
-        return $this->hasOne(AsignacionPlan::class, 'servicio_id')->whereNull('fecha_fin');
+        return $this->hasOne(AsignacionPlan::class, 'idServicio', 'idServicio')->whereNull('fechaFin');
+    }
+
+    public function getIdAttribute(): ?int
+    {
+        return isset($this->attributes['idServicio']) ? (int) $this->attributes['idServicio'] : null;
+    }
+
+    public function getClienteIdAttribute(): ?int
+    {
+        return isset($this->attributes['idCliente']) ? (int) $this->attributes['idCliente'] : null;
+    }
+
+    public function setClienteIdAttribute(?int $value): void
+    {
+        $this->attributes['idCliente'] = $value;
+    }
+
+    public function getEstadoServicioIdAttribute(): ?int
+    {
+        return isset($this->attributes['idEstadoServicio']) ? (int) $this->attributes['idEstadoServicio'] : null;
+    }
+
+    public function setEstadoServicioIdAttribute(?int $value): void
+    {
+        $this->attributes['idEstadoServicio'] = $value;
+        $this->unsetRelation('estado');
+    }
+
+    public function getCodigoServicioAttribute(): ?string
+    {
+        return $this->attributes['codigoServicio'] ?? "SRV-{$this->idServicio}";
+    }
+
+    public function setCodigoServicioAttribute(?string $value): void
+    {
+        $this->attributes['codigoServicio'] = $value;
+    }
+
+    public function getDireccionInstalacionAttribute(): ?string
+    {
+        return $this->attributes['direccion'] ?? null;
+    }
+
+    public function setDireccionInstalacionAttribute(?string $value): void
+    {
+        $this->attributes['direccion'] = $value;
+    }
+
+    public function getFechaActivacionAttribute(): ?string
+    {
+        return $this->attributes['fechaActivacion'] ?? null;
+    }
+
+    public function setFechaActivacionAttribute(?string $value): void
+    {
+        $this->attributes['fechaActivacion'] = $value;
+    }
+
+    public function getDiaCorteAttribute(): int
+    {
+        return isset($this->attributes['diaCorte']) ? (int) $this->attributes['diaCorte'] : 10;
+    }
+
+    public function setDiaCorteAttribute($value): void
+    {
+        $this->attributes['diaCorte'] = (int) $value;
+    }
+
+    public function getEstadoServicioAttribute(): string
+    {
+        if (isset($this->attributes['idEstadoServicio'])) {
+            $nombre = EstadoServicio::where('idEstadoServicio', $this->attributes['idEstadoServicio'])->value('nombreEstado');
+            if ($nombre) {
+                return $nombre;
+            }
+        }
+        return $this->estado?->nombreEstado ?? 'ACTIVO';
+    }
+
+    public function setEstadoServicioAttribute(?string $value): void
+    {
+        if ($value) {
+            $estadoId = EstadoServicio::where('nombreEstado', $value)->value('idEstadoServicio');
+            if ($estadoId) {
+                $this->attributes['idEstadoServicio'] = $estadoId;
+                $this->unsetRelation('estado');
+            }
+        }
+    }
+
+    public function getPlanNombreAttribute(): ?string
+    {
+        return $this->asignacionPlanActual?->plan?->nombrePlan ?? $this->attributes['plan_nombre'] ?? null;
+    }
+
+    public function setPlanNombreAttribute(?string $value): void
+    {
+        // virtual
+    }
+
+    public function getVelocidadMbpsAttribute(): ?int
+    {
+        return $this->asignacionPlanActual?->plan?->velocidadMbps ?? (isset($this->attributes['velocidad_mbps']) ? (int) $this->attributes['velocidad_mbps'] : null);
+    }
+
+    public function setVelocidadMbpsAttribute($value): void
+    {
+        // virtual
+    }
+
+    public function getPrecioMensualAttribute(): ?string
+    {
+        $val = $this->asignacionPlanActual?->precioAplicado ?? $this->asignacionPlanActual?->plan?->precioMensual ?? (isset($this->attributes['precio_mensual']) ? $this->attributes['precio_mensual'] : null);
+        if ($val !== null && is_numeric($val)) {
+            return number_format((float) $val, 2, '.', '');
+        }
+        return $val !== null ? (string) $val : null;
+    }
+
+    public function setPrecioMensualAttribute($value): void
+    {
+        // virtual
+    }
+
+    public function getFechaInstalacionAttribute(): ?string
+    {
+        return $this->attributes['fechaActivacion'] ?? null;
+    }
+
+    public function setFechaInstalacionAttribute(?string $value): void
+    {
+        if (empty($this->attributes['fechaActivacion'])) {
+            $this->attributes['fechaActivacion'] = $value;
+        }
     }
 }

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Wifi, Lock, Mail, ShieldCheck, Users, RefreshCw } from 'lucide-react';
+import { Wifi, Lock, Mail, ShieldCheck, Users, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useAuthController } from '../../../../controllers/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/useAuthController';
 import { siteConfig } from '../../../../config/siteConfig';
+import RecuperarPasswordView from './RecuperarPasswordView';
 import './login.css';
 
 // Año actual calculado una sola vez (fuera del render).
@@ -75,10 +76,20 @@ const FEATURE_ICONS = {
 };
 
 export default function LoginView({ onLoginSuccess, onBack }) {
-  const { credentials, loading, error, handleChange, handleSubmit } =
+  const { credentials, setCredentials, loading, error, handleChange, handleSubmit } =
     useAuthController(onLoginSuccess);
   const [showPassword, setShowPassword] = useState(false);
-  const [forgotMsg, setForgotMsg] = useState(false);
+
+  // Parámetros de URL para acceso directo desde el enlace del correo
+  const queryParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const urlView = queryParams?.get('view');
+  const urlEmail = queryParams?.get('email') || '';
+  const urlCodigo = queryParams?.get('codigo') || queryParams?.get('token') || '';
+
+  const [mode, setMode] = useState(
+    urlView === 'recuperar' || Boolean(urlCodigo) ? 'recuperar' : 'login'
+  );
+  const [successBanner, setSuccessBanner] = useState(null);
   const { portal, brand } = siteConfig;
 
   return (
@@ -125,108 +136,134 @@ export default function LoginView({ onLoginSuccess, onBack }) {
 
         {/* ------------------ Panel derecho ------------------ */}
         <section className="emp-right">
-          <div className="emp-form-wrap">
-            <div className="emp-form-head">
-              <div className="emp-form-icon">
-                <Wifi size={26} />
-              </div>
-              <div className="emp-form-logo">
-                {brand.name}
-                <span className="emp-dot">.</span>
-              </div>
-              <p>{portal.subtitle}</p>
-            </div>
-
-            {error && (
-              <div className="emp-alert">
-                <ShieldCheck size={16} /> {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="emp-field">
-                <label htmlFor="login-user">Nombre de Usuario</label>
-                <div className="emp-input">
-                  <Mail size={17} className="emp-input-icon" />
-                  <input
-                    id="login-user"
-                    type="email"
-                    name="email"
-                    value={credentials.email}
-                    onChange={handleChange}
-                    placeholder="usuario@telcom.com"
-                    autoComplete="username"
-                    required
-                  />
+          {mode === 'recuperar' ? (
+            <RecuperarPasswordView
+              initialEmail={urlEmail}
+              initialCodigo={urlCodigo}
+              onVolverALogin={(data) => {
+                setMode('login');
+                if (data?.email) {
+                  setCredentials((prev) => ({ ...prev, email: data.email }));
+                }
+                setSuccessBanner(data?.successMsg || 'Contraseña actualizada. Inicia sesión con tu nueva contraseña.');
+              }}
+            />
+          ) : (
+            <div className="emp-form-wrap">
+              <div className="emp-form-head">
+                <div className="emp-form-icon">
+                  <Wifi size={26} />
                 </div>
+                <div className="emp-form-logo">
+                  {brand.name}
+                  <span className="emp-dot">.</span>
+                </div>
+                <p>{portal.subtitle}</p>
               </div>
 
-              <div className="emp-field">
-                <label htmlFor="login-password">Contraseña</label>
-                <div className="emp-input has-toggle">
-                  <Lock size={17} className="emp-input-icon" />
-                  <input
-                    id="login-password"
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={credentials.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    required
-                  />
+              {successBanner && (
+                <div className="emp-alert-success" role="status">
+                  <CheckCircle2 size={16} /> {successBanner}
+                </div>
+              )}
+
+              {error && (
+                <div className="emp-alert" role="alert">
+                  <ShieldCheck size={16} /> {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="emp-field">
+                  <label htmlFor="login-user">Nombre de Usuario o Correo</label>
+                  <div className="emp-input">
+                    <Mail size={17} className="emp-input-icon" />
+                    <input
+                      id="login-user"
+                      type="email"
+                      name="email"
+                      value={credentials.email}
+                      onChange={(e) => {
+                        setSuccessBanner(null);
+                        handleChange(e);
+                      }}
+                      placeholder="usuario@telcom.com"
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="emp-field">
+                  <label htmlFor="login-password">Contraseña</label>
+                  <div className="emp-input has-toggle">
+                    <Lock size={17} className="emp-input-icon" />
+                    <input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={credentials.password}
+                      onChange={(e) => {
+                        setSuccessBanner(null);
+                        handleChange(e);
+                      }}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="emp-toggle"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="emp-row-link">
                   <button
                     type="button"
-                    className="emp-toggle"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    className="emp-link"
+                    onClick={() => {
+                      setSuccessBanner(null);
+                      setMode('recuperar');
+                    }}
                   >
-                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    {portal.forgotLabel}
                   </button>
                 </div>
-              </div>
 
-              <div className="emp-row-link">
-                <button type="button" className="emp-link" onClick={() => setForgotMsg(true)}>
-                  {portal.forgotLabel}
+                <button type="submit" className="emp-submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <RefreshCw size={17} className="emp-spin" /> Verificando…
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={17} /> Iniciar Sesión
+                    </>
+                  )}
                 </button>
-              </div>
+              </form>
 
-              <button type="submit" className="emp-submit" disabled={loading}>
-                {loading ? (
-                  <>
-                    <RefreshCw size={17} className="emp-spin" /> Verificando…
-                  </>
-                ) : (
-                  <>
-                    <Lock size={17} /> Iniciar Sesión
-                  </>
-                )}
-              </button>
-            </form>
-
-            {forgotMsg && (
-              <p className="emp-info">
-                La recuperación de contraseña aún no está habilitada. Contacta al
-                administrador del sistema para restablecer tu acceso.
-              </p>
-            )}
-
-            {onBack && (
-              <div className="emp-back">
-                <a
-                  href="#volver"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onBack();
-                  }}
-                >
-                  ← Volver al inicio
-                </a>
-              </div>
-            )}
-          </div>
+              {onBack && (
+                <div className="emp-back">
+                  <a
+                    href="#volver"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onBack();
+                    }}
+                  >
+                    ← Volver al inicio
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </div>

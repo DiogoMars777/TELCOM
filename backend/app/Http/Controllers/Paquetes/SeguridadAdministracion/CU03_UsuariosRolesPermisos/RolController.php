@@ -67,12 +67,12 @@ class RolController extends Controller
 
         $validated = $request->validate([
             'permisos'   => ['present', 'array'],
-            'permisos.*' => ['string', Rule::exists('permisos', 'slug')],
+            'permisos.*' => ['string', Rule::exists('Permiso', 'slug')],
         ]);
 
         // Normaliza: sin duplicados y solo slugs existentes.
         $slugs = array_values(array_unique($validated['permisos']));
-        $ids = Permiso::whereIn('slug', $slugs)->pluck('id')->all();
+        $ids = Permiso::whereIn('slug', $slugs)->pluck('idPermiso')->all();
 
         if (! $this->algunRolActivoConservaAdministracion($rol, $slugs)) {
             return $this->error(

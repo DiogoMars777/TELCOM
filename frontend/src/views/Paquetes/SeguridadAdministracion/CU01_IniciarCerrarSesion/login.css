@@ -582,3 +582,145 @@ img.emp-left-visual {
     animation: none;
   }
 }
+
+/* Recuperación de contraseña (CU01) */
+.emp-alert-success {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 0.95rem;
+  margin-bottom: 1.2rem;
+  border-radius: 11px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.emp-alert-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 0.95rem;
+  margin-bottom: 1.2rem;
+  border-radius: 11px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.emp-code-input input {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 1.35rem !important;
+  font-weight: 700;
+  letter-spacing: 0.35rem;
+  text-align: center;
+  padding-left: 0.9rem !important;
+}
+
+.emp-steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.emp-step-dot {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.emp-step-dot.active {
+  color: #2f80ed;
+}
+
+.emp-step-dot.completed {
+  color: #10b981;
+}
+
+.emp-step-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.emp-step-dot.active .emp-step-circle {
+  background: #2f80ed;
+  color: #ffffff;
+  border-color: #2f80ed;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.2);
+}
+
+.emp-step-dot.completed .emp-step-circle {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.emp-step-line {
+  width: 24px;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.emp-password-rules {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.emp-rule-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.emp-rule-item:last-child {
+  margin-bottom: 0;
+}
+
+.emp-rule-item.met {
+  color: #059669;
+  font-weight: 600;
+}
+
+.emp-btn-link-subtle {
+  background: none;
+  border: none;
+  color: #2f80ed;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.emp-btn-link-subtle:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+

@@ -73,9 +73,9 @@ class AsignacionPlanController extends Controller
 
         $asignacion = DB::transaction(function () use ($servicio, $plan, $validated, $fecha, $userId) {
             // Cerrar la asignación vigente conservando el historial.
-            AsignacionPlan::where('servicio_id', $servicio->id)
-                ->whereNull('fecha_fin')
-                ->update(['fecha_fin' => $fecha, 'updated_at' => now()]);
+            AsignacionPlan::where('idServicio', $servicio->idServicio)
+                ->whereNull('fechaFin')
+                ->update(['fechaFin' => $fecha]);
 
             $nueva = AsignacionPlan::create([
                 'servicio_id'     => $servicio->id,

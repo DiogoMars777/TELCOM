@@ -7,14 +7,6 @@ use Throwable;
 
 /**
  * Registro centralizado de la bitácora de auditoría (CU02).
- *
- * Todas las operaciones de escritura del sistema (CU01, CU03-CU15 y la
- * asignación de planes) llaman aquí para dejar constancia en
- * `bitacora_auditorias`. Consultar CU02 devuelve esos registros reales.
- *
- * La auditoría es "best effort": si por cualquier motivo no se puede
- * escribir (BD, permisos, etc.) NUNCA interrumpe la operación de negocio;
- * el error se reporta pero no se propaga.
  */
 class AuditLogger
 {
@@ -31,14 +23,16 @@ class AuditLogger
         ?int $userId = null
     ): void {
         try {
+            $uid = $userId ?? auth()->id();
             BitacoraAuditoria::create([
-                'user_id'       => $userId ?? auth()->id(),
-                'modulo'        => $modulo,
-                'accion'        => $accion,
-                'detalles'      => $detalles,
-                'ip_origen'     => request()->ip(),
-                'datos_previos' => $previos,
-                'datos_nuevos'  => $nuevos,
+                'idUsuario'    => $uid,
+                'modulo'       => $modulo,
+                'accion'       => $accion,
+                'descripcion'  => $detalles,
+                'ipOrigen'     => request()->ip(),
+                'datosPrevios' => $previos,
+                'datosNuevos'  => $nuevos,
+                'fechaHora'    => now(),
             ]);
         } catch (Throwable $e) {
             report($e);

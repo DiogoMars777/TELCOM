@@ -66,6 +66,7 @@ class ReactivacionesController extends Controller
                 'estado_servicio'    => 'ACTIVO',
                 'estado_servicio_id' => EstadoServicio::where('nombre_estado', 'ACTIVO')->value('id'),
             ]);
+            $servicio->refresh();
 
             AuditLogger::log(
                 'CU15',

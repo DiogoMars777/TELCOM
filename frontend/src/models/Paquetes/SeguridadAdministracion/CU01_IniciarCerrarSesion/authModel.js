@@ -51,6 +51,26 @@ export const authService = {
     }, { throwOnError: true });
   },
 
+  // Solicita el código de recuperación por correo electrónico (CU01).
+  async solicitarRecuperacionPassword(email) {
+    return await apiClient.post('/cu01/recuperar-password/solicitar', { email }, { throwOnError: true });
+  },
+
+  // Verifica si el código de 6 dígitos es válido y está vigente (CU01).
+  async verificarCodigoRecuperacion({ email, codigo }) {
+    return await apiClient.post('/cu01/recuperar-password/verificar-codigo', { email, codigo }, { throwOnError: true });
+  },
+
+  // Restablece la contraseña usando el código verificado (CU01).
+  async restablecerPassword({ email, codigo, password, passwordConfirmation }) {
+    return await apiClient.post('/cu01/recuperar-password/restablecer', {
+      email,
+      codigo,
+      password,
+      password_confirmation: passwordConfirmation,
+    }, { throwOnError: true });
+  },
+
   getToken() {
     return authToken.get();
   },

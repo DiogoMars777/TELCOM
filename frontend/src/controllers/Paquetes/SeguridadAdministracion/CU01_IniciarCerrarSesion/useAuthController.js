@@ -38,6 +38,7 @@ export function useAuthController(onLoginSuccess) {
 
   return {
     credentials,
+    setCredentials,
     loading,
     error,
     handleChange,
