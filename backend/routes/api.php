@@ -53,9 +53,13 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\AsignacionPlanControlle
 // CU01: Iniciar y cerrar sesión
 Route::prefix('cu01')->group(function () {
     // Pública: necesaria para obtener el token Bearer
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('login.throttle');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+
+    // Recuperación de contraseña
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     // Cambiar la contraseña del usuario AUTENTICADO. Todos los roles internos
     // (Administrador, Secretaría y Soporte Técnico) poseen `auth.login`, por lo

@@ -51,6 +51,21 @@ export const authService = {
     }, { throwOnError: true });
   },
 
+  async forgotPassword(email) {
+    return await apiClient.post('/cu01/forgot-password', {
+      email,
+    }, { throwOnError: true });
+  },
+
+  async resetPassword({ email, code, newPassword, newPasswordConfirmation }) {
+    return await apiClient.post('/cu01/reset-password', {
+      email,
+      code,
+      new_password: newPassword,
+      new_password_confirmation: newPasswordConfirmation,
+    }, { throwOnError: true });
+  },
+
   getToken() {
     return authToken.get();
   },

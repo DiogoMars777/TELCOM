@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Wifi, Lock, Mail, ShieldCheck, Users, RefreshCw } from 'lucide-react';
+import { Wifi, Lock, Mail, ShieldCheck, Users, RefreshCw, KeyRound, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useAuthController } from '../../../../controllers/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/useAuthController';
+import { authService } from '../../../../models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
+import { evaluatePassword } from '../../../../config/passwordPolicy';
 import { siteConfig } from '../../../../config/siteConfig';
 import './login.css';
 
@@ -78,7 +80,15 @@ export default function LoginView({ onLoginSuccess, onBack }) {
   const { credentials, loading, error, handleChange, handleSubmit } =
     useAuthController(onLoginSuccess);
   const [showPassword, setShowPassword] = useState(false);
-  const [forgotMsg, setForgotMsg] = useState(false);
+  const [forgotStep, setForgotStep] = useState('login');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotCode, setForgotCode] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [newPassConfirm, setNewPassConfirm] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  // const [resendCooldown, setResendCooldown] = useState(0); // reservado para reenvío si backend lo limita
   const { portal, brand } = siteConfig;
 
   return (
@@ -188,7 +198,19 @@ export default function LoginView({ onLoginSuccess, onBack }) {
               </div>
 
               <div className="emp-row-link">
-                <button type="button" className="emp-link" onClick={() => setForgotMsg(true)}>
+                <button
+                  type="button"
+                  className="emp-link"
+                  onClick={() => {
+                    setForgotStep('email');
+                    setForgotEmail(credentials.email || '');
+                    setForgotCode('');
+                    setNewPass('');
+                    setNewPassConfirm('');
+                    setForgotError('');
+                    setForgotSuccess('');
+                  }}
+                >
                   {portal.forgotLabel}
                 </button>
               </div>
@@ -206,11 +228,240 @@ export default function LoginView({ onLoginSuccess, onBack }) {
               </button>
             </form>
 
-            {forgotMsg && (
-              <p className="emp-info">
-                La recuperación de contraseña aún no está habilitada. Contacta al
-                administrador del sistema para restablecer tu acceso.
-              </p>
+            {forgotStep !== 'login' && (
+              <div className="emp-forgot" style={{ marginTop: '1rem', width: '100%' }}>
+                {forgotStep === 'email' && (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setForgotLoading(true);
+                      setForgotError('');
+                      setForgotSuccess('');
+                      try {
+                        await authService.forgotPassword(forgotEmail);
+                        setForgotSuccess('Si el correo existe, recibirás un código de verificación.');
+                        setForgotStep('code');
+                      } catch (err) {
+                        setForgotError(err?.message || 'No se pudo enviar el código.');
+                      } finally {
+                        setForgotLoading(false);
+                      }
+                    }}
+                  >
+                    <div className="emp-field">
+                      <label htmlFor="forgot-email">Correo electrónico</label>
+                      <div className="emp-input">
+                        <Mail size={17} className="emp-input-icon" />
+                        <input
+                          id="forgot-email"
+                          type="email"
+                          value={forgotEmail}
+                          onChange={(e) => setForgotEmail(e.target.value)}
+                          placeholder="usuario@telcom.com"
+                          required
+                        />
+                      </div>
+                    </div>
+                    {forgotError && (
+                      <div className="emp-alert" style={{ marginBottom: '0.75rem' }}>
+                        <ShieldCheck size={16} /> {forgotError}
+                      </div>
+                    )}
+                    {forgotSuccess && (
+                      <div className="emp-info" style={{ marginBottom: '0.75rem' }}>
+                        {forgotSuccess}
+                      </div>
+                    )}
+                    <button type="submit" className="emp-submit" disabled={forgotLoading}>
+                      {forgotLoading ? (
+                        <>
+                          <RefreshCw size={17} className="emp-spin" /> Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={17} /> Enviar código
+                        </>
+                      )}
+                    </button>
+                    <div className="emp-back" style={{ marginTop: '0.75rem' }}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setForgotStep('login');
+                        }}
+                      >
+                        <ArrowLeft size={14} /> Volver al inicio de sesión
+                      </a>
+                    </div>
+                  </form>
+                )}
+                {forgotStep === 'code' && (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setForgotStep('reset');
+                    }}
+                  >
+                    <div className="emp-field">
+                      <label htmlFor="forgot-code">Código de 6 dígitos</label>
+                      <div className="emp-input">
+                        <KeyRound size={17} className="emp-input-icon" />
+                        <input
+                          id="forgot-code"
+                          type="text"
+                          maxLength={6}
+                          pattern="[0-9]{6}"
+                          value={forgotCode}
+                          onChange={(e) => setForgotCode(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="000000"
+                          required
+                        />
+                      </div>
+                    </div>
+                    {forgotError && (
+                      <div className="emp-alert" style={{ marginBottom: '0.75rem' }}>
+                        <ShieldCheck size={16} /> {forgotError}
+                      </div>
+                    )}
+                    <button type="submit" className="emp-submit">
+                      Continuar
+                    </button>
+                    <div className="emp-back" style={{ marginTop: '0.75rem' }}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setForgotStep('email');
+                        }}
+                      >
+                        <ArrowLeft size={14} /> Volver
+                      </a>
+                    </div>
+                  </form>
+                )}
+                {forgotStep === 'reset' && (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setForgotLoading(true);
+                      setForgotError('');
+                      setForgotSuccess('');
+                      const policy = evaluatePassword(newPass);
+                      const allMet = policy.every((r) => r.met);
+                      if (!allMet) {
+                        setForgotError('La nueva contraseña no cumple la política.');
+                        setForgotLoading(false);
+                        return;
+                      }
+                      if (newPass !== newPassConfirm) {
+                        setForgotError('Las contraseñas no coinciden.');
+                        setForgotLoading(false);
+                        return;
+                      }
+                      try {
+                        await authService.resetPassword({
+                          email: forgotEmail,
+                          code: forgotCode,
+                          newPassword: newPass,
+                          newPasswordConfirmation: newPassConfirm,
+                        });
+                        setForgotSuccess('Contraseña restablecida correctamente. Puedes iniciar sesión con la nueva contraseña.');
+                        setForgotStep('success');
+                      } catch (err) {
+                        setForgotError(err?.message || 'No se pudo restablecer la contraseña.');
+                      } finally {
+                        setForgotLoading(false);
+                      }
+                    }}
+                  >
+                    <div className="emp-field">
+                      <label htmlFor="new-pass">Nueva contraseña</label>
+                      <div className="emp-input">
+                        <Lock size={17} className="emp-input-icon" />
+                        <input
+                          id="new-pass"
+                          type="password"
+                          value={newPass}
+                          onChange={(e) => setNewPass(e.target.value)}
+                          autoComplete="new-password"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <ul className="password-requirements" style={{ margin: '0 0 0.75rem 0', fontSize: '0.78rem' }}>
+                      {evaluatePassword(newPass).map((req) => (
+                        <li key={req.id} className={req.met ? 'is-met' : 'is-pending'} style={{ marginBottom: '0.25rem' }}>
+                          {req.met ? <CheckCircle2 size={14} /> : <ShieldCheck size={14} />}
+                          <span>{req.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="emp-field">
+                      <label htmlFor="new-pass-confirm">Confirmar nueva contraseña</label>
+                      <div className="emp-input">
+                        <Lock size={17} className="emp-input-icon" />
+                        <input
+                          id="new-pass-confirm"
+                          type="password"
+                          value={newPassConfirm}
+                          onChange={(e) => setNewPassConfirm(e.target.value)}
+                          autoComplete="new-password"
+                          required
+                        />
+                      </div>
+                    </div>
+                    {forgotError && (
+                      <div className="emp-alert" style={{ marginBottom: '0.75rem' }}>
+                        <ShieldCheck size={16} /> {forgotError}
+                      </div>
+                    )}
+                    <button type="submit" className="emp-submit" disabled={forgotLoading}>
+                      {forgotLoading ? (
+                        <>
+                          <RefreshCw size={17} className="emp-spin" /> Restableciendo...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={17} /> Restablecer contraseña
+                        </>
+                      )}
+                    </button>
+                    <div className="emp-back" style={{ marginTop: '0.75rem' }}>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setForgotStep('code');
+                        }}
+                      >
+                        <ArrowLeft size={14} /> Volver
+                      </a>
+                    </div>
+                  </form>
+                )}
+                {forgotStep === 'success' && (
+                  <div>
+                    <p className="emp-info" style={{ marginBottom: '1rem' }}>
+                      {forgotSuccess}
+                    </p>
+                    <button
+                      type="button"
+                      className="emp-submit"
+                      onClick={() => {
+                        setForgotStep('login');
+                        setForgotCode('');
+                        setNewPass('');
+                        setNewPassConfirm('');
+                        setForgotError('');
+                        setForgotSuccess('');
+                      }}
+                    >
+                      Volver al inicio de sesión
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             {onBack && (

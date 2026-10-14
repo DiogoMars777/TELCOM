@@ -20,7 +20,7 @@ export default function AuditoriaView() {
   const correoUsuario = (log) => log.user?.email || 'sin correo';
 
   return (
-    <div className="view-panel">
+    <div className="view-panel cu02-view">
       <div className="view-header">
         <div>
           <h2>Consultar Bitácora de Auditoría</h2>
@@ -81,7 +81,7 @@ export default function AuditoriaView() {
                 <tr>
                   <th className="audit-col-id">ID</th>
                   <th className="audit-col-user">Usuario</th>
-                  <th className="audit-col-module">Módulo</th>
+
                   <th className="audit-col-action">Acción</th>
                   <th className="audit-col-details">Detalles Operación</th>
                   <th className="audit-col-ip">IP Origen</th>
@@ -98,9 +98,7 @@ export default function AuditoriaView() {
                         <small>{correoUsuario(log)}</small>
                       </div>
                     </td>
-                    <td className="audit-col-module">
-                      <span className="badge badge-info">{log.modulo}</span>
-                    </td>
+
                     <td className="audit-col-action">
                       <span className="badge badge-warning">{log.accion}</span>
                     </td>
@@ -126,7 +124,6 @@ export default function AuditoriaView() {
                   <small>{correoUsuario(log)}</small>
                 </div>
                 <div className="audit-card-badges">
-                  <span className="badge badge-info">{log.modulo}</span>
                   <span className="badge badge-warning">{log.accion}</span>
                 </div>
                 <p className="audit-card-details">{log.detalles}</p>
