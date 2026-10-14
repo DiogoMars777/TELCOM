@@ -1,19 +1,41 @@
 import { apiClient } from '../../../../services/apiClient.js';
 import { isDemoMode } from '../../../../config/appConfig.js';
 
-export const mockHistorialPagos = [{
-  id: 1,
-  codigo_recibo: 'REC-2026-0001',
-  monto_pagado: 200,
-  metodo_pago: 'QR',
-  fecha_pago: '2026-10-13 10:30:00',
-  cajero_nombre: 'Secretaría TELCOM',
-  cliente_nombre: 'Cliente de demostración',
-  cliente_codigo: 'CLI-001',
-  servicio_codigo: 'SRV-001',
-  periodos: ['2026-10'],
-  detalles: [],
-}];
+export const mockHistorialPagos = [
+  {
+    id: 1, codigo_recibo: 'REC-2026-0001', monto_pagado: 200, metodo_pago: 'QR',
+    fecha_pago: '2026-10-13 10:30:00', cajero_nombre: 'Secretaría TELCOM',
+    cliente_nombre: 'Carlos Mendoza', cliente_codigo: 'CLI-001', cliente_ci: '7845123',
+    servicio_id: 1, servicio_codigo: 'SRV-001', periodos: ['2026-10'], detalles: [],
+  },
+  {
+    id: 2, codigo_recibo: 'REC-2026-0002', monto_pagado: 150, metodo_pago: 'EFECTIVO',
+    fecha_pago: '2026-09-18 15:45:00', cajero_nombre: 'Secretaría TELCOM',
+    cliente_nombre: 'María Rojas', cliente_codigo: 'CLI-002', cliente_ci: '6312458',
+    servicio_id: 2, servicio_codigo: 'SRV-002', periodos: ['2026-09'], detalles: [],
+  },
+  {
+    id: 3, codigo_recibo: 'REC-2026-0003', monto_pagado: 300, metodo_pago: 'TRANSFERENCIA',
+    fecha_pago: '2026-08-05 09:10:00', cajero_nombre: 'Administrador TELCOM',
+    cliente_nombre: 'Luis Fernández', cliente_codigo: 'CLI-003', cliente_ci: '9256741',
+    servicio_id: 3, servicio_codigo: 'SRV-003', periodos: ['2026-07', '2026-08'], detalles: [],
+  },
+];
+
+function filtrarDemostracion(filters = {}) {
+  const termino = String(filters.buscar || '').trim().toLocaleLowerCase('es');
+  return mockHistorialPagos.filter((pago) => {
+    const texto = [pago.codigo_recibo, pago.cliente_nombre, pago.cliente_codigo, pago.cliente_ci, pago.servicio_codigo]
+      .filter(Boolean).join(' ').toLocaleLowerCase('es');
+    const fecha = String(pago.fecha_pago || '').slice(0, 10);
+    return (!termino || texto.includes(termino))
+      && (!filters.servicio_id || Number(filters.servicio_id) === Number(pago.servicio_id))
+      && (!filters.periodo || pago.periodos.includes(filters.periodo))
+      && (!filters.metodo_pago || pago.metodo_pago === filters.metodo_pago)
+      && (!filters.fecha_desde || fecha >= filters.fecha_desde)
+      && (!filters.fecha_hasta || fecha <= filters.fecha_hasta);
+  });
+}
 
 function normalizePago(pago) {
   const detalles = pago.detalles || [];
@@ -49,7 +71,10 @@ function normalizePago(pago) {
 
 export const historialPagosService = {
   async fetchHistorial(filters = {}) {
-    if (isDemoMode()) return { pagos: mockHistorialPagos, meta: { current_page: 1, last_page: 1, total: 1 } };
+    if (isDemoMode()) {
+      const pagos = filtrarDemostracion(filters);
+      return { pagos, meta: { current_page: 1, last_page: 1, total: pagos.length, from: pagos.length ? 1 : 0, to: pagos.length } };
+    }
     const response = await apiClient.get('/cu11/historial', filters);
     const page = response?.data || {};
     return {
@@ -65,7 +90,13 @@ export const historialPagosService = {
   },
 
   async fetchFiltros() {
-    if (isDemoMode()) return { servicios: [], metodos: ['EFECTIVO', 'QR'] };
+    if (isDemoMode()) return {
+      servicios: mockHistorialPagos.map((p) => ({
+        id: p.servicio_id, codigo: p.servicio_codigo, cliente_id: p.id,
+        cliente_codigo: p.cliente_codigo, cliente_nombre: p.cliente_nombre, cliente_ci: p.cliente_ci,
+      })),
+      metodos: [...new Set(mockHistorialPagos.map((p) => p.metodo_pago))],
+    };
     const response = await apiClient.get('/cu11/historial/filtros');
     return response?.data || { servicios: [], metodos: [] };
   },

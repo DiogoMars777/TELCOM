@@ -153,6 +153,24 @@ test('CU11 obtiene las opciones reales de filtros sin datos ficticios', async ()
   assert.deepEqual(opciones.metodos, ['QR', 'EFECTIVO']);
 });
 
+test('CU11 aplica búsqueda y filtros también en el modo demostración', async () => {
+  globalThis.__TELCOM_DEMO__ = true;
+
+  const porCliente = await historialPagosService.fetchHistorial({ buscar: 'María' });
+  assert.equal(porCliente.pagos.length, 1);
+  assert.equal(porCliente.pagos[0].servicio_codigo, 'SRV-002');
+
+  const porMetodoPeriodo = await historialPagosService.fetchHistorial({
+    metodo_pago: 'TRANSFERENCIA', periodo: '2026-08',
+  });
+  assert.equal(porMetodoPeriodo.pagos.length, 1);
+  assert.equal(porMetodoPeriodo.pagos[0].codigo_recibo, 'REC-2026-0003');
+
+  const sinResultados = await historialPagosService.fetchHistorial({ fecha_desde: '2026-11-01' });
+  assert.equal(sinResultados.pagos.length, 0);
+  assert.equal(sinResultados.meta.total, 0);
+});
+
 test.after(() => {
   delete globalThis.__TELCOM_DEMO__;
 });
