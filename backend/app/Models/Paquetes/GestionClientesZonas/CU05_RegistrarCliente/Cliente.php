@@ -133,6 +133,54 @@ class Cliente extends Model
                 return parent::orWhereLike($column, $value, $caseSensitive);
             }
 
+            public function select($columns = ['*'])
+            {
+                if (is_array($columns)) {
+                    $cols = $columns;
+                } else {
+                    $cols = func_get_args();
+                }
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::select(array_values(array_unique($normalized)));
+            }
+
+            public function addSelect($column)
+            {
+                $cols = is_array($column) ? $column : func_get_args();
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::addSelect(array_values(array_unique($normalized)));
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
             public function latest($column = 'fechaRegistro')
             {
                 if (is_string($column)) {

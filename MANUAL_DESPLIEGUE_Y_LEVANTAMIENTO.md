@@ -103,7 +103,7 @@ Tienes dos opciones según el estado de tu proyecto:
 ### OPCIÓN A: Estructura Inicial Limpia (Migraciones + Seeders incluidos)
 Si vas a comenzar desde cero con las tablas y datos demo predefinidos:
 ```bash
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 ```
 *Esto creará automáticamente las tablas para los 15 Casos de Uso (sesiones, auditoría, roles, zonas, clientes, servicios, mensualidades, pagos, cortes y reactivaciones) junto con el usuario administrador demo.*
 

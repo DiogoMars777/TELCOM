@@ -39,8 +39,8 @@ class UsuarioController extends Controller
     {
         $validated = $request->validate([
             'name'           => 'required|string|max:255',
-            'nombre_usuario' => 'nullable|string|max:100|unique:users,nombre_usuario',
-            'email'          => 'required|email|unique:users,email',
+            'nombre_usuario' => 'nullable|string|max:100|unique:Usuario,nombreUsuario',
+            'email'          => 'required|email|unique:Usuario,correo',
             // Política de contraseñas: mínimo 8 caracteres, al menos una
             // mayúscula, una minúscula, un número y un carácter especial
             // (! @ # $ % & *). Debe coincidir con el frontend
@@ -53,8 +53,8 @@ class UsuarioController extends Controller
             ],
             'telefono'       => 'nullable|string|max:50',
             'activo'         => 'sometimes|boolean',
-            'rol_id'         => 'required_without:role|nullable|integer|exists:roles,id',
-            'role'           => 'required_without:rol_id|nullable|string|exists:roles,nombre',
+            'rol_id'         => 'required_without:role|nullable|integer|exists:Rol,idRol',
+            'role'           => 'required_without:rol_id|nullable|string|exists:Rol,nombre',
         ], [
             'password.required'       => 'La contraseña es obligatoria.',
             'password.min'            => 'La contraseña debe tener al menos 8 caracteres.',
@@ -105,7 +105,7 @@ class UsuarioController extends Controller
             'name'     => 'sometimes|string|max:255',
             'telefono' => 'nullable|string|max:50',
             'activo'   => 'sometimes|boolean',
-            'rol_id'   => 'sometimes|integer|exists:roles,id',
+            'rol_id'   => 'sometimes|integer|exists:Rol,idRol',
         ]);
 
         if (array_key_exists('activo', $validated)
@@ -136,7 +136,7 @@ class UsuarioController extends Controller
         $usuario = User::findOrFail($id);
 
         $validated = $request->validate([
-            'rol_id' => 'required|integer|exists:roles,id',
+            'rol_id' => 'required|integer|exists:Rol,idRol',
         ]);
 
         $previos = ['rol_id' => $usuario->rol_id];

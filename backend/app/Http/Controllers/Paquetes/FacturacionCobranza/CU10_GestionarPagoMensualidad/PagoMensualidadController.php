@@ -22,7 +22,7 @@ class PagoMensualidadController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'mensualidad_id'     => 'required|exists:mensualidades,id',
+            'mensualidad_id'     => 'required|exists:Mensualidad,idMensualidad',
             'monto_pagado'       => 'required|numeric|min:0.01',
             'metodo_pago'        => 'required|string|in:EFECTIVO,TRANSFERENCIA,QR,TARJETA',
             'numero_transaccion' => 'nullable|string|max:100',

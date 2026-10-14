@@ -35,8 +35,8 @@ class ReactivacionesController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'servicio_id'        => 'required|exists:servicios_internet,id',
-            'pago_id'            => 'nullable|exists:pagos,id',
+            'servicio_id'        => 'required|exists:ServicioInternet,idServicio',
+            'pago_id'            => 'nullable|exists:Pago,idPago',
             'costo_reactivacion' => 'nullable|numeric|min:0',
             'observaciones'      => 'nullable|string|max:500',
         ]);

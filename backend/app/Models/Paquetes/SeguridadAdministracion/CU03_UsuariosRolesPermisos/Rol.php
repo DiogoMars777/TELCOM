@@ -31,6 +31,14 @@ class Rol extends Model
                 }
                 return parent::where($column, $operator, $value, $boolean);
             }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if ($column === 'id') {
+                    $column = 'idRol';
+                }
+                return parent::orderBy($column, $direction);
+            }
         };
     }
 

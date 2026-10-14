@@ -60,7 +60,7 @@ class AsignacionPlanController extends Controller
             'plan_id' => [
                 'required',
                 'integer',
-                Rule::exists('planes_internet', 'id')->where('activo', true),
+                Rule::exists('PlanInternet', 'idPlan')->where('activo', true),
             ],
             'motivo_cambio' => 'nullable|string|max:255',
         ], [

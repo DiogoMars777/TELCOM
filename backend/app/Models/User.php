@@ -64,20 +64,31 @@ class User extends Authenticatable
         });
     }
 
+    public function getCreatedAtColumn()
+    {
+        return 'fechaCreacion';
+    }
+
     public function newEloquentBuilder($query)
     {
         return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            protected function normalizeColumn(string $column): string
+            {
+                return match ($column) {
+                    'id', 'user_id' => 'idUsuario',
+                    'email' => 'correo',
+                    'rol_id' => 'idRol',
+                    'name', 'nombre' => 'nombreCompleto',
+                    'password' => 'passwordHash',
+                    'created_at' => 'fechaCreacion',
+                    default => $column,
+                };
+            }
+
             public function where($column, $operator = null, $value = null, $boolean = 'and')
             {
                 if (is_string($column)) {
-                    $column = match ($column) {
-                        'id' => 'idUsuario',
-                        'email' => 'correo',
-                        'rol_id' => 'idRol',
-                        'name' => 'nombreCompleto',
-                        'password' => 'passwordHash',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::where($column, $operator, $value, $boolean);
             }
@@ -85,30 +96,91 @@ class User extends Authenticatable
             public function whereIn($column, $values, $boolean = 'and', $not = false)
             {
                 if (is_string($column)) {
-                    $column = match ($column) {
-                        'id' => 'idUsuario',
-                        'email' => 'correo',
-                        'rol_id' => 'idRol',
-                        'name' => 'nombreCompleto',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::whereIn($column, $values, $boolean, $not);
             }
 
             public function whereNotNull($columns, $boolean = 'and')
             {
-                if ($columns === 'email') $columns = 'correo';
-                if ($columns === 'rol_id') $columns = 'idRol';
-                if ($columns === 'id') $columns = 'idUsuario';
+                if (is_string($columns)) {
+                    $columns = $this->normalizeColumn($columns);
+                }
                 return parent::whereNotNull($columns, $boolean);
+            }
+
+            public function latest($column = 'fechaCreacion')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::latest($column ?? 'fechaCreacion');
+            }
+
+            public function oldest($column = 'fechaCreacion')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::oldest($column ?? 'fechaCreacion');
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
+            public function select($columns = ['*'])
+            {
+                if (is_array($columns)) {
+                    $cols = $columns;
+                } else {
+                    $cols = func_get_args();
+                }
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::select(array_values(array_unique($normalized)));
+            }
+
+            public function addSelect($column)
+            {
+                $cols = is_array($column) ? $column : func_get_args();
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::addSelect(array_values(array_unique($normalized)));
             }
 
             public function pluck($column, $key = null)
             {
-                if ($column === 'email') $column = 'correo';
-                if ($column === 'id') $column = 'idUsuario';
-                if ($column === 'rol_id') $column = 'idRol';
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                if (is_string($key)) {
+                    $key = $this->normalizeColumn($key);
+                }
                 return parent::pluck($column, $key);
             }
         };

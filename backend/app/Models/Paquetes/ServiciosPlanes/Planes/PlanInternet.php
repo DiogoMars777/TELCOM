@@ -41,17 +41,56 @@ class PlanInternet extends Model
     public function newEloquentBuilder($query)
     {
         return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            protected function normalizeColumn(string $column): string
+            {
+                return match ($column) {
+                    'id', 'plan_id' => 'idPlan',
+                    'nombre', 'nombre_plan' => 'nombrePlan',
+                    'velocidad', 'velocidad_mbps' => 'velocidadMbps',
+                    'precio', 'precio_mensual' => 'precioMensual',
+                    'created_at' => 'idPlan',
+                    default => $column,
+                };
+            }
+
             public function where($column, $operator = null, $value = null, $boolean = 'and')
             {
                 if (is_string($column)) {
-                    $column = match ($column) {
-                        'nombre_plan' => 'nombrePlan',
-                        'velocidad_mbps' => 'velocidadMbps',
-                        'precio_mensual' => 'precioMensual',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::where($column, $operator, $value, $boolean);
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
+            public function latest($column = 'idPlan')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::latest($column ?? 'idPlan');
+            }
+
+            public function oldest($column = 'idPlan')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::oldest($column ?? 'idPlan');
             }
         };
     }

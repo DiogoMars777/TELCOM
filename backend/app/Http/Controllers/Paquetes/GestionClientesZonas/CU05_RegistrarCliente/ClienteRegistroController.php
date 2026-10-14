@@ -20,14 +20,14 @@ class ClienteRegistroController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'documento_identidad' => 'required|string|unique:clientes,documento_identidad',
+            'documento_identidad' => 'required|string|unique:Cliente,ci',
             'tipo_documento'      => 'required|string|in:CI,NIT,PASAPORTE',
             'nombres'             => 'required|string|max:150',
             'apellidos'           => 'required|string|max:150',
             'telefono'            => 'required|string|max:30',
-            'email'               => 'required|email|unique:clientes,email',
+            'email'               => 'required|email|unique:Cliente,correo',
             'direccion'           => 'required|string|max:255',
-            'zona_id'             => 'required|integer|exists:zonas_cobertura,id',
+            'zona_id'             => 'required|integer|exists:Zona,idZona',
         ]);
 
         $validated['codigo_cliente'] = $this->generarCodigoCliente();

@@ -33,7 +33,7 @@ class ServicioInternetController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'cliente_id'            => 'required|exists:clientes,id',
+            'cliente_id'            => 'required|exists:Cliente,idCliente',
             'plan_nombre'           => 'required|string|max:100',
             'velocidad_mbps'        => 'required|integer|min:10',
             'precio_mensual'        => 'required|numeric|min:0',

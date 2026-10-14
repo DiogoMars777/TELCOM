@@ -60,6 +60,22 @@ class ServicioInternet extends Model
     public function newEloquentBuilder($query)
     {
         return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            protected function normalizeColumn(string $column): string
+            {
+                return match ($column) {
+                    'id', 'servicio_id' => 'idServicio',
+                    'cliente_id' => 'idCliente',
+                    'estado_servicio_id' => 'idEstadoServicio',
+                    'codigo_servicio' => 'codigoServicio',
+                    'zona_id' => 'idZona',
+                    'dia_corte' => 'diaCorte',
+                    'fecha_activacion' => 'fechaActivacion',
+                    'direccion_instalacion' => 'direccion',
+                    'created_at' => 'idServicio',
+                    default => $column,
+                };
+            }
+
             public function where($column, $operator = null, $value = null, $boolean = 'and')
             {
                 if (is_string($column)) {
@@ -72,18 +88,41 @@ class ServicioInternet extends Model
                         }
                         return parent::where($column, '=', $estadoId, $boolean);
                     }
-                    $column = match ($column) {
-                        'cliente_id' => 'idCliente',
-                        'estado_servicio_id' => 'idEstadoServicio',
-                        'codigo_servicio' => 'codigoServicio',
-                        'zona_id' => 'idZona',
-                        'dia_corte' => 'diaCorte',
-                        'fecha_activacion' => 'fechaActivacion',
-                        'direccion_instalacion' => 'direccion',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::where($column, $operator, $value, $boolean);
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
+            public function latest($column = 'idServicio')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::latest($column ?? 'idServicio');
+            }
+
+            public function oldest($column = 'idServicio')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::oldest($column ?? 'idServicio');
             }
         };
     }

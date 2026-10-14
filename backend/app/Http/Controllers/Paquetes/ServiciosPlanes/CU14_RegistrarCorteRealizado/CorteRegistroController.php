@@ -23,7 +23,7 @@ class CorteRegistroController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'servicio_id'   => 'required|exists:servicios_internet,id',
+            'servicio_id'   => 'required|exists:ServicioInternet,idServicio',
             'tipo_corte'    => 'required|in:LOGICO,FISICO',
             'motivo'        => 'required|string|max:255',
             'observaciones' => 'nullable|string|max:500',
