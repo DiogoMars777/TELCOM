@@ -64,7 +64,8 @@ export const servicioInternetService = {
 
   async fetchPlanes() {
     if (isDemoMode()) return mockPlanesCu08;
-    const res = await apiClient.get('/planes');
+    // Solo planes activos: un plan desactivado no puede asignarse a servicios.
+    const res = await apiClient.get('/planes', { activo: 1 });
     return res?.data?.planes ?? [];
   },
 

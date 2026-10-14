@@ -17,12 +17,28 @@ class ServicioInternetController extends Controller
 
     /**
      * CU08 - Listar servicios de Internet
+     *
+     * Filtro opcional ?buscar=<texto> por código de servicio, plan o datos del
+     * cliente. Lo reutiliza CU17 para localizar el servicio al que asignar plan.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $servicios = ServicioInternet::with('cliente:id,nombres,apellidos,documento_identidad')
-            ->latest()
-            ->paginate(15);
+        $query = ServicioInternet::with('cliente:id,nombres,apellidos,documento_identidad');
+
+        if ($request->filled('buscar')) {
+            $patron = '%'.$request->input('buscar').'%';
+            $query->where(function ($q) use ($patron) {
+                $q->whereLike('codigo_servicio', $patron, caseSensitive: false)
+                    ->orWhereLike('plan_nombre', $patron, caseSensitive: false)
+                    ->orWhereHas('cliente', function ($c) use ($patron) {
+                        $c->whereLike('nombres', $patron, caseSensitive: false)
+                            ->orWhereLike('apellidos', $patron, caseSensitive: false)
+                            ->orWhereLike('documento_identidad', $patron, caseSensitive: false);
+                    });
+            });
+        }
+
+        $servicios = $query->latest()->paginate(15);
 
         return $this->success($servicios, 'Servicios de Internet obtenidos exitosamente.');
     }

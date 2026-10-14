@@ -178,11 +178,26 @@ Route::prefix('cu15')->middleware(['auth:sanctum', 'permission:reactivaciones.ma
 
 // Catálogo de planes
 Route::prefix('planes')->group(function () {
+    // Consultar / buscar (admin y secretaría).
     Route::get('/', [PlanInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);
     Route::get('/{id}', [PlanInternetController::class, 'show'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:planes.view']);
+
+    // CU16 - Gestión del catálogo (SOLO administrador).
+    Route::post('/', [PlanInternetController::class, 'store'])
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    Route::put('/{id}', [PlanInternetController::class, 'update'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    // Activar/desactivar: nunca se borra un plan con historial.
+    Route::put('/{id}/activar', [PlanInternetController::class, 'activar'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    Route::put('/{id}/desactivar', [PlanInternetController::class, 'desactivar'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
 });
 
 // Historial y asignación de plan de un servicio (nunca se sobrescribe)

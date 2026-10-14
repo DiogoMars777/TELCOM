@@ -68,11 +68,18 @@ class AsignacionPlanController extends Controller
         ]);
 
         $plan = PlanInternet::findOrFail($validated['plan_id']);
+        // La fecha de inicio y el autor son SIEMPRE datos del servidor. El
+        // `user_id` que pudiera enviar el frontend se ignora por completo.
         $fecha = now()->toDateString();
         $userId = $request->user()->id;
 
         $asignacion = DB::transaction(function () use ($servicio, $plan, $validated, $fecha, $userId) {
-            // Cerrar la asignación vigente conservando el historial.
+            // Asignación vigente anterior (si existe) para la auditoría.
+            $anterior = AsignacionPlan::where('servicio_id', $servicio->id)
+                ->whereNull('fecha_fin')
+                ->first();
+
+            // Cerrar la asignación vigente conservando el historial (no se borra).
             AsignacionPlan::where('servicio_id', $servicio->id)
                 ->whereNull('fecha_fin')
                 ->update(['fecha_fin' => $fecha, 'updated_at' => now()]);
@@ -88,7 +95,8 @@ class AsignacionPlanController extends Controller
             ]);
 
             // Mantener coherente el "snapshot" legado que ya consume CU08.
-            // Los valores históricos quedan preservados en asignaciones_plan.
+            // Los valores y precios históricos quedan preservados en
+            // `asignaciones_plan`; NO se tocan mensualidades ni pagos ya emitidos.
             $servicio->update([
                 'plan_nombre'    => $plan->nombre_plan,
                 'velocidad_mbps' => $plan->velocidad_mbps,
@@ -99,7 +107,12 @@ class AsignacionPlanController extends Controller
                 'PLANES',
                 'ASIGNAR_PLAN',
                 "Plan {$plan->nombre_plan} asignado al servicio {$servicio->codigo_servicio}.",
-                null,
+                $anterior ? [
+                    'asignacion_id'   => $anterior->id,
+                    'plan_id'         => $anterior->plan_id,
+                    'precio_aplicado' => $anterior->precio_aplicado,
+                    'fecha_inicio'    => $anterior->fecha_inicio?->toDateString(),
+                ] : null,
                 ['servicio_id' => $servicio->id, 'plan_id' => $plan->id, 'precio_aplicado' => $plan->precio_mensual]
             );
 

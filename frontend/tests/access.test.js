@@ -27,7 +27,7 @@ const PERMISOS_ADMIN = [
   'mensualidades.view', 'mensualidades.generate',
   'pagos.register', 'pagos.history', 'alertas.view',
   'cortes.list', 'cortes.register', 'reactivaciones.manage',
-  'planes.view', 'planes.assign',
+  'planes.view', 'planes.assign', 'planes.manage',
   'equipos.view', 'equipos.manage', 'equipos.assign',
   'instalaciones.view', 'instalaciones.schedule', 'instalaciones.execute',
   'proveedores.manage', 'compras.manage', 'reportes.view',
@@ -72,6 +72,9 @@ test('Secretaría ve sus módulos operativos', () => {
   assert.ok(visibles.includes('CU13'));
   assert.ok(visibles.includes('CU14'));
   assert.ok(visibles.includes('CU15'));
+  // CU17 (asignar/cambiar plan) sí; CU16 (gestión del catálogo) es solo admin.
+  assert.equal(canAccessCu(secretaria, 'CU17'), true);
+  assert.equal(canAccessCu(secretaria, 'CU16'), false);
 });
 
 test('Secretaría NO ve administración de usuarios, auditoría ni zonas', () => {
