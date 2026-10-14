@@ -36,6 +36,7 @@ class Cliente extends Model
         // alias de compatibilidad
         'codigo_cliente',
         'documento_identidad',
+        'nombre_completo',
         'nombres',
         'apellidos',
         'telefono',
@@ -49,6 +50,7 @@ class Cliente extends Model
         'id',
         'codigo_cliente',
         'documento_identidad',
+        'nombre_completo',
         'nombres',
         'apellidos',
         'telefono',
@@ -88,7 +90,7 @@ class Cliente extends Model
             {
                 return match ($column) {
                     'id', 'cliente_id' => 'idCliente',
-                    'documento_identidad' => 'ci',
+                    'documento_identidad', 'documentoIdentidad' => 'ci',
                     'codigo_cliente' => 'codigoCliente',
                     'telefono' => 'telefonoPrincipal',
                     'zona_id' => 'idZona',
@@ -269,6 +271,22 @@ class Cliente extends Model
     public function setEstadoAttribute(?string $value): void
     {
         $this->attributes['estadoCliente'] = $value;
+    }
+
+    public function getNombreCompletoAttribute(): ?string
+    {
+        if (!empty($this->attributes['nombreCompleto'])) {
+            return $this->attributes['nombreCompleto'];
+        }
+        $n = $this->nombres ?? '';
+        $a = $this->apellidos ?? '';
+        $full = trim("{$n} {$a}");
+        return $full !== '' ? $full : ($this->attributes['nombreCompleto'] ?? null);
+    }
+
+    public function setNombreCompletoAttribute(?string $value): void
+    {
+        $this->attributes['nombreCompleto'] = $value;
     }
 
     public function getNombresAttribute(): ?string

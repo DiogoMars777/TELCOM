@@ -24,9 +24,9 @@ class MensualidadGeneracionController extends Controller
     {
         $periodo = $request->input('periodo', now()->format('Y-m'));
 
-        $mensualidades = MensualidadFacturacion::with(['cliente', 'servicio'])
+        $mensualidades = MensualidadFacturacion::with(['cliente', 'servicio.asignacionPlanActual.plan'])
             ->where('periodo', $periodo)
-            ->latest()
+            ->latest('idMensualidad')
             ->paginate(20);
 
         return $this->success($mensualidades, "Mensualidades del período {$periodo} obtenidas.");
@@ -42,20 +42,34 @@ class MensualidadGeneracionController extends Controller
         ]);
 
         $periodo = $validated['periodo'];
-        $serviciosActivos = ServicioInternet::where('estado_servicio', 'ACTIVO')->get();
+        $serviciosActivos = ServicioInternet::with(['asignacionPlanActual.plan'])
+            ->where('estado_servicio', 'ACTIVO')
+            ->get();
         $generadas = 0;
 
         DB::transaction(function () use ($serviciosActivos, $periodo, &$generadas) {
             foreach ($serviciosActivos as $servicio) {
-                // Evitar duplicados para el mismo período. Se bloquea la fila
-                // existente (si la hay) para que dos ejecuciones concurrentes
-                // no generen la misma mensualidad dos veces.
-                $existe = MensualidadFacturacion::where('servicio_id', $servicio->id)
+                // Determinar el monto exacto del plan contratado
+                $tarifa = $servicio->precio_mensual
+                    ?? $servicio->asignacionPlanActual?->precioAplicado
+                    ?? $servicio->asignacionPlanActual?->plan?->precioMensual;
+
+                if ($tarifa === null || (float)$tarifa <= 0) {
+                    $tarifa = 150.00;
+                }
+
+                // Evitar duplicados para el mismo período. Se bloquea la fila existente
+                $existente = MensualidadFacturacion::where('servicio_id', $servicio->id)
                     ->where('periodo', $periodo)
                     ->lockForUpdate()
-                    ->exists();
+                    ->first();
 
-                if ($existe) {
+                if ($existente) {
+                    // Si ya existía pero con monto nulo o 0, actualizar con la tarifa real
+                    if ($existente->monto === null || (float)$existente->monto <= 0) {
+                        $existente->update(['monto' => $tarifa]);
+                        $generadas++;
+                    }
                     continue;
                 }
 
@@ -67,7 +81,7 @@ class MensualidadGeneracionController extends Controller
                     'cliente_id'        => $servicio->cliente_id,
                     'servicio_id'       => $servicio->id,
                     'periodo'           => $periodo,
-                    'monto'             => $servicio->precio_mensual,
+                    'monto'             => $tarifa,
                     'fecha_emision'     => now(),
                     'fecha_vencimiento' => $fechaVencimiento,
                     'estado_pago'       => 'PENDIENTE',

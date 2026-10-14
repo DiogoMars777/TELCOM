@@ -41,6 +41,8 @@ class ServicioInternet extends Model
         'plan_nombre',
         'velocidad_mbps',
         'precio_mensual',
+        'ip_asignada',
+        'mac_router',
     ];
 
     protected $appends = [
@@ -55,6 +57,8 @@ class ServicioInternet extends Model
         'velocidad_mbps',
         'precio_mensual',
         'estado_servicio',
+        'ip_asignada',
+        'mac_router',
     ];
 
     public function newEloquentBuilder($query)
@@ -71,6 +75,8 @@ class ServicioInternet extends Model
                     'dia_corte' => 'diaCorte',
                     'fecha_activacion' => 'fechaActivacion',
                     'direccion_instalacion' => 'direccion',
+                    'ip_asignada' => 'ipAsignada',
+                    'mac_router' => 'macRouter',
                     'created_at' => 'idServicio',
                     default => $column,
                 };
@@ -245,9 +251,29 @@ class ServicioInternet extends Model
         }
     }
 
+    public function getIpAsignadaAttribute(): ?string
+    {
+        return $this->attributes['ipAsignada'] ?? null;
+    }
+
+    public function setIpAsignadaAttribute(?string $value): void
+    {
+        $this->attributes['ipAsignada'] = $value;
+    }
+
+    public function getMacRouterAttribute(): ?string
+    {
+        return $this->attributes['macRouter'] ?? null;
+    }
+
+    public function setMacRouterAttribute(?string $value): void
+    {
+        $this->attributes['macRouter'] = $value;
+    }
+
     public function getPlanNombreAttribute(): ?string
     {
-        return $this->asignacionPlanActual?->plan?->nombrePlan ?? $this->attributes['plan_nombre'] ?? null;
+        return $this->asignacionPlanActual?->plan?->nombrePlan ?? null;
     }
 
     public function setPlanNombreAttribute(?string $value): void
@@ -257,7 +283,8 @@ class ServicioInternet extends Model
 
     public function getVelocidadMbpsAttribute(): ?int
     {
-        return $this->asignacionPlanActual?->plan?->velocidadMbps ?? (isset($this->attributes['velocidad_mbps']) ? (int) $this->attributes['velocidad_mbps'] : null);
+        $val = $this->asignacionPlanActual?->plan?->velocidadMbps ?? null;
+        return $val !== null ? (int) $val : null;
     }
 
     public function setVelocidadMbpsAttribute($value): void
@@ -267,7 +294,7 @@ class ServicioInternet extends Model
 
     public function getPrecioMensualAttribute(): ?string
     {
-        $val = $this->asignacionPlanActual?->precioAplicado ?? $this->asignacionPlanActual?->plan?->precioMensual ?? (isset($this->attributes['precio_mensual']) ? $this->attributes['precio_mensual'] : null);
+        $val = $this->asignacionPlanActual?->precioAplicado ?? $this->asignacionPlanActual?->plan?->precioMensual ?? null;
         if ($val !== null && is_numeric($val)) {
             return number_format((float) $val, 2, '.', '');
         }

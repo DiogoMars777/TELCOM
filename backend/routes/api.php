@@ -139,9 +139,17 @@ Route::prefix('cu09')->group(function () {
         ->middleware(['auth:sanctum', 'permission:mensualidades.generate']);
 });
 
-// CU10: Gestionar pago de mensualidad (admin, secretaría)
-Route::prefix('cu10')->middleware(['auth:sanctum', 'permission:pagos.register'])->group(function () {
-    Route::post('/pagos', [PagoMensualidadController::class, 'store']);
+// CU10: Gestionar pago de mensualidad y portal cliente
+Route::prefix('cu10')->group(function () {
+    // Portal de autoservicio para clientes (consulta por C.I. y pago en línea por QR, Transferencia y PayPal)
+    Route::get('/portal-cliente/consultar/{ci}', [PagoMensualidadController::class, 'consultarPorCI']);
+    Route::post('/portal-cliente/pagar', [PagoMensualidadController::class, 'pagarEnLinea']);
+
+    // Cobranza interna y caja (requiere autenticación y permisos)
+    Route::middleware(['auth:sanctum', 'permission:pagos.register'])->group(function () {
+        Route::get('/pendientes', [PagoMensualidadController::class, 'pendientes']);
+        Route::post('/pagos', [PagoMensualidadController::class, 'store']);
+    });
 });
 
 // CU11: Consultar historial de pagos (admin, secretaría)

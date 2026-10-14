@@ -198,18 +198,29 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 8. Plan de Internet (UML)
-        $plan = PlanInternet::firstOrCreate(
-            [
-                'nombrePlan'    => 'Fibra 200 Mbps',
-                'velocidadMbps' => 200,
-            ],
-            [
-                'precioMensual' => 250.00,
-                'descripcion'   => 'Plan inicial de datos de ejemplo.',
-                'activo'        => true,
-            ]
-        );
+        // 8. Planes de Internet (UML)
+        $planesCatalogo = [
+            ['nombrePlan' => 'Plan Básico 30 Mbps', 'velocidadMbps' => 30, 'precioMensual' => 130.00, 'descripcion' => 'Plan residencial esencial.'],
+            ['nombrePlan' => 'Plan Hogar Plus 50 Mbps', 'velocidadMbps' => 50, 'precioMensual' => 160.00, 'descripcion' => 'Plan ideal para el hogar.'],
+            ['nombrePlan' => 'Plan Fibra Ultra 100 Mbps', 'velocidadMbps' => 100, 'precioMensual' => 200.00, 'descripcion' => 'Alta velocidad para streaming y trabajo.'],
+            ['nombrePlan' => 'Fibra 200 Mbps', 'velocidadMbps' => 200, 'precioMensual' => 250.00, 'descripcion' => 'Plan corporativo y gamer.'],
+        ];
+
+        $plan = null;
+        foreach ($planesCatalogo as $pData) {
+            $createdPlan = PlanInternet::firstOrCreate(
+                ['nombrePlan' => $pData['nombrePlan']],
+                [
+                    'velocidadMbps' => $pData['velocidadMbps'],
+                    'precioMensual' => $pData['precioMensual'],
+                    'descripcion'   => $pData['descripcion'],
+                    'activo'        => true,
+                ]
+            );
+            if ($pData['nombrePlan'] === 'Fibra 200 Mbps') {
+                $plan = $createdPlan;
+            }
+        }
 
         // 9. Servicio de Internet inicial (CU08)
         $servicio = ServicioInternet::firstOrCreate(

@@ -24,6 +24,8 @@ export function useServicioInternetController() {
     precio_mensual: '',
     direccion_instalacion: '',
     dia_corte: 10,
+    ip_asignada: '',
+    mac_router: '',
   });
 
   const [formActivar, setFormActivar] = useState({
@@ -94,14 +96,16 @@ export function useServicioInternetController() {
     setLoading(true);
     setFormError(null);
     try {
-      // Solo se envían los campos que acepta el backend (sin `plan_id`).
       await servicioInternetService.registrarServicio({
         cliente_id: formServicio.cliente_id,
+        plan_id: formServicio.plan_id ? Number(formServicio.plan_id) : undefined,
         plan_nombre: formServicio.plan_nombre,
         velocidad_mbps: Number(formServicio.velocidad_mbps),
         precio_mensual: Number(formServicio.precio_mensual),
         direccion_instalacion: formServicio.direccion_instalacion,
         dia_corte: Number(formServicio.dia_corte),
+        ip_asignada: formServicio.ip_asignada?.trim() || undefined,
+        mac_router: formServicio.mac_router?.trim() || undefined,
       });
       // Solo se cierra el modal cuando el backend confirmó. Se recarga el
       // listado real en lugar de inventar el registro localmente.
@@ -114,6 +118,8 @@ export function useServicioInternetController() {
         precio_mensual: '',
         direccion_instalacion: '',
         dia_corte: 10,
+        ip_asignada: '',
+        mac_router: '',
       });
       await loadServicios();
     } catch (err) {

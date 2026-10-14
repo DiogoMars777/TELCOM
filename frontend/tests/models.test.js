@@ -26,6 +26,7 @@ const { zonaService, mockZonas } = await import('../src/models/Paquetes/GestionC
 const { clienteConsultaService } = await import('../src/models/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/clienteConsultaModel.js');
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
+const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -111,6 +112,48 @@ test('CU09 aplana las relaciones cliente/servicio de la respuesta real', async (
   assert.equal(factura.servicio_codigo, 'SRV-1');
 });
 
+test('CU10 consultarPorCI envía GET a /cu10/portal-cliente/consultar/{ci}', async () => {
+  let calledUrl = '';
+  globalThis.fetch = async (url) => {
+    calledUrl = String(url);
+    return jsonResponse(200, {
+      success: true,
+      data: {
+        tiene_deuda: true,
+        cliente: { ci: '8492019' },
+        factura: { id: 1, monto: 220 },
+      },
+    });
+  };
+  const res = await pagoMensualidadService.consultarPorCI('8492019');
+  assert.ok(calledUrl.includes('/cu10/portal-cliente/consultar/8492019'));
+  assert.equal(res.tiene_deuda, true);
+});
+
+test('CU10 pagarEnLinea envía POST a /cu10/portal-cliente/pagar con datos correctos', async () => {
+  let calledUrl = '';
+  let sentBody = null;
+  globalThis.fetch = async (url, opts) => {
+    calledUrl = String(url);
+    sentBody = JSON.parse(opts.body);
+    return jsonResponse(201, {
+      success: true,
+      data: {
+        recibo: { codigo_recibo: 'REC-ONL-123' },
+      },
+    });
+  };
+  const res = await pagoMensualidadService.pagarEnLinea({
+    mensualidad_id: 1,
+    monto_pagado: 220,
+    metodo_pago: 'QR',
+  });
+  assert.ok(calledUrl.includes('/cu10/portal-cliente/pagar'));
+  assert.equal(sentBody.metodo_pago, 'QR');
+  assert.equal(res.recibo.codigo_recibo, 'REC-ONL-123');
+});
+
 test.after(() => {
   delete globalThis.__TELCOM_DEMO__;
 });
+
