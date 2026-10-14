@@ -146,7 +146,9 @@ Route::prefix('cu10')->middleware(['auth:sanctum', 'permission:pagos.register'])
 
 // CU11: Consultar historial de pagos (admin, secretaría)
 Route::prefix('cu11')->middleware(['auth:sanctum', 'permission:pagos.history'])->group(function () {
+    Route::get('/historial/filtros', [HistorialPagosController::class, 'filtros']);
     Route::get('/historial', [HistorialPagosController::class, 'index']);
+    Route::get('/historial/{id}', [HistorialPagosController::class, 'show'])->whereNumber('id');
 });
 
 // CU12: Visualizar alertas de vencimiento (admin, secretaría)

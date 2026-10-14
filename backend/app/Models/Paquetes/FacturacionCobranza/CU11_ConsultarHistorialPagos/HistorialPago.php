@@ -3,16 +3,20 @@
 namespace App\Models\Paquetes\FacturacionCobranza\CU11_ConsultarHistorialPagos;
 
 use App\Models\Paquetes\FacturacionCobranza\CU10_GestionarPagoMensualidad\PagoMensualidad;
+use Illuminate\Database\Eloquent\Builder;
 
+/** Proyección de solo lectura para el historial generado por CU10. */
 class HistorialPago extends PagoMensualidad
 {
-    /**
-     * Scope para filtrar historial por rango de fechas y cliente
-     */
-    public function scopePorCliente($query, int $clienteId)
+    public function scopePorCliente(Builder $query, int $clienteId): Builder
     {
-        return $query->whereHas('mensualidad', function ($q) use ($clienteId) {
-            $q->where('cliente_id', $clienteId);
-        });
+        return $query->whereHas('detalles.mensualidad', fn (Builder $mensualidad) =>
+            $mensualidad->where('idCliente', $clienteId));
+    }
+
+    public function scopePorServicio(Builder $query, int $servicioId): Builder
+    {
+        return $query->whereHas('detalles.mensualidad', fn (Builder $mensualidad) =>
+            $mensualidad->where('idServicio', $servicioId));
     }
 }

@@ -26,6 +26,7 @@ const { zonaService, mockZonas } = await import('../src/models/Paquetes/GestionC
 const { clienteConsultaService } = await import('../src/models/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/clienteConsultaModel.js');
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
+const { historialPagosService } = await import('../src/models/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/historialPagoModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -109,6 +110,47 @@ test('CU09 aplana las relaciones cliente/servicio de la respuesta real', async (
   const [factura] = await mensualidadService.fetchMensualidades('2026-10');
   assert.equal(factura.cliente_nombre, 'Ana Pérez');
   assert.equal(factura.servicio_codigo, 'SRV-1');
+});
+
+test('CU11 normaliza el pago, cliente, servicio y periodos desde DetallePago', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: {
+      current_page: 1, last_page: 1, total: 1,
+      data: [{
+        idPago: 7,
+        numeroComprobante: 'REC-7',
+        montoTotal: '200.00',
+        fechaHora: '2026-10-13 10:00:00',
+        metodo_pago: { nombreMetodo: 'QR' },
+        cajero: { nombreCompleto: 'Ana Secretaria' },
+        detalles: [{
+          montoAplicado: '200.00',
+          mensualidad: {
+            periodo: '2026-10',
+            cliente: { nombreCompleto: 'Luis Pérez', codigoCliente: 'CLI-7', ci: '123' },
+            servicio: { codigoServicio: 'SRV-7', idServicio: 9 },
+          },
+        }],
+      }],
+    },
+  }));
+
+  const resultado = await historialPagosService.fetchHistorial({ metodo_pago: 'QR' });
+  assert.equal(resultado.pagos[0].cliente_nombre, 'Luis Pérez');
+  assert.equal(resultado.pagos[0].servicio_codigo, 'SRV-7');
+  assert.equal(resultado.pagos[0].metodo_pago, 'QR');
+  assert.deepEqual(resultado.pagos[0].periodos, ['2026-10']);
+});
+
+test('CU11 obtiene las opciones reales de filtros sin datos ficticios', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: { servicios: [{ id: 9, codigo: 'SRV-7' }], metodos: ['QR', 'EFECTIVO'] },
+  }));
+  const opciones = await historialPagosService.fetchFiltros();
+  assert.equal(opciones.servicios[0].codigo, 'SRV-7');
+  assert.deepEqual(opciones.metodos, ['QR', 'EFECTIVO']);
 });
 
 test.after(() => {
