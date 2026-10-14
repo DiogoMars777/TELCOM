@@ -19,6 +19,8 @@
 .cu11-results-head { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid #e2e8f0; }
 .cu11-results-head strong { color:#111827; }
 .cu11-results-head span { color:#64748b; }
+.cu11-results-summary { display:flex; flex-direction:column; gap:3px; }
+.cu11-results-head .cu11-results-title { color:#1e3a5f; font-size:.78rem; font-weight:800; letter-spacing:.035em; text-transform:uppercase; }
 .cu11-table-wrap { width:100%; overflow:auto; }
 .cu11-table { width:100%; border-collapse:collapse; font-size:.88rem; }
 .cu11-table th { padding:12px 14px; background:#f1f5f9; color:#475569; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; text-align:left; white-space:nowrap; }

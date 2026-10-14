@@ -95,7 +95,7 @@ export default function HistorialPagosView() {
       </form>
 
       <section className="cu11-results" aria-busy={c.loading}>
-        <div className="cu11-results-head"><div><strong>{c.meta.total} pago{c.meta.total === 1 ? '' : 's'}</strong><span> encontrado{c.meta.total === 1 ? '' : 's'}</span></div><button className="btn btn-secondary" onClick={c.recargar} disabled={c.loading}><RefreshCw className={c.loading ? 'spin' : ''} size={16} /> Actualizar</button></div>
+        <div className="cu11-results-head"><div className="cu11-results-summary"><span className="cu11-results-title">Resultados encontrados</span><div><strong>{c.meta.total} pago{c.meta.total === 1 ? '' : 's'}</strong><span> encontrado{c.meta.total === 1 ? '' : 's'}</span></div></div><button className="btn btn-secondary" onClick={c.recargar} disabled={c.loading}><RefreshCw className={c.loading ? 'spin' : ''} size={16} /> Actualizar</button></div>
         {c.loading ? <div className="cu11-state"><RefreshCw className="spin" size={28} /><strong>Consultando pagos…</strong></div>
           : c.pagos.length === 0 ? <div className="cu11-state"><FileSearch size={38} /><strong>No existen pagos registrados</strong><span>Prueba con otros criterios de búsqueda.</span></div>
           : <>
