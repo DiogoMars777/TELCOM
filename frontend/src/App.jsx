@@ -10,9 +10,7 @@ import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_I
 import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
 import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
 import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
-import ClienteRegistroView from './views/Paquetes/GestionClientesZonas/CU05_RegistrarCliente/ClienteRegistroView';
-import ClienteConsultaView from './views/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/ClienteConsultaView';
-import ClienteMantenimientoView from './views/Paquetes/GestionClientesZonas/CU07_ActualizarBajaCliente/ClienteMantenimientoView';
+import ClientesView from './views/Paquetes/GestionClientesZonas/ClientesView';
 import ServicioInternetView from './views/Paquetes/ServiciosPlanes/CU08_RegistrarActivarServicio/ServicioInternetView';
 import MensualidadGeneracionView from './views/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/MensualidadGeneracionView';
 import PagoMensualidadView from './views/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PagoMensualidadView';
@@ -60,7 +58,14 @@ export default function App() {
       authService,
       onAuthenticated: (user) => {
         setCurrentUser(user);
-        setView('admin');
+        // Solo ir directamente al panel si la URL lo solicita explícitamente (?view=admin).
+        // Al levantar el frontend, se muestra por defecto la Landing Page pública.
+        if (typeof window !== 'undefined') {
+          const q = new URLSearchParams(window.location.search);
+          if (q.get('view') === 'admin') {
+            setView('admin');
+          }
+        }
       },
       onBooted: () => setBooting(false),
     });
@@ -136,9 +141,7 @@ export default function App() {
     {
       title: 'Abonados & Clientes',
       items: [
-        { id: 'CU05', label: 'Registrar Nuevo Cliente', icon: UserPlus },
-        { id: 'CU06', label: 'Consultar / Buscar Clientes', icon: Search },
-        { id: 'CU07', label: 'Actualizar / Baja Cliente', icon: Edit3 },
+        { id: 'CU06', label: 'Clientes', icon: Users },
       ],
     },
     {
@@ -185,7 +188,8 @@ export default function App() {
   const activeSectionLabel =
     menuSections
       .flatMap((section) => section.items)
-      .find((item) => item.id === effectiveCu)?.label || 'Panel de Gestión';
+      .find((item) => item.id === effectiveCu)?.label ||
+    (effectiveCu === 'CU05' || effectiveCu === 'CU07' ? 'Clientes' : 'Panel de Gestión');
 
   const handleIrACorte = (servicio) => {
     setCorteServicioSelected(servicio);
@@ -208,11 +212,9 @@ export default function App() {
       case 'CU04':
         return <ZonasCoberturaView user={currentUser} />;
       case 'CU05':
-        return <ClienteRegistroView onClienteCreated={() => setActiveCU('CU06')} />;
       case 'CU06':
-        return <ClienteConsultaView />;
       case 'CU07':
-        return <ClienteMantenimientoView />;
+        return <ClientesView user={currentUser} />;
       case 'CU08':
         return <ServicioInternetView user={currentUser} />;
       case 'CU09':
@@ -230,7 +232,7 @@ export default function App() {
       case 'CU15':
         return <ReactivacionesView user={currentUser} />;
       default:
-        return <ClienteConsultaView />;
+        return <ClientesView user={currentUser} />;
     }
   };
 
@@ -244,9 +246,20 @@ export default function App() {
     );
   }
 
-  // --- Página pública ---
+  // --- Página pública (Landing Page de inicio) ---
   if (view === 'landing') {
-    return <LandingView onEnterPortal={() => setView('login')} />;
+    return (
+      <LandingView
+        portalLabel={currentUser ? 'Ir al Panel de Gestión' : undefined}
+        onEnterPortal={() => {
+          if (currentUser) {
+            setView('admin');
+          } else {
+            setView('login');
+          }
+        }}
+      />
+    );
   }
 
   // --- Protección de rutas: sin sesión no se entra al panel ---
@@ -328,6 +341,16 @@ export default function App() {
           </div>
 
           <div className="top-bar-right">
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => setView('landing')}
+              title="Ver Landing Page pública"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.75rem' }}
+            >
+              <Radio size={14} />
+              <span>Ver Sitio Web</span>
+            </button>
             <div className="top-bar-user">
               <div className="user-avatar" aria-hidden="true">
                 {(currentUser?.name || 'U').charAt(0).toUpperCase()}

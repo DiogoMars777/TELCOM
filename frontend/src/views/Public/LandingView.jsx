@@ -45,7 +45,7 @@ function scrollToId(id) {
 }
 
 /* ============================ Encabezado ============================ */
-function PublicHeader({ onEnterPortal }) {
+function PublicHeader({ onEnterPortal, portalLabel }) {
   return (
     <header className="pub-header">
       <div className="pub-container pub-header-inner">
@@ -72,7 +72,7 @@ function PublicHeader({ onEnterPortal }) {
         </nav>
 
         <button className="pub-portal-btn" onClick={onEnterPortal}>
-          {siteConfig.nav.portalLabel}
+          {portalLabel || siteConfig.nav.portalLabel}
         </button>
       </div>
     </header>
@@ -405,10 +405,10 @@ function PublicFooter() {
 }
 
 /* ============================ Vista completa ============================ */
-export default function LandingView({ onEnterPortal }) {
+export default function LandingView({ onEnterPortal, portalLabel }) {
   return (
     <div className="pub-root">
-      <PublicHeader onEnterPortal={onEnterPortal} />
+      <PublicHeader onEnterPortal={onEnterPortal} portalLabel={portalLabel} />
       <Hero />
       <Plans />
       <Coverage />
