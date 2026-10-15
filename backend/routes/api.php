@@ -34,14 +34,15 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU13_ListadoServiciosCorte\Ser
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
 // CU15: Gestionar lista y registro de reactivaciones
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionesController;
-// Planes: catálogo de planes y asignación a servicios (entidades UML)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\PlanInternetController;
-use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\AsignacionPlanController;
+// CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarPlanesInternet\PlanInternetController;
+// CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan\AsignacionPlanController;
 
 /*
 |--------------------------------------------------------------------------
 | RUTAS API - TELCOM SISTEMA DE TELECOMUNICACIONES
-| Estructura MVC orientada a Casos de Uso (CU01 - CU15)
+| Estructura MVC orientada a Casos de Uso (CU01 - CU17)
 |--------------------------------------------------------------------------
 | - CU01 /login es la ÚNICA ruta pública (permite obtener el token).
 | - CU01 /logout y /me, y TODAS las rutas CU02-CU15 exigen auth:sanctum.
@@ -180,24 +181,42 @@ Route::prefix('cu15')->middleware(['auth:sanctum', 'permission:reactivaciones.ma
 
 /*
 |--------------------------------------------------------------------------
-| PLANES DE INTERNET (entidades UML: PlanInternet y AsignacionPlan)
+| CU16 - PLANES DE INTERNET (catálogo; entidad UML PlanInternet)
 |--------------------------------------------------------------------------
 | Se reutilizan los permisos REALES ya existentes en la matriz RBAC:
-|   - planes.view   -> admin, secretaría.
-|   - planes.assign -> admin, secretaría.
+|   - planes.view   -> consultar el catálogo (admin, secretaría).
+|   - planes.assign -> crear/editar/activar/desactivar (admin, secretaría).
 | El técnico NO los tiene: el middleware `permission` devuelve HTTP 403.
+| El contrato de `/planes` (GET) ya lo consume CU08 -> no cambia.
+| Un plan nunca se borra: DELETE = baja lógica (`activo = false`).
 */
-
-// Catálogo de planes
 Route::prefix('planes')->group(function () {
     Route::get('/', [PlanInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);
     Route::get('/{id}', [PlanInternetController::class, 'show'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:planes.view']);
+
+    Route::post('/', [PlanInternetController::class, 'store'])
+        ->middleware(['auth:sanctum', 'permission:planes.assign']);
+    Route::put('/{id}', [PlanInternetController::class, 'update'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.assign']);
+    Route::delete('/{id}', [PlanInternetController::class, 'destroy'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.assign']);
 });
 
-// Historial y asignación de plan de un servicio (nunca se sobrescribe)
+/*
+|--------------------------------------------------------------------------
+| CU17 - ASIGNAR / CAMBIAR EL PLAN DE UN SERVICIO (entidad AsignacionPlan)
+|--------------------------------------------------------------------------
+| Historial que nunca se sobrescribe. Se mantiene la ruta existente
+| `cu08/servicios/{servicio}/planes` porque es el contrato que ya consume el
+| frontend (CU08 y CU17); solo cambia el controlador al de CU17.
+|   - planes.view   -> consultar el historial.
+|   - planes.assign -> asignar/cambiar plan (admin, secretaría).
+*/
 Route::prefix('cu08/servicios/{servicio}/planes')->group(function () {
     Route::get('/', [AsignacionPlanController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);
