@@ -61,6 +61,22 @@ class PlanInternet extends Model
                 return parent::where($column, $operator, $value, $boolean);
             }
 
+            public function whereLike($column, $value, $caseSensitive = false, $boolean = 'and')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::whereLike($column, $value, $caseSensitive, $boolean);
+            }
+
+            public function orWhereLike($column, $value, $caseSensitive = false)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orWhereLike($column, $value, $caseSensitive);
+            }
+
             public function orderBy($column, $direction = 'asc')
             {
                 if (is_string($column)) {

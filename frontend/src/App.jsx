@@ -19,12 +19,15 @@ import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_Vi
 import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
 import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
+import PlanCatalogoView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanCatalogoView';
+import AsignacionPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarPlanServicio/AsignacionPlanView';
 
 // Iconos de cada módulo del panel
 import {
   Radio, LogOut, History, Users, MapPin,
   UserPlus, Search, Edit3, Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
+  ClipboardList, ArrowRightLeft,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -146,7 +149,11 @@ export default function App() {
     },
     {
       title: 'Servicios de Internet',
-      items: [{ id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi }],
+      items: [
+        { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
+        { id: 'CU16', label: 'Catálogo de Planes', icon: ClipboardList },
+        { id: 'CU17', label: 'Asignar Plan a Servicio', icon: ArrowRightLeft },
+      ],
     },
     {
       title: 'Mensualidades & Pagos',
@@ -217,6 +224,10 @@ export default function App() {
         return <ClientesView user={currentUser} />;
       case 'CU08':
         return <ServicioInternetView user={currentUser} />;
+      case 'CU16':
+        return <PlanCatalogoView user={currentUser} />;
+      case 'CU17':
+        return <AsignacionPlanView user={currentUser} />;
       case 'CU09':
         return <MensualidadGeneracionView user={currentUser} />;
       case 'CU10':

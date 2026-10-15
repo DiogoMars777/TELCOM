@@ -27,6 +27,12 @@ export const CU_PERMISSIONS = {
   CU06: 'clientes.view',
   CU07: 'clientes.update',
   CU08: 'servicios.view',
+  // CU16: gestionar el catálogo de planes (solo administrador).
+  CU16: 'planes.manage',
+  // CU17: asignar/cambiar el plan de un servicio (admin y secretaría).
+  // La lectura del catálogo e historial usa `planes.view`; el botón de
+  // asignación se controla además con `planes.assign` dentro de la vista.
+  CU17: 'planes.view',
   CU09: 'mensualidades.view',
   CU10: 'pagos.register',
   CU11: 'pagos.history',
@@ -41,7 +47,7 @@ export const CU_PERMISSIONS = {
  * El primero permitido para el usuario será el que se muestre.
  */
 export const CU_ORDER = [
-  'CU06', 'CU05', 'CU07', 'CU08', 'CU09', 'CU10', 'CU11',
+  'CU06', 'CU05', 'CU07', 'CU08', 'CU17', 'CU16', 'CU09', 'CU10', 'CU11',
   'CU12', 'CU13', 'CU14', 'CU15', 'CU02', 'CU03', 'CU04', 'CU01',
 ];
 

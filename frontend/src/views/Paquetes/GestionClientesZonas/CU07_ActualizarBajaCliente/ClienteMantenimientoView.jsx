@@ -1,6 +1,8 @@
 import React from 'react';
 import { useClienteMantenimientoController } from '../../../../controllers/Paquetes/GestionClientesZonas/CU07_ActualizarBajaCliente/useClienteMantenimientoController';
 import { UserX, Save, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
+// Estilos acotados a esta pantalla (ocultado de la barra vertical).
+import './ClienteMantenimientoView.css';
 
 export default function ClienteMantenimientoView() {
   const {
@@ -19,7 +21,7 @@ export default function ClienteMantenimientoView() {
   } = useClienteMantenimientoController();
 
   return (
-    <div className="view-panel">
+    <div className="view-panel cu07-view">
       <div className="view-header">
         <div>
           <h2>Actualizar Datos y Dar Baja Lógica a Cliente</h2>
