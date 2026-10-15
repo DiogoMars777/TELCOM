@@ -26,6 +26,7 @@ const { zonaService, mockZonas } = await import('../src/models/Paquetes/GestionC
 const { clienteConsultaService } = await import('../src/models/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/clienteConsultaModel.js');
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
+const { historialPagosService } = await import('../src/models/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/historialPagoModel.js');
 const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
 const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel.js');
 const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel.js');
@@ -112,6 +113,70 @@ test('CU09 aplana las relaciones cliente/servicio de la respuesta real', async (
   const [factura] = await mensualidadService.fetchMensualidades('2026-10');
   assert.equal(factura.cliente_nombre, 'Ana Pérez');
   assert.equal(factura.servicio_codigo, 'SRV-1');
+});
+
+test('CU11 normaliza el pago, cliente, servicio y periodos desde DetallePago', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: {
+      current_page: 1, last_page: 1, total: 1,
+      data: [{
+        idPago: 7,
+        numeroComprobante: 'REC-7',
+        montoTotal: '200.00',
+        fechaHora: '2026-10-13 10:00:00',
+        metodo_pago: { nombreMetodo: 'QR' },
+        cajero: { nombreCompleto: 'Ana Secretaria' },
+        detalles: [{
+          montoAplicado: '200.00',
+          mensualidad: {
+            periodo: '2026-10',
+            cliente: { nombreCompleto: 'Luis Pérez', codigoCliente: 'CLI-7', ci: '123' },
+            servicio: { codigoServicio: 'SRV-7', idServicio: 9 },
+          },
+        }],
+      }],
+    },
+  }));
+
+  const resultado = await historialPagosService.fetchHistorial({ metodo_pago: 'QR' });
+  assert.equal(resultado.pagos[0].cliente_nombre, 'Luis Pérez');
+  assert.equal(resultado.pagos[0].servicio_codigo, 'SRV-7');
+  assert.equal(resultado.pagos[0].metodo_pago, 'QR');
+  assert.deepEqual(resultado.pagos[0].periodos, ['2026-10']);
+});
+
+test('CU11 obtiene tipos de servicio del catálogo de planes, no comprobantes', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: { planes: [{ id: 9, nombre: 'Fibra Plus', velocidad_mbps: 100 }], metodos: ['QR', 'EFECTIVO'] },
+  }));
+  const opciones = await historialPagosService.fetchFiltros();
+  assert.equal(opciones.planes[0].nombre, 'Fibra Plus');
+  assert.equal(opciones.planes[0].velocidad_mbps, 100);
+  assert.deepEqual(opciones.metodos, ['QR', 'EFECTIVO']);
+});
+
+test('CU11 aplica búsqueda y filtros también en el modo demostración', async () => {
+  globalThis.__TELCOM_DEMO__ = true;
+
+  const porCliente = await historialPagosService.fetchHistorial({ buscar: 'María' });
+  assert.equal(porCliente.pagos.length, 1);
+  assert.equal(porCliente.pagos[0].servicio_codigo, 'SRV-002');
+
+  const porMetodoPeriodo = await historialPagosService.fetchHistorial({
+    metodo_pago: 'TRANSFERENCIA', periodo: '2026-08',
+  });
+  assert.equal(porMetodoPeriodo.pagos.length, 1);
+  assert.equal(porMetodoPeriodo.pagos[0].codigo_recibo, 'REC-2026-0003');
+
+  const porTipoServicio = await historialPagosService.fetchHistorial({ plan_id: 2 });
+  assert.equal(porTipoServicio.pagos.length, 1);
+  assert.equal(porTipoServicio.pagos[0].plan_nombre, 'Fibra Hogar');
+
+  const sinResultados = await historialPagosService.fetchHistorial({ fecha_desde: '2026-11-01' });
+  assert.equal(sinResultados.pagos.length, 0);
+  assert.equal(sinResultados.meta.total, 0);
 });
 
 test('CU10 consultarPorCI envía GET a /cu10/portal-cliente/consultar/{ci}', async () => {
@@ -246,4 +311,3 @@ test('CU17 asignarPlan envía POST con plan_id y motivo', async () => {
 test.after(() => {
   delete globalThis.__TELCOM_DEMO__;
 });
-

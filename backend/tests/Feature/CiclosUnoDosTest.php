@@ -296,6 +296,8 @@ class CiclosUnoDosTest extends TestCase
         $secretaria = $this->usuarioConRol('secretaria');
         $headers = $this->bearer($secretaria);
         $servicio = $this->servicioSembrado();
+        $plan = $servicio->asignacionPlanActual?->plan;
+        $this->assertNotNull($plan);
         $mensualidad = $this->crearMensualidad($servicio, ['monto' => 250.00]);
 
         // Monto incorrecto (parcial) -> 422
@@ -386,6 +388,36 @@ class CiclosUnoDosTest extends TestCase
         $res = $this->withHeaders($headers)->getJson('/api/cu11/historial?metodo_pago=QR');
         $res->assertStatus(200);
         $this->assertGreaterThanOrEqual(1, count($res->json('data.data')));
+
+        $pagoId = $res->json('data.data.0.id');
+        $res->assertJsonPath('data.data.0.detalles.0.mensualidad.periodo', '2026-08');
+        $res->assertJsonPath('data.data.0.detalles.0.mensualidad.servicio.codigo_servicio', 'SRV-88201');
+
+        // Búsqueda por código de servicio y consulta inmutable del comprobante.
+        $this->withHeaders($headers)
+            ->getJson('/api/cu11/historial?buscar=SRV-88201&periodo=2026-08')
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+
+        $this->withHeaders($headers)
+            ->getJson("/api/cu11/historial?plan_id={$plan->idPlan}")
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+
+        $this->withHeaders($headers)
+            ->getJson("/api/cu11/historial/{$pagoId}")
+            ->assertStatus(200)
+            ->assertJsonPath('data.id', $pagoId)
+            ->assertJsonPath('data.detalles.0.mensualidad.cliente.id', $servicio->cliente_id);
+
+        $this->withHeaders($headers)
+            ->getJson('/api/cu11/historial/filtros')
+            ->assertStatus(200)
+            ->assertJsonFragment([
+                'id' => $plan->idPlan,
+                'nombre' => $plan->nombrePlan,
+                'velocidad_mbps' => $plan->velocidadMbps,
+            ]);
     }
 
     // ------------------------------------------------------------------

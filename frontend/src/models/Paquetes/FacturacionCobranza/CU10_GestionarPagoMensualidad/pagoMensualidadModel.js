@@ -135,4 +135,3 @@ export const pagoMensualidadService = {
     return res?.data ?? res;
   },
 };
-
