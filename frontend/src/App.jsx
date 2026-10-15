@@ -6,7 +6,7 @@ import LoginView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerr
 import SesionView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
 import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/CambiarPasswordView';
 
-// Vistas de los 15 Casos de Uso (módulos administrativos)
+// Vistas de los Casos de Uso (módulos administrativos, CU02-CU17)
 import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
 import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
 import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
@@ -19,20 +19,85 @@ import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_Vi
 import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
 import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
-import PlanCatalogoView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanCatalogoView';
-import AsignacionPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarPlanServicio/AsignacionPlanView';
+import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/PlanesInternetView';
+import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/AsignarPlanView';
 
 // Iconos de cada módulo del panel
 import {
   Radio, LogOut, History, Users, MapPin,
   UserPlus, Search, Edit3, Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
-  ClipboardList, ArrowRightLeft,
+  Router, ArrowRightLeft,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
 import { runAuthBootstrap } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authBootstrap';
 import { canAccessCu, firstAllowedCu } from './config/access';
+
+/**
+ * Menú lateral RECURSIVO.
+ * Renderiza una categoría con sus ítems y, si los tiene, sus subcategorías
+ * (`children`) anidadas a cualquier profundidad. Se apoya en las mismas clases
+ * (.nav-group-title / .nav-item) para conservar el comportamiento responsive
+ * del panel (barra compacta en tablet y deslizante en móvil).
+ */
+function MenuGroup({ group, activeId, onSelect }) {
+  const items = group.items ?? [];
+  const children = group.children ?? [];
+
+  return (
+    <div className="nav-group">
+      {group.title && <div className="nav-group-title">{group.title}</div>}
+
+      {items.map((item) => {
+        const IconComponent = item.icon;
+        const isActive = activeId === item.id;
+        return (
+          <button
+            key={item.id}
+            className={`nav-item ${isActive ? 'active' : ''}`}
+            onClick={() => onSelect(item.id)}
+          >
+            <IconComponent size={16} />
+            <span className="nav-item-label">{item.label}</span>
+          </button>
+        );
+      })}
+
+      {children.map((child, idx) => (
+        <MenuGroup
+          key={child.title || idx}
+          group={child}
+          activeId={activeId}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Filtra recursivamente las categorías del menú según los permisos REALES del
+ * usuario. Un grupo se conserva solo si le queda algún ítem o subcategoría.
+ */
+function filtrarGrupoMenu(group, user) {
+  const items = (group.items ?? []).filter((item) => canAccessCu(user, item.id));
+  const children = (group.children ?? [])
+    .map((child) => filtrarGrupoMenu(child, user))
+    .filter((child) => (child.items?.length ?? 0) > 0 || (child.children?.length ?? 0) > 0);
+
+  return { ...group, items, children };
+}
+
+/** Aplana recursivamente los ítems del menú (para resolver el título activo). */
+function aplanarItems(groups) {
+  const out = [];
+  for (const group of groups) {
+    out.push(...(group.items ?? []));
+    out.push(...aplanarItems(group.children ?? []));
+  }
+  return out;
+}
 
 export default function App() {
   // 'landing' | 'login' | 'admin'
@@ -148,11 +213,11 @@ export default function App() {
       ],
     },
     {
-      title: 'Servicios de Internet',
+      title: 'Servicios y Planes',
       items: [
         { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
-        { id: 'CU16', label: 'Catálogo de Planes', icon: ClipboardList },
-        { id: 'CU17', label: 'Asignar Plan a Servicio', icon: ArrowRightLeft },
+        { id: 'CU16', label: 'Gestionar Planes de Internet', icon: Router },
+        { id: 'CU17', label: 'Asignar / Cambiar Plan de Servicio', icon: ArrowRightLeft },
       ],
     },
     {
@@ -182,20 +247,16 @@ export default function App() {
 
   // Solo se muestran los módulos para los que el usuario posee permiso real.
   // (Ocultar aquí no sustituye la autorización del backend.)
+  // El filtrado es recursivo para admitir subcategorías anidadas.
   const visibleMenuSections = menuSections
-    .map((section) => ({
-      ...section,
-      items: section.items.filter((item) => canAccessCu(currentUser, item.id)),
-    }))
-    .filter((section) => section.items.length > 0);
+    .map((section) => filtrarGrupoMenu(section, currentUser))
+    .filter((section) => section.items.length > 0 || section.children.length > 0);
 
   // Nombre funcional del módulo activo para la barra superior (sin exponer el
   // código interno del caso de uso). CU01 no está en el menú, por lo que se
   // usa un rótulo genérico cuando la vista activa es el panel de sesión.
   const activeSectionLabel =
-    menuSections
-      .flatMap((section) => section.items)
-      .find((item) => item.id === effectiveCu)?.label ||
+    aplanarItems(menuSections).find((item) => item.id === effectiveCu)?.label ||
     (effectiveCu === 'CU05' || effectiveCu === 'CU07' ? 'Clientes' : 'Panel de Gestión');
 
   const handleIrACorte = (servicio) => {
@@ -224,10 +285,6 @@ export default function App() {
         return <ClientesView user={currentUser} />;
       case 'CU08':
         return <ServicioInternetView user={currentUser} />;
-      case 'CU16':
-        return <PlanCatalogoView user={currentUser} />;
-      case 'CU17':
-        return <AsignacionPlanView user={currentUser} />;
       case 'CU09':
         return <MensualidadGeneracionView user={currentUser} />;
       case 'CU10':
@@ -242,6 +299,10 @@ export default function App() {
         return <CorteRegistroView initialServicio={corteServicioSelected} />;
       case 'CU15':
         return <ReactivacionesView user={currentUser} />;
+      case 'CU16':
+        return <PlanesInternetView user={currentUser} />;
+      case 'CU17':
+        return <AsignarPlanView user={currentUser} />;
       default:
         return <ClientesView user={currentUser} />;
     }
@@ -299,26 +360,15 @@ export default function App() {
 
         <nav className="sidebar-nav">
           {visibleMenuSections.map((section, idx) => (
-            <div key={idx} className="nav-group">
-              <div className="nav-group-title">{section.title}</div>
-              {section.items.map((item) => {
-                const IconComponent = item.icon;
-                const isActive = effectiveCu === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    className={`nav-item ${isActive ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveCU(item.id);
-                      setSidebarOpen(false);
-                    }}
-                  >
-                    <IconComponent size={16} />
-                    <span className="nav-item-label">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <MenuGroup
+              key={section.title || idx}
+              group={section}
+              activeId={effectiveCu}
+              onSelect={(id) => {
+                setActiveCU(id);
+                setSidebarOpen(false);
+              }}
+            />
           ))}
         </nav>
 

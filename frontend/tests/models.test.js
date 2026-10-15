@@ -27,6 +27,8 @@ const { clienteConsultaService } = await import('../src/models/Paquetes/GestionC
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
 const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
+const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel.js');
+const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -151,6 +153,94 @@ test('CU10 pagarEnLinea envía POST a /cu10/portal-cliente/pagar con datos corre
   assert.ok(calledUrl.includes('/cu10/portal-cliente/pagar'));
   assert.equal(sentBody.metodo_pago, 'QR');
   assert.equal(res.recibo.codigo_recibo, 'REC-ONL-123');
+});
+
+test('CU16 fetchPlanes lee el catálogo real de /planes', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: {
+      planes: [
+        { id: 1, nombre_plan: 'Plan A', velocidad_mbps: 50, precio_mensual: 120, activo: true },
+      ],
+    },
+  }));
+  const planes = await planInternetService.fetchPlanes();
+  assert.equal(planes.length, 1);
+  assert.equal(planes[0].nombre_plan, 'Plan A');
+  assert.equal(planes[0].activo, true);
+});
+
+test('CU16 crear/editar/desactivar usan los verbos y rutas correctas', async () => {
+  let calledUrl = '';
+  let calledMethod = '';
+  let sentBody = null;
+  globalThis.fetch = async (url, opts) => {
+    calledUrl = String(url);
+    calledMethod = opts.method;
+    sentBody = opts.body ? JSON.parse(opts.body) : null;
+    return jsonResponse(201, { success: true, data: { plan: { id: 7 } } });
+  };
+
+  await planInternetService.createPlan({ nombre_plan: 'Plan Nuevo', velocidad_mbps: 80, precio_mensual: 200 });
+  assert.ok(calledUrl.endsWith('/planes'));
+  assert.equal(calledMethod, 'POST');
+  assert.equal(sentBody.nombre_plan, 'Plan Nuevo');
+
+  await planInternetService.updatePlan(7, { activo: true });
+  assert.ok(calledUrl.endsWith('/planes/7'));
+  assert.equal(calledMethod, 'PUT');
+  assert.deepEqual(sentBody, { activo: true });
+
+  await planInternetService.desactivarPlan(7);
+  assert.ok(calledUrl.endsWith('/planes/7'));
+  assert.equal(calledMethod, 'DELETE');
+});
+
+test('CU16 un error del backend NO se sustituye por datos de ejemplo', async () => {
+  stubFetch(jsonResponse(403, { success: false, message: 'Prohibido' }));
+  await assert.rejects(planInternetService.fetchPlanes(), (err) => err.status === 403);
+});
+
+test('CU17 fetchServicios aplana el cliente de /cu08/servicios', async () => {
+  stubFetch(jsonResponse(200, {
+    success: true,
+    data: {
+      data: [
+        { id: 1, codigo_servicio: 'SRV-1', cliente: { nombres: 'Ana', apellidos: 'Pérez' } },
+      ],
+    },
+  }));
+  const [servicio] = await asignacionPlanService.fetchServicios();
+  assert.equal(servicio.cliente_nombre, 'Ana Pérez');
+});
+
+test('CU17 fetchHistorial lee data.servicio y data.asignaciones', async () => {
+  let calledUrl = '';
+  globalThis.fetch = async (url) => {
+    calledUrl = String(url);
+    return jsonResponse(200, {
+      success: true,
+      data: { servicio: { codigo_servicio: 'SRV-1' }, asignaciones: [{ id: 5 }] },
+    });
+  };
+  const res = await asignacionPlanService.fetchHistorial(1);
+  assert.ok(calledUrl.includes('/cu08/servicios/1/planes'));
+  assert.equal(res.asignaciones.length, 1);
+  assert.equal(res.servicio.codigo_servicio, 'SRV-1');
+});
+
+test('CU17 asignarPlan envía POST con plan_id y motivo', async () => {
+  let calledUrl = '';
+  let sentBody = null;
+  globalThis.fetch = async (url, opts) => {
+    calledUrl = String(url);
+    sentBody = JSON.parse(opts.body);
+    return jsonResponse(201, { success: true, data: { asignacion: { plan_id: 3 } } });
+  };
+  const res = await asignacionPlanService.asignarPlan(1, { plan_id: 3, motivo_cambio: 'Upgrade' });
+  assert.ok(calledUrl.includes('/cu08/servicios/1/planes'));
+  assert.equal(sentBody.plan_id, 3);
+  assert.equal(res.data.asignacion.plan_id, 3);
 });
 
 test.after(() => {

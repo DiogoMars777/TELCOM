@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Paquetes\ServiciosPlanes\Planes;
+namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan;
 
 use App\Http\Controllers\Controller;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
@@ -14,13 +14,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
- * Asignación de planes a un servicio de Internet (historial que NO se
- * sobrescribe). Entidad UML AsignacionPlan.
+ * CU17 - Asignar o cambiar el plan de un servicio de Internet.
+ *
+ * El historial de planes NO se sobrescribe: cada cambio cierra la asignación
+ * vigente (`fechaFin`) y crea una nueva dentro de una transacción. Se
+ * reutilizan los modelos compartidos AsignacionPlan y PlanInternet.
  *
  * Permisos REALES (matriz RBAC existente):
  *  - planes.view   -> consultar el historial.
  *  - planes.assign -> asignar/cambiar plan (admin y secretaría).
- * El técnico NO posee ninguno -> HTTP 403 (lo aplica el middleware).
+ * El técnico no posee ninguno -> HTTP 403 (lo aplica el middleware).
+ *
+ * El contrato de la API lo consume el frontend (CU17 y CU08):
+ *   GET  /api/cu08/servicios/{servicio}/planes  -> { data: { servicio, asignaciones } }
+ *   POST /api/cu08/servicios/{servicio}/planes  -> { data: { asignacion } }
  */
 class AsignacionPlanController extends Controller
 {
@@ -105,7 +112,7 @@ class AsignacionPlanController extends Controller
             ]);
 
             AuditLogger::log(
-                'PLANES',
+                'CU17',
                 'ASIGNAR_PLAN',
                 "Plan {$plan->nombre_plan} asignado al servicio {$servicio->codigo_servicio}.",
                 $anterior ? [

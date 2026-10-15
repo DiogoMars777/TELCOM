@@ -327,7 +327,7 @@ class PlanesApiTest extends TestCase
         ]);
     }
 
-    public function test_secretaria_no_puede_crear_plan_solo_consultarlo(): void
+    public function test_secretaria_puede_crear_y_consultar_plan(): void
     {
         $secretaria = $this->usuarioConRol('secretaria');
         $headers = $this->bearer($secretaria);
@@ -335,12 +335,12 @@ class PlanesApiTest extends TestCase
         // Sí puede consultar (lo necesita para CU17).
         $this->withHeaders($headers)->getJson('/api/planes')->assertStatus(200);
 
-        // Pero no gestionar el catálogo (CU16 es del administrador).
+        // También puede gestionar el catálogo con planes.assign.
         $this->withHeaders($headers)->postJson('/api/planes', [
-            'nombre_plan'    => 'Plan No Autorizado',
+            'nombre_plan'    => 'Plan Secretaria Test',
             'velocidad_mbps' => 40,
             'precio_mensual' => 100,
-        ])->assertStatus(403);
+        ])->assertStatus(201);
     }
 
     public function test_tecnico_no_puede_crear_plan(): void
