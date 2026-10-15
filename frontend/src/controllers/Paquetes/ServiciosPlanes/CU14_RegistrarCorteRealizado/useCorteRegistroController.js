@@ -14,6 +14,12 @@ export function useCorteRegistroController(initialServicio = null) {
   const [error, setError] = useState(null);
   const [corteSuccess, setCorteSuccess] = useState(null);
 
+  useEffect(() => {
+    if (initialServicio) {
+      setSelectedServicio(initialServicio);
+    }
+  }, [initialServicio]);
+
   // El listado de servicios proviene del backend (CU13), no de datos inventados.
   useEffect(() => {
     let active = true;
@@ -22,7 +28,13 @@ export function useCorteRegistroController(initialServicio = null) {
         const data = await serviciosCorteService.fetchServiciosCorte();
         if (!active) return;
         setServicios(data);
-        setSelectedServicio(prev => prev ?? data[0] ?? null);
+        setSelectedServicio(prev => {
+          if (prev) {
+            const found = data.find(s => s.id === prev.id);
+            return found ? { ...prev, ...found } : prev;
+          }
+          return data[0] ?? null;
+        });
       } catch (e) {
         if (!active) return;
         setServicios([]);

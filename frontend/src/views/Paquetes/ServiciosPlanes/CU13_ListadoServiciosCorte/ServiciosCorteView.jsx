@@ -10,7 +10,9 @@ import {
   MapPin,
   Calendar,
   Phone,
-  CreditCard
+  CreditCard,
+  XCircle,
+  Wifi
 } from 'lucide-react';
 
 export default function ServiciosCorteView({ onIrACorte }) {
@@ -26,9 +28,15 @@ export default function ServiciosCorteView({ onIrACorte }) {
     setZonaId,
     buscar,
     setBuscar,
+    page,
+    setPage,
+    meta,
+    limpiarFiltros,
     exportarCsv,
     imprimirHojaRuta,
   } = useServiciosCorteController();
+
+  const hayFiltrosActivos = Boolean(buscar || zonaId || diasMora !== 5);
 
   return (
     <div className="view-panel printable-area">
@@ -132,9 +140,20 @@ export default function ServiciosCorteView({ onIrACorte }) {
           </select>
         </div>
 
+        {hayFiltrosActivos && (
+          <button
+            className="btn btn-sm btn-secondary"
+            onClick={limpiarFiltros}
+            title="Restablecer filtros a valores por defecto"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+          >
+            <XCircle size={14} /> Limpiar
+          </button>
+        )}
+
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
           <span className="badge badge-warning">
-            {servicios.length} {servicios.length === 1 ? 'servicio elegible' : 'servicios elegibles'}
+            {meta?.total ?? servicios.length} {(meta?.total ?? servicios.length) === 1 ? 'abonado elegible' : 'abonados elegibles'}
           </span>
         </div>
       </div>
@@ -143,7 +162,7 @@ export default function ServiciosCorteView({ onIrACorte }) {
       <div className="only-print" style={{ display: 'none', marginBottom: '1rem' }}>
         <h2 style={{ margin: 0 }}>TELCOM - Hoja de Ruta de Cortes Técnicos</h2>
         <p style={{ margin: '0.25rem 0', color: '#64748b' }}>
-          Fecha de emisión: {new Date().toLocaleDateString('es-BO')} | Total de abonados a cortar: {servicios.length}
+          Fecha de emisión: {new Date().toLocaleDateString('es-BO')} | Total de abonados a cortar: {meta?.total ?? servicios.length}
         </p>
       </div>
 
@@ -172,8 +191,15 @@ export default function ServiciosCorteView({ onIrACorte }) {
             )}
             {!loading && servicios.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8', padding: '2rem' }}>
-                  No se encontraron servicios que cumplan con los criterios de corte seleccionados.
+                <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8', padding: '2.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>No se encontraron servicios que cumplan con los criterios de corte seleccionados.</p>
+                    {hayFiltrosActivos && (
+                      <button className="btn btn-sm btn-secondary" onClick={limpiarFiltros} style={{ marginTop: '0.5rem' }}>
+                        <XCircle size={14} /> Restablecer filtros
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             )}
@@ -194,7 +220,16 @@ export default function ServiciosCorteView({ onIrACorte }) {
                 <td>
                   <span className="badge badge-info">{s.zona_nombre}</span>
                 </td>
-                <td>{s.plan_nombre}</td>
+                <td>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <span>{s.plan_nombre}</span>
+                    {s.velocidad_mbps && (
+                      <span className="badge badge-primary" style={{ width: 'fit-content', fontSize: '0.68rem', padding: '0.1rem 0.4rem' }}>
+                        <Wifi size={10} style={{ marginRight: '0.2rem' }} /> {s.velocidad_mbps} Mbps
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td>
                   <code>{s.ip_asignada || '—'}</code>
                 </td>
@@ -204,9 +239,14 @@ export default function ServiciosCorteView({ onIrACorte }) {
                   </strong>
                 </td>
                 <td>
-                  <strong className="text-danger" style={{ color: '#ef4444', fontSize: '0.95rem' }}>
-                    {s.monto_deuda != null ? `Bs. ${Number(s.monto_deuda).toFixed(2)}` : '—'}
-                  </strong>
+                  <div>
+                    <strong className="text-danger" style={{ color: '#ef4444', fontSize: '0.95rem' }}>
+                      {s.monto_deuda != null ? `Bs. ${Number(s.monto_deuda).toFixed(2)}` : '—'}
+                    </strong>
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                      {s.mensualidades_pendientes} {s.mensualidades_pendientes === 1 ? 'mensualidad' : 'mensualidades'}
+                    </div>
+                  </div>
                 </td>
                 <td className="no-print">
                   <button
@@ -222,6 +262,43 @@ export default function ServiciosCorteView({ onIrACorte }) {
           </tbody>
         </table>
       </div>
+
+      {/* Barra de Paginación */}
+      {!loading && meta && meta.last_page > 1 && (
+        <div
+          className="pagination-bar no-print"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '1rem',
+            padding: '0.75rem 0.5rem',
+            borderTop: '1px solid var(--border-color)',
+            flexWrap: 'wrap',
+            gap: '0.5rem'
+          }}
+        >
+          <span style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+            Página <strong>{meta.current_page}</strong> de <strong>{meta.last_page}</strong> (Mostrando {servicios.length} de {meta.total} registros)
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              className="btn btn-sm btn-secondary"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+            >
+              ◀ Anterior
+            </button>
+            <button
+              className="btn btn-sm btn-secondary"
+              disabled={page >= meta.last_page || loading}
+              onClick={() => setPage(p => p + 1)}
+            >
+              Siguiente ▶
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
