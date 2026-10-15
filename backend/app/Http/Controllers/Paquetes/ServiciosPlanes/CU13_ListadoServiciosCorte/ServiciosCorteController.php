@@ -23,20 +23,46 @@ class ServiciosCorteController extends Controller
     public function index(Request $request): JsonResponse
     {
         $diasMora = max(0, $request->integer('dias_mora', 5));
+        $zonaId   = $request->input('zona_id');
+        $buscar   = trim((string) $request->input('buscar', ''));
 
-        $servicios = ServicioParaCorte::query()
-            ->with(['cliente:id,nombres,apellidos,documento_identidad,telefono'])
+        $query = ServicioParaCorte::query()
+            ->with(['cliente', 'zona'])
             ->with(['mensualidades' => function ($q) {
                 $q->where('estado_pago', '!=', 'PAGADO')->orderBy('fecha_vencimiento');
             }])
             ->elegiblesParaCorte($diasMora)
-            ->latest('id')
-            ->paginate(15);
+            ->when($zonaId, function ($q) use ($zonaId) {
+                $q->where('idZona', $zonaId);
+            })
+            ->when($buscar !== '', function ($q) use ($buscar) {
+                $q->where(function ($sub) use ($buscar) {
+                    $sub->where('codigoServicio', 'like', "%{$buscar}%")
+                        ->orWhere('ipAsignada', 'like', "%{$buscar}%")
+                        ->orWhereHas('cliente', function ($c) use ($buscar) {
+                            $c->where('nombreCompleto', 'like', "%{$buscar}%")
+                              ->orWhere('ci', 'like', "%{$buscar}%");
+                        });
+                });
+            })
+            ->latest('id');
 
-        $servicios->getCollection()->transform(function (ServicioParaCorte $servicio) {
+        $exportAll = $request->boolean('todos');
+        $servicios = $exportAll ? $query->get() : $query->paginate(15);
+        $coleccion = $exportAll ? $servicios : $servicios->getCollection();
+
+        $coleccion->transform(function (ServicioParaCorte $servicio) {
+            $cliente = $servicio->cliente;
+            $zona = $servicio->zona;
             $impagas = $servicio->mensualidades;
             $hoy = now()->startOfDay();
 
+            $servicio->setAttribute('zona_id', $servicio->idZona);
+            $servicio->setAttribute('zona_nombre', $zona?->nombreZona ?? $zona?->nombre ?? 'Sin zona');
+            $servicio->setAttribute('cliente_nombre', $cliente?->nombreCompleto ?? trim(($cliente?->nombres ?? '') . ' ' . ($cliente?->apellidos ?? '')));
+            $servicio->setAttribute('cliente_ci', $cliente?->ci ?? $cliente?->documento_identidad);
+            $servicio->setAttribute('cliente_telefono', $cliente?->telefonoPrincipal ?? $cliente?->telefono);
+            $servicio->setAttribute('cliente_direccion', $servicio->direccion ?? $cliente?->direccion);
             $servicio->setAttribute('mensualidades_pendientes', $impagas->count());
             $servicio->setAttribute('monto_deuda', round((float) $impagas->sum('monto'), 2));
             $servicio->setAttribute('dias_mora', (int) $impagas->map(

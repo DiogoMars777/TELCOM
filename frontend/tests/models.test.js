@@ -30,6 +30,7 @@ const { historialPagosService } = await import('../src/models/Paquetes/Facturaci
 const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
 const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel.js');
 const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel.js');
+const { serviciosCorteService } = await import('../src/models/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/servicioCorteModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -220,6 +221,7 @@ test('CU10 pagarEnLinea envía POST a /cu10/portal-cliente/pagar con datos corre
   assert.equal(res.recibo.codigo_recibo, 'REC-ONL-123');
 });
 
+<<<<<<< HEAD
 test('CU16 fetchPlanes lee el catálogo real de /planes', async () => {
   stubFetch(jsonResponse(200, {
     success: true,
@@ -306,6 +308,44 @@ test('CU17 asignarPlan envía POST con plan_id y motivo', async () => {
   assert.ok(calledUrl.includes('/cu08/servicios/1/planes'));
   assert.equal(sentBody.plan_id, 3);
   assert.equal(res.data.asignacion.plan_id, 3);
+});
+
+test('CU13 fetchServiciosCorte envía filtros de mora, zona y búsqueda y normaliza datos', async () => {
+  let requestedUrl = '';
+  globalThis.fetch = async (url) => {
+    requestedUrl = url;
+    return jsonResponse(200, {
+      success: true,
+      data: {
+        data: [
+          {
+            id: 10,
+            codigo_servicio: 'SRV-10',
+            ip_asignada: '10.0.0.10',
+            cliente: { nombres: 'Carlos', apellidos: 'Mamani', ci: '1234567 LP', telefono: '78901234' },
+            zona: { nombreZona: 'Zona Central' },
+            dias_mora: 14,
+            monto_deuda: 350.50,
+          },
+        ],
+      },
+    });
+  };
+
+  const lista = await serviciosCorteService.fetchServiciosCorte({
+    dias_mora: 10,
+    zona_id: 2,
+    buscar: 'Carlos',
+  });
+
+  assert.ok(requestedUrl.includes('/cu13/servicios-corte'));
+  assert.ok(requestedUrl.includes('dias_mora=10'));
+  assert.ok(requestedUrl.includes('zona_id=2'));
+  assert.ok(requestedUrl.includes('buscar=Carlos'));
+  assert.equal(lista.length, 1);
+  assert.equal(lista[0].cliente_nombre, 'Carlos Mamani');
+  assert.equal(lista[0].cliente_ci, '1234567 LP');
+  assert.equal(lista[0].zona_nombre, 'Zona Central');
 });
 
 test.after(() => {
