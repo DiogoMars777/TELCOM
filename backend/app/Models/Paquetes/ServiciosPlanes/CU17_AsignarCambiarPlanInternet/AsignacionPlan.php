@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Models\Paquetes\ServiciosPlanes\Planes;
+namespace App\Models\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet;
 
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Models\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternet;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 

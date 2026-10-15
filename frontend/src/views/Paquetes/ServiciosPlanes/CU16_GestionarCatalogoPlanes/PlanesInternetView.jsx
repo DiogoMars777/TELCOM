@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePlanInternetController } from '../../../../controllers/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/usePlanInternetController';
+import { usePlanInternetController } from '../../../../controllers/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/usePlanInternetController';
 import { hasPermission } from '../../../../config/access.js';
 import { Router, Plus, Pencil, Power, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import './PlanesInternetView.css';

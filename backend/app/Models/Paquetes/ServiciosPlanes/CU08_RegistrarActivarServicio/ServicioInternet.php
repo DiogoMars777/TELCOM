@@ -5,7 +5,7 @@ namespace App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio;
 use App\Models\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCobertura;
 use App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente;
 use App\Models\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadFacturacion;
-use App\Models\Paquetes\ServiciosPlanes\Planes\AsignacionPlan;
+use App\Models\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlan;
 use Illuminate\Database\Eloquent\Model;
 
 class ServicioInternet extends Model

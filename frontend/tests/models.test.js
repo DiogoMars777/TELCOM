@@ -27,8 +27,8 @@ const { clienteConsultaService } = await import('../src/models/Paquetes/GestionC
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
 const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
-const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel.js');
-const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel.js');
+const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/planInternetModel.js');
+const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/asignacionPlanModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models\Paquetes\ServiciosPlanes\Planes;
+namespace App\Models\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes;
 
+use App\Models\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlan;
 use Illuminate\Database\Eloquent\Model;
 
 class PlanInternet extends Model

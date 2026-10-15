@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarPlanesInternet;
+namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes;
 
 use App\Http\Controllers\Controller;
-use App\Models\Paquetes\ServiciosPlanes\Planes\PlanInternet;
+use App\Models\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternet;
 use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
