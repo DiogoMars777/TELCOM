@@ -1004,12 +1004,12 @@ Relaciones: `ServicioInternet [1] → AsignacionPlan [1..*]` (`asignacionesPlan`
 | Elemento | Nombre exacto | Archivo |
 | :--- | :--- | :--- |
 | Actor | Admin / Secretaría | — |
-| Vista/Frontera | `PlanesInternetView` | `frontend/src/views/.../CU16_GestionarPlanesInternet/` |
+| Vista/Frontera | `PlanesInternetView` | `frontend/src/views/.../CU16_GestionarCatalogoPlanes/` |
 | Controlador frontend | `usePlanInternetController` | `frontend/src/controllers/.../CU16.../` |
 | Servicio/Modelo API | `planInternetService` | `frontend/src/models/.../CU16.../planInternetModel.js` |
 | Ruta HTTP | `/api/planes`, `/api/planes/{id}` | `backend/routes/api.php` |
-| Controlador backend | `PlanInternetController` | `backend/app/Http/Controllers/.../CU16_GestionarPlanesInternet/` |
-| Modelos | `PlanInternet`, `AsignacionPlan` | `backend/app/Models/.../Planes/` |
+| Controlador backend | `PlanInternetController` | `backend/app/Http/Controllers/.../CU16_GestionarCatalogoPlanes/` |
+| Modelos | `PlanInternet`, `AsignacionPlan` | `backend/app/Models/.../CU16_GestionarCatalogoPlanes/`, `.../CU17_AsignarCambiarPlanInternet/` |
 | Tablas | `PlanInternet`, `AsignacionPlan` | migración |
 
 **5. Mensajes numerados (crear plan).**
@@ -1028,7 +1028,7 @@ Relaciones: `ServicioInternet [1] → AsignacionPlan [1..*]` (`asignacionesPlan`
 | Clase/artefacto | Archivo | Responsabilidad | Métodos / estado | Relaciones |
 | :--- | :--- | :--- | :--- | :--- |
 | `PlanInternetController` | `.../CU16.../PlanInternetController.php` | CRUD catálogo | `index, store, show, update, destroy`; `validarPlan` | usa `PlanInternet`, `AsignacionPlan`, `AuditLogger` |
-| `PlanInternet` | `.../Planes/PlanInternet.php` | Plan | `asignaciones()`; `$table='PlanInternet'`; alias `nombre_plan` etc. | `asignaciones → AsignacionPlan` |
+| `PlanInternet` | `.../CU16_GestionarCatalogoPlanes/PlanInternet.php` | Plan | `asignaciones()`; `$table='PlanInternet'`; alias `nombre_plan` etc. | `asignaciones → AsignacionPlan` |
 | `usePlanInternetController` | `.../usePlanInternetController.js` | Estado | `planes, formPlan, setFormPlan, handleSubmit, editingId, openCreate, openEdit, closeModal, cambiarEstado, savingId, reload` | usa el servicio |
 | `PlanesInternetView` | `.../PlanesInternetView.jsx` | Frontera | prop `{user}`; gate `planes.assign` | — |
 | `planInternetService` | `.../planInternetModel.js` | Adaptador API | `fetchPlanes`, `createPlan`, `updatePlan`, `desactivarPlan` | usa `apiClient` |
@@ -1052,11 +1052,11 @@ Relaciones: `ServicioInternet [1] → AsignacionPlan [1..*]` (`asignacionesPlan`
 | Elemento | Nombre exacto | Archivo |
 | :--- | :--- | :--- |
 | Actor | Admin / Secretaría | — |
-| Vista/Frontera | `AsignarPlanView` | `frontend/src/views/.../CU17_AsignarCambiarPlan/` |
+| Vista/Frontera | `AsignarPlanView` | `frontend/src/views/.../CU17_AsignarCambiarPlanInternet/` |
 | Controlador frontend | `useAsignacionPlanController` | `frontend/src/controllers/.../CU17.../` |
 | Servicio/Modelo API | `asignacionPlanService` | `frontend/src/models/.../CU17.../asignacionPlanModel.js` |
 | Ruta HTTP | `/api/cu08/servicios/{servicio}/planes` | `backend/routes/api.php` |
-| Controlador backend | `AsignacionPlanController` | `backend/app/Http/Controllers/.../CU17_AsignarCambiarPlan/` |
+| Controlador backend | `AsignacionPlanController` | `backend/app/Http/Controllers/.../CU17_AsignarCambiarPlanInternet/` |
 | Modelos | `AsignacionPlan`, `PlanInternet`, `ServicioInternet`, `User` | `backend/app/Models/.../` |
 | Tablas | `AsignacionPlan`, `PlanInternet`, `ServicioInternet`, `Usuario` | migración |
 
@@ -1079,8 +1079,8 @@ Relaciones: `ServicioInternet [1] → AsignacionPlan [1..*]` (`asignacionesPlan`
 | Clase/artefacto | Archivo | Responsabilidad | Métodos / estado | Relaciones |
 | :--- | :--- | :--- | :--- | :--- |
 | `AsignacionPlanController` | `.../CU17.../AsignacionPlanController.php` | Historial/asignación | `index`, `store` | usa `AsignacionPlan`, `PlanInternet`, `ServicioInternet` |
-| `AsignacionPlan` | `.../Planes/AsignacionPlan.php` | Asignación de plan | `servicio()`, `plan()`, `usuario()`, `estaVigente()`; `$table='AsignacionPlan'` | `servicio → ServicioInternet`, `plan → PlanInternet`, `usuario → User` |
-| `PlanInternet` | `.../Planes/PlanInternet.php` | Catálogo | `asignaciones()` | `asignaciones → AsignacionPlan` |
+| `AsignacionPlan` | `.../CU17_AsignarCambiarPlanInternet/AsignacionPlan.php` | Asignación de plan | `servicio()`, `plan()`, `usuario()`, `estaVigente()`; `$table='AsignacionPlan'` | `servicio → ServicioInternet`, `plan → PlanInternet`, `usuario → User` |
+| `PlanInternet` | `.../CU16_GestionarCatalogoPlanes/PlanInternet.php` | Catálogo | `asignaciones()` | `asignaciones → AsignacionPlan` |
 | `useAsignacionPlanController` | `.../useAsignacionPlanController.js` | Estado | `servicios, planes, servicioId, servicio, asignaciones, planVigente, loadingHistorial, showModal, form, handleAsignar, seleccionarServicio, reload` | usa el servicio |
 | `AsignarPlanView` | `.../AsignarPlanView.jsx` | Frontera | prop `{user}`; gate `planes.assign` | — |
 | `asignacionPlanService` | `.../asignacionPlanModel.js` | Adaptador API | `fetchServicios`, `fetchPlanes`, `fetchHistorial(servicioId)`, `asignarPlan(servicioId,data)` | usa `apiClient` |

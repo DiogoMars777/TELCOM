@@ -1,7 +1,8 @@
 import React from 'react';
-import { useAsignacionPlanController } from '../../../../controllers/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/useAsignacionPlanController';
+import { useAsignacionPlanController } from '../../../../controllers/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/useAsignacionPlanController';
 import { hasPermission } from '../../../../config/access.js';
 import { ArrowRightLeft, Wifi, AlertCircle, RefreshCw, History, CheckCircle2 } from 'lucide-react';
+import ServicioBuscador from './ServicioBuscador.jsx';
 import './AsignarPlanView.css';
 
 function nombrePlanDe(asignacion) {
@@ -102,21 +103,14 @@ export default function AsignarPlanView({ user }) {
       </div>
 
       <div className="cu17-selector form-group">
-        <label>Servicio</label>
-        <select
+        <ServicioBuscador
+          inputId="cu17-servicio-input"
+          label="Servicio"
+          servicios={servicios}
+          loading={loadingServicios}
           value={servicioId}
-          disabled={loadingServicios}
-          onChange={(e) => seleccionarServicio(e.target.value)}
-        >
-          <option value="">
-            {loadingServicios ? 'Cargando servicios…' : 'Seleccione un servicio'}
-          </option>
-          {servicios.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.codigo_servicio} — {s.cliente_nombre || 'Sin cliente'}
-            </option>
-          ))}
-        </select>
+          onChange={seleccionarServicio}
+        />
       </div>
 
       {serviciosError && (

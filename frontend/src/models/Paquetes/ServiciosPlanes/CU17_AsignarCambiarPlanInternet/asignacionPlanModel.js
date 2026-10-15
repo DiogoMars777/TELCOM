@@ -11,6 +11,9 @@ import { isDemoMode } from '../../../../config/appConfig.js';
  *   - POST /cu08/servicios/{id}/planes        -> asignar/cambiar plan
  */
 
+// Tope defensivo de páginas a recorrer al cargar todos los servicios.
+const MAX_PAGINAS_SERVICIOS = 100;
+
 // Datos de ejemplo SOLO para el modo demostración (desactivado por defecto).
 export const mockServiciosCu17 = [
   {
@@ -76,8 +79,31 @@ function normalizarPlan(p) {
 export const asignacionPlanService = {
   async fetchServicios() {
     if (isDemoMode()) return mockServiciosCu17;
-    const res = await apiClient.get('/cu08/servicios');
-    return (res?.data?.data ?? []).map((s) => ({ ...s, cliente_nombre: nombreCliente(s) }));
+
+    // `GET /cu08/servicios` NO admite parámetros de búsqueda: el controlador usa
+    // `->paginate(15)` (CU08). Para que el buscador de CU17 alcance TODO el
+    // catálogo se recorren las páginas siguientes usando el `last_page` que
+    // devuelve Laravel. `MAX_PAGINAS_SERVICIOS` es un tope defensivo por si
+    // `last_page` llegara erróneo (evita un bucle sin fin).
+    const primera = await apiClient.get('/cu08/servicios');
+    const pagina = primera?.data ?? {};
+    const items = Array.isArray(pagina.data) ? [...pagina.data] : [];
+
+    const totalPaginas = Number(pagina.last_page);
+    const ultimaPagina = Math.min(
+      Number.isFinite(totalPaginas) && totalPaginas > 1 ? totalPaginas : 1,
+      MAX_PAGINAS_SERVICIOS,
+    );
+
+    for (let num = 2; num <= ultimaPagina; num += 1) {
+      // Secuencial a propósito: evita ráfagas de peticiones. Si una página
+      // falla, el error se propaga (la app nunca oculta fallos de red).
+      const res = await apiClient.get('/cu08/servicios', { page: num });
+      const lote = res?.data?.data;
+      if (Array.isArray(lote)) items.push(...lote);
+    }
+
+    return items.map((s) => ({ ...s, cliente_nombre: nombreCliente(s) }));
   },
 
   async fetchPlanes() {

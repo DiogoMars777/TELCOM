@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { planInternetService } from '../../../../models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel';
+import { planInternetService } from '../../../../models/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/planInternetModel';
 import { describeApiError } from '../../../../services/apiClient';
 
 // Valores iniciales de un plan NUEVO.

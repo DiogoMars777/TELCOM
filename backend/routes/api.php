@@ -35,9 +35,9 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\C
 // CU15: Gestionar lista y registro de reactivaciones
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionesController;
 // CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarPlanesInternet\PlanInternetController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan\AsignacionPlanController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 
 /*
 |--------------------------------------------------------------------------

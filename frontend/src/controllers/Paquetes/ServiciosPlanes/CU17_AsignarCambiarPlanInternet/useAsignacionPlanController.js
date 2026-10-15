@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { asignacionPlanService } from '../../../../models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel';
+import { asignacionPlanService } from '../../../../models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/asignacionPlanModel';
 import { describeApiError } from '../../../../services/apiClient';
 
 const emptyForm = { plan_id: '', motivo_cambio: '' };

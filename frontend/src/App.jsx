@@ -19,8 +19,8 @@ import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_Vi
 import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
 import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
-import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/PlanesInternetView';
-import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/AsignarPlanView';
+import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
+import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
 
 // Iconos de cada módulo del panel
 import {

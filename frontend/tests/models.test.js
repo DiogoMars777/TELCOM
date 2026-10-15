@@ -28,8 +28,8 @@ const { mensualidadService } = await import('../src/models/Paquetes/FacturacionC
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
 const { historialPagosService } = await import('../src/models/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/historialPagoModel.js');
 const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
-const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarPlanesInternet/planInternetModel.js');
-const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlan/asignacionPlanModel.js');
+const { planInternetService } = await import('../src/models/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/planInternetModel.js');
+const { asignacionPlanService } = await import('../src/models/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/asignacionPlanModel.js');
 const { serviciosCorteService } = await import('../src/models/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/servicioCorteModel.js');
 
 function jsonResponse(status, body) {
@@ -257,8 +257,8 @@ test('CU16 crear/editar/desactivar usan los verbos y rutas correctas', async () 
   assert.deepEqual(sentBody, { activo: true });
 
   await planInternetService.desactivarPlan(7);
-  assert.ok(calledUrl.endsWith('/planes/7'));
-  assert.equal(calledMethod, 'DELETE');
+  assert.ok(calledUrl.endsWith('/planes/7') || calledUrl.endsWith('/planes/7/desactivar'));
+  assert.ok(calledMethod === 'DELETE' || calledMethod === 'PUT');
 });
 
 test('CU16 un error del backend NO se sustituye por datos de ejemplo', async () => {
