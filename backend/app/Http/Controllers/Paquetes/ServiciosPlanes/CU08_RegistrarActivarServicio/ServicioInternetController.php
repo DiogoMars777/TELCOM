@@ -24,7 +24,7 @@ class ServicioInternetController extends Controller
      * CU08 – Listar servicios de Internet registrados.
      * Permiso requerido: servicios.view
      */
-    public function index(): JsonResponse
+    public function listar(): JsonResponse
     {
         $servicios = ServicioInternet::with([
                 'cliente',
@@ -53,7 +53,7 @@ class ServicioInternetController extends Controller
      *
      * Permiso requerido: servicios.manage
      */
-    public function store(Request $request): JsonResponse
+    public function registrar(Request $request): JsonResponse
     {
         // ── Paso 12: Validación flexible para simulación y pruebas ────────────
         $validated = $request->validate([
@@ -207,7 +207,7 @@ class ServicioInternetController extends Controller
      * CU08 – Mostrar detalle de un servicio.
      * Permiso requerido: servicios.view
      */
-    public function show(int $id): JsonResponse
+    public function mostrar(int $id): JsonResponse
     {
         $servicio = ServicioInternet::with([
                 'cliente',
@@ -225,7 +225,7 @@ class ServicioInternetController extends Controller
      * CU08 – Actualizar datos técnicos / administrativos de un servicio existente.
      * Permiso requerido: servicios.manage
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function actualizar(Request $request, int $id): JsonResponse
     {
         $servicio = ServicioInternet::findOrFail($id);
 
@@ -293,4 +293,12 @@ class ServicioInternetController extends Controller
 
         return $this->success($servicio, 'Servicio actualizado exitosamente.');
     }
+
+    /**
+     * Alias de compatibilidad estándar (enrutador y tests).
+     */
+    public function index(): JsonResponse { return $this->listar(); }
+    public function store(Request $request): JsonResponse { return $this->registrar($request); }
+    public function show(int $id): JsonResponse { return $this->mostrar($id); }
+    public function update(Request $request, int $id): JsonResponse { return $this->actualizar($request, $id); }
 }

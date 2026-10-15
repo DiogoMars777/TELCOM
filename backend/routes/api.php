@@ -124,9 +124,9 @@ Route::prefix('cu07')->middleware(['auth:sanctum', 'permission:clientes.update']
 // CU08: Registrar y activar servicio de Internet
 Route::prefix('cu08')->group(function () {
     // Consulta: admin, secretaría, técnico
-    Route::get('/servicios', [ServicioInternetController::class, 'index'])
+    Route::get('/servicios', [ServicioInternetController::class, 'listar'])
         ->middleware(['auth:sanctum', 'permission:servicios.view']);
-    Route::get('/servicios/{id}', [ServicioInternetController::class, 'show'])
+    Route::get('/servicios/{id}', [ServicioInternetController::class, 'mostrar'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:servicios.view']);
 
@@ -137,9 +137,9 @@ Route::prefix('cu08')->group(function () {
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
 
     // Registro y actualización: admin, secretaría
-    Route::post('/servicios', [ServicioInternetController::class, 'store'])
+    Route::post('/servicios', [ServicioInternetController::class, 'registrar'])
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
-    Route::put('/servicios/{id}', [ServicioInternetController::class, 'update'])
+    Route::put('/servicios/{id}', [ServicioInternetController::class, 'actualizar'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
 });
