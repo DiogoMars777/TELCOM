@@ -12,17 +12,6 @@
  * - En celulares, cada registro se muestra como tarjeta.
  */
 
-/* Ocultar barra vertical solo en esta pantalla (sin overflow:hidden) */
-.content-body:has(.cu02-view) {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.content-body:has(.cu02-view)::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
 /* ------------------------------------------------------------------ */
 /* Filtros                                                             */
 /* ------------------------------------------------------------------ */
@@ -80,13 +69,13 @@
 }
 
 /* Anchos proporcionados: se mantienen legibles sin cortarse. */
-.audit-table .audit-col-id { width: 8%; }
-.audit-table .audit-col-user { width: 20%; }
-.audit-table .audit-col-module { display: none; }
-.audit-table .audit-col-action { width: 14%; }
-.audit-table .audit-col-details { width: 30%; }
-.audit-table .audit-col-ip { width: 12%; }
-.audit-table .audit-col-date { width: 16%; }
+.audit-table .audit-col-id { width: 7%; }
+.audit-table .audit-col-user { width: 15%; }
+.audit-table .audit-col-module { width: 17%; }
+.audit-table .audit-col-action { width: 12%; }
+.audit-table .audit-col-details { width: 24%; }
+.audit-table .audit-col-ip { width: 10%; }
+.audit-table .audit-col-date { width: 15%; }
 
 /* Los badges con nombres largos (p. ej. módulos) deben poder partirse. */
 .audit-table .badge {

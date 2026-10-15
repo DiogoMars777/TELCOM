@@ -11,26 +11,6 @@
  *   cortar contenido.
  */
 
-/* -------------------------------------------------------------------------
-   Barra vertical
-   Se OCULTA visualmente SOLO en esta pantalla, sin desactivar el desplazamiento:
-   la rueda, el teclado, el trackpad y los gestos táctiles siguen funcionando.
-   El desplazamiento ocurre en `.content-body` (que ya tiene `overflow-y: auto`),
-   por lo que NO se usa `overflow: hidden` ni se fija una altura que pudiera
-   recortar la tabla o la última fila. El desplazamiento horizontal interno de
-   `.table-responsive` (si la tabla no cabe) se conserva intacto.
-   ------------------------------------------------------------------------- */
-.content-body:has(.cu06-view) {
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* Edge antiguo */
-}
-
-.content-body:has(.cu06-view)::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;              /* Chrome, Edge y Safari */
-}
-
 /* Celdas con varias líneas (contacto, dirección/zona). */
 .cu06-cell {
   display: flex;

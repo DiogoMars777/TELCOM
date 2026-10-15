@@ -6,16 +6,6 @@
  */
 
 import { apiClient, authToken } from '../../../../services/apiClient.js';
-import { isDemoMode } from '../../../../config/appConfig.js';
-import { CU_PERMISSIONS } from '../../../../config/access.js';
-
-export const mockDemoUser = {
-  id: 1,
-  name: 'Administrador Demo',
-  email: 'admin@telcom.bo',
-  rol: { slug: 'admin', nombre: 'Administrador' },
-  permisos: Object.values(CU_PERMISSIONS).filter(Boolean),
-};
 
 export const initialAuthCredentials = {
   email: '',
@@ -26,12 +16,6 @@ const USER_KEY = 'telcom_user';
 
 export const authService = {
   async login(credentials) {
-    if (isDemoMode()) {
-      authToken.set('demo-token-active');
-      localStorage.setItem(USER_KEY, JSON.stringify(mockDemoUser));
-      return mockDemoUser;
-    }
-
     const res = await apiClient.post('/cu01/login', credentials, { throwOnError: true });
 
     if (res?.data?.token) {
@@ -53,9 +37,6 @@ export const authService = {
   },
 
   async fetchCurrentUser() {
-    if (isDemoMode()) {
-      return this.getCurrentUser() || mockDemoUser;
-    }
     const res = await apiClient.get('/cu01/me', {}, { throwOnError: true });
     return res?.data ?? null;
   },
@@ -88,20 +69,6 @@ export const authService = {
       password,
       password_confirmation: passwordConfirmation,
     }, { throwOnError: true });
-  },
-
-  // Alias para compatibilidad con flujos de recuperación
-  async forgotPassword(email) {
-    return await this.solicitarRecuperacionPassword(email);
-  },
-
-  async resetPassword({ email, code, newPassword, newPasswordConfirmation }) {
-    return await this.restablecerPassword({
-      email,
-      codigo: code,
-      password: newPassword,
-      passwordConfirmation: newPasswordConfirmation,
-    });
   },
 
   getToken() {

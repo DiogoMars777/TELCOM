@@ -68,6 +68,40 @@ class ZonaCoberturaController extends Controller
     }
 
     /**
+     * CU04 - Obtener una zona de cobertura específica
+     */
+    public function show(int $id): JsonResponse
+    {
+        $zona = ZonaCobertura::findOrFail($id);
+        return $this->success($zona, 'Zona de cobertura obtenida exitosamente.');
+    }
+
+    /**
+     * CU04 - Eliminar zona de cobertura
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $zona = ZonaCobertura::findOrFail($id);
+        $previos = [
+            'id'     => $zona->id,
+            'codigo' => $zona->codigo,
+            'nombre' => $zona->nombre,
+        ];
+
+        $zona->delete();
+
+        AuditLogger::log(
+            'CU04',
+            'ELIMINAR_ZONA',
+            "Zona {$zona->codigo} eliminada.",
+            $previos,
+            null
+        );
+
+        return $this->success(null, 'Zona de cobertura eliminada exitosamente.');
+    }
+
+    /**
      * Reglas de validación compartidas por crear y actualizar.
      * En creación los campos base son obligatorios; en actualización son
      * opcionales (`sometimes`) para poder completar datos de zonas antiguas.
@@ -86,7 +120,7 @@ class ZonaCoberturaController extends Controller
         return $request->validate([
             'codigo' => $esCreacion
                 ? 'required|string|max:50|unique:Zona,codigo'
-                : 'sometimes|string|max:50|unique:Zona,codigo,' . $zona->idZona . ',idZona',
+                : 'sometimes|string|max:50|unique:Zona,codigo,' . ($zona->idZona ?? $zona->id) . ',idZona',
             'nombre'           => $req . '|string|max:150',
             'ciudad'           => $req . '|string|max:100',
             'barrio'           => 'nullable|string|max:150',

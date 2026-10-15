@@ -76,25 +76,15 @@ class AuthorizationRbacTest extends TestCase
         $secretaria = Rol::where('slug', 'secretaria')->firstOrFail();
         $tecnico = Rol::where('slug', 'tecnico')->firstOrFail();
 
-        $this->assertSame(29, $admin->permisos()->count(), 'El administrador debe tener todos los permisos.');
+        $this->assertSame(28, $admin->permisos()->count(), 'El administrador debe tener todos los permisos.');
         $this->assertSame(20, $secretaria->permisos()->count());
         $this->assertSame(8, $tecnico->permisos()->count());
 
         // El rol antiguo ya no existe.
         $this->assertFalse(Rol::where('slug', 'cajero')->exists());
 
-        // CU16 (gestionar catálogo de planes) es EXCLUSIVO del administrador.
-        $this->assertTrue($admin->permisos()->where('permisos.slug', 'planes.manage')->exists());
-        $this->assertFalse($secretaria->permisos()->where('permisos.slug', 'planes.manage')->exists());
-        $this->assertFalse($tecnico->permisos()->where('permisos.slug', 'planes.manage')->exists());
-
-        // CU17 (asignar plan) y la consulta de planes los comparte secretaría.
-        foreach (['planes.view', 'planes.assign'] as $slug) {
-            $this->assertTrue($secretaria->permisos()->where('permisos.slug', $slug)->exists());
-        }
-
         // Secretaría no tiene permisos administrativos.
-        foreach (['usuarios.manage', 'auditoria.view', 'zonas.manage', 'planes.manage', 'proveedores.manage', 'compras.manage', 'reportes.view'] as $slug) {
+        foreach (['usuarios.manage', 'auditoria.view', 'zonas.manage', 'proveedores.manage', 'compras.manage', 'reportes.view'] as $slug) {
             $this->assertFalse(
                 $secretaria->permisos()->where('permisos.slug', $slug)->exists(),
                 "Secretaría no debe tener $slug"

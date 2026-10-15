@@ -91,12 +91,8 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'cortes.register', 'nombre' => 'Registrar Corte Realizado', 'modulo' => 'CU14'],
             // CU15 - Reactivaciones
             ['slug' => 'reactivaciones.manage', 'nombre' => 'Gestionar Reactivaciones', 'modulo' => 'CU15'],
-            // Planes (CU16 catálogo, CU17 asignación)
-            //   - planes.view   -> consultar/buscar planes (admin y secretaría).
-            //   - planes.manage -> crear/editar/activar/desactivar (solo admin).
-            //   - planes.assign -> asignar/cambiar el plan de un servicio (admin y secretaría).
+            // Planes (módulo previsto)
             ['slug' => 'planes.view', 'nombre' => 'Consultar Planes', 'modulo' => 'PLANES'],
-            ['slug' => 'planes.manage', 'nombre' => 'Gestionar Catálogo de Planes', 'modulo' => 'PLANES'],
             ['slug' => 'planes.assign', 'nombre' => 'Asignar Planes', 'modulo' => 'PLANES'],
             // Equipos / comodato (módulo previsto)
             ['slug' => 'equipos.view', 'nombre' => 'Consultar Equipos', 'modulo' => 'EQUIPOS'],

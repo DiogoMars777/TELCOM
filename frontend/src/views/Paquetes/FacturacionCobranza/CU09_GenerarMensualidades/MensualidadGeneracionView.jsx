@@ -79,7 +79,6 @@ export default function MensualidadGeneracionView({ user }) {
                 <td><strong>{m.codigo_factura}</strong></td>
                 <td>{m.cliente_nombre}</td>
                 <td><span className="badge badge-info">{m.servicio_codigo}</span></td>
-                <td>{m.periodo}</td>
                 <td>
                   <strong>
                     Bs. {m.monto !== null && m.monto !== undefined && m.monto !== ''

@@ -35,10 +35,6 @@ class MensualidadFacturacion extends Model
         'monto_pagado',
     ];
 
-    protected $casts = [
-        'monto' => 'decimal:2',
-    ];
-
     protected $appends = [
         'id',
         'servicio_id',

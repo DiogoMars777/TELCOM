@@ -170,4 +170,12 @@ class ZonaCobertura extends Model
     {
         $this->attributes['areaMapa'] = is_array($value) ? json_encode($value) : $value;
     }
+
+    /**
+     * Relación con clientes asignados a la zona de cobertura
+     */
+    public function clientes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente::class, 'idZona', 'idZona');
+    }
 }

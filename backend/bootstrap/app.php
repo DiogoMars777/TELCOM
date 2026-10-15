@@ -24,7 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // indicado (p. ej. `permission:zonas.manage`). Devuelve HTTP 403 si no.
         $middleware->alias([
             'permission' => \App\Http\Middleware\EnsurePermission::class,
-            'login.throttle' => \App\Http\Middleware\LoginThrottle::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -24,9 +24,7 @@ export function useAuthController(onLoginSuccess) {
       const user = await authService.login(credentials);
       if (onLoginSuccess) onLoginSuccess(user);
     } catch (err) {
-      if (err.status === 429) {
-        setError(err.message || 'Demasiados intentos fallidos. Vuelve a intentarlo en unos minutos.');
-      } else if (err.status === 401) {
+      if (err.status === 401) {
         setError('Correo o contraseña incorrectos.');
       } else if (err.status === 422) {
         setError('Revisa el correo y la contraseña ingresados.');

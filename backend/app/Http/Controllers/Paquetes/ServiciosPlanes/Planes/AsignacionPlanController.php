@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan;
+namespace App\Http\Controllers\Paquetes\ServiciosPlanes\Planes;
 
 use App\Http\Controllers\Controller;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
@@ -14,20 +14,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
- * CU17 - Asignar o cambiar el plan de un servicio de Internet.
- *
- * El historial de planes NO se sobrescribe: cada cambio cierra la asignación
- * vigente (`fechaFin`) y crea una nueva dentro de una transacción. Se
- * reutilizan los modelos compartidos AsignacionPlan y PlanInternet.
+ * Asignación de planes a un servicio de Internet (historial que NO se
+ * sobrescribe). Entidad UML AsignacionPlan.
  *
  * Permisos REALES (matriz RBAC existente):
  *  - planes.view   -> consultar el historial.
  *  - planes.assign -> asignar/cambiar plan (admin y secretaría).
- * El técnico no posee ninguno -> HTTP 403 (lo aplica el middleware).
- *
- * El contrato de la API lo consume el frontend (CU17 y CU08):
- *   GET  /api/cu08/servicios/{servicio}/planes  -> { data: { servicio, asignaciones } }
- *   POST /api/cu08/servicios/{servicio}/planes  -> { data: { asignacion } }
+ * El técnico NO posee ninguno -> HTTP 403 (lo aplica el middleware).
  */
 class AsignacionPlanController extends Controller
 {
@@ -75,22 +68,14 @@ class AsignacionPlanController extends Controller
         ]);
 
         $plan = PlanInternet::findOrFail($validated['plan_id']);
-        // La fecha de inicio y el autor son SIEMPRE datos del servidor. El
-        // `user_id` que pudiera enviar el frontend se ignora por completo.
         $fecha = now()->toDateString();
         $userId = $request->user()->id;
 
         $asignacion = DB::transaction(function () use ($servicio, $plan, $validated, $fecha, $userId) {
-            // Asignación vigente anterior (si existe) para la auditoría.
-            $anterior = AsignacionPlan::where('idServicio', $servicio->idServicio)
-                ->whereNull('fechaFin')
-                ->first();
-
             // Cerrar la asignación vigente conservando el historial.
             AsignacionPlan::where('idServicio', $servicio->idServicio)
                 ->whereNull('fechaFin')
                 ->update(['fechaFin' => $fecha]);
-
 
             $nueva = AsignacionPlan::create([
                 'servicio_id'     => $servicio->id,
@@ -103,8 +88,7 @@ class AsignacionPlanController extends Controller
             ]);
 
             // Mantener coherente el "snapshot" legado que ya consume CU08.
-            // Los valores y precios históricos quedan preservados en
-            // `asignaciones_plan`; NO se tocan mensualidades ni pagos ya emitidos.
+            // Los valores históricos quedan preservados en asignaciones_plan.
             $servicio->update([
                 'plan_nombre'    => $plan->nombre_plan,
                 'velocidad_mbps' => $plan->velocidad_mbps,
@@ -112,15 +96,10 @@ class AsignacionPlanController extends Controller
             ]);
 
             AuditLogger::log(
-                'CU17',
+                'PLANES',
                 'ASIGNAR_PLAN',
                 "Plan {$plan->nombre_plan} asignado al servicio {$servicio->codigo_servicio}.",
-                $anterior ? [
-                    'asignacion_id'   => $anterior->id,
-                    'plan_id'         => $anterior->plan_id,
-                    'precio_aplicado' => $anterior->precio_aplicado,
-                    'fecha_inicio'    => is_string($anterior->fecha_inicio) ? $anterior->fecha_inicio : $anterior->fecha_inicio?->toDateString(),
-                ] : null,
+                null,
                 ['servicio_id' => $servicio->id, 'plan_id' => $plan->id, 'precio_aplicado' => $plan->precio_mensual]
             );
 

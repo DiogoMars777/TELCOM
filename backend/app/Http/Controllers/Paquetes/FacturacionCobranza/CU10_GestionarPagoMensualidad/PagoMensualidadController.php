@@ -185,8 +185,8 @@ class PagoMensualidadController extends Controller
         $factura = $pendientes->first();
 
         // Cálculo de fecha programada de corte (5 días de tolerancia tras vencimiento según CU13/CU14)
-        $fechaVencimiento = $factura->fecha_vencimiento
-            ? Carbon::parse($factura->fecha_vencimiento)->startOfDay()
+        $fechaVencimiento = $factura->fecha_vencimiento 
+            ? Carbon::parse($factura->fecha_vencimiento)->startOfDay() 
             : Carbon::today()->addDays(5);
 
         $fechaCorte = $fechaVencimiento->copy()->addDays(5);
@@ -313,3 +313,4 @@ class PagoMensualidadController extends Controller
         });
     }
 }
+

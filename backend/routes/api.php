@@ -34,15 +34,14 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU13_ListadoServiciosCorte\Ser
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
 // CU15: Gestionar lista y registro de reactivaciones
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionesController;
-// CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarPlanesInternet\PlanInternetController;
-// CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan\AsignacionPlanController;
+// Planes: catálogo de planes y asignación a servicios (entidades UML)
+use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\PlanInternetController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\AsignacionPlanController;
 
 /*
 |--------------------------------------------------------------------------
 | RUTAS API - TELCOM SISTEMA DE TELECOMUNICACIONES
-| Estructura MVC orientada a Casos de Uso (CU01 - CU17)
+| Estructura MVC orientada a Casos de Uso (CU01 - CU15)
 |--------------------------------------------------------------------------
 | - CU01 /login es la ÚNICA ruta pública (permite obtener el token).
 | - CU01 /logout y /me, y TODAS las rutas CU02-CU15 exigen auth:sanctum.
@@ -55,13 +54,9 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlan\Asigna
 // CU01: Iniciar y cerrar sesión
 Route::prefix('cu01')->group(function () {
     // Pública: necesaria para obtener el token Bearer
-    Route::post('/login', [AuthController::class, 'login'])->middleware('login.throttle');
+    Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
-
-    // Recuperación de contraseña
-    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     // Cambiar la contraseña del usuario AUTENTICADO. Todos los roles internos
     // (Administrador, Secretaría y Soporte Técnico) poseen `auth.login`, por lo
@@ -101,7 +96,9 @@ Route::prefix('cu03')->middleware(['auth:sanctum', 'permission:usuarios.manage']
 Route::prefix('cu04')->middleware(['auth:sanctum', 'permission:zonas.manage'])->group(function () {
     Route::get('/zonas', [ZonaCoberturaController::class, 'index']);
     Route::post('/zonas', [ZonaCoberturaController::class, 'store']);
+    Route::get('/zonas/{id}', [ZonaCoberturaController::class, 'show']);
     Route::put('/zonas/{id}', [ZonaCoberturaController::class, 'update']);
+    Route::delete('/zonas/{id}', [ZonaCoberturaController::class, 'destroy']);
 });
 
 // CU05: Registrar nuevo cliente (administrador, secretaría)
@@ -129,10 +126,21 @@ Route::prefix('cu08')->group(function () {
     // Consulta: admin, secretaría, técnico
     Route::get('/servicios', [ServicioInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:servicios.view']);
-    // Registro / activación administrativa: admin, secretaría
+    Route::get('/servicios/{id}', [ServicioInternetController::class, 'show'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:servicios.view']);
+
+    // Catálogos para el formulario de registro (clientes activos, zonas y planes)
+    Route::get('/zonas', [ZonaCoberturaController::class, 'index'])
+        ->middleware(['auth:sanctum', 'permission:servicios.manage']);
+    Route::get('/planes', [PlanInternetController::class, 'index'])
+        ->middleware(['auth:sanctum', 'permission:servicios.manage']);
+
+    // Registro y actualización: admin, secretaría
     Route::post('/servicios', [ServicioInternetController::class, 'store'])
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
-    Route::put('/servicios/{id}/activar', [ServicioInternetController::class, 'activar'])
+    Route::put('/servicios/{id}', [ServicioInternetController::class, 'update'])
+        ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
 });
 
@@ -159,9 +167,7 @@ Route::prefix('cu10')->group(function () {
 
 // CU11: Consultar historial de pagos (admin, secretaría)
 Route::prefix('cu11')->middleware(['auth:sanctum', 'permission:pagos.history'])->group(function () {
-    Route::get('/historial/filtros', [HistorialPagosController::class, 'filtros']);
     Route::get('/historial', [HistorialPagosController::class, 'index']);
-    Route::get('/historial/{id}', [HistorialPagosController::class, 'show'])->whereNumber('id');
 });
 
 // CU12: Visualizar alertas de vencimiento (admin, secretaría)
@@ -187,49 +193,24 @@ Route::prefix('cu15')->middleware(['auth:sanctum', 'permission:reactivaciones.ma
 
 /*
 |--------------------------------------------------------------------------
-| CU16 - PLANES DE INTERNET (catálogo; entidad UML PlanInternet)
+| PLANES DE INTERNET (entidades UML: PlanInternet y AsignacionPlan)
 |--------------------------------------------------------------------------
 | Se reutilizan los permisos REALES ya existentes en la matriz RBAC:
-|   - planes.view   -> consultar el catálogo (admin, secretaría).
-|   - planes.assign -> crear/editar/activar/desactivar (admin, secretaría).
+|   - planes.view   -> admin, secretaría.
+|   - planes.assign -> admin, secretaría.
 | El técnico NO los tiene: el middleware `permission` devuelve HTTP 403.
-| El contrato de `/planes` (GET) ya lo consume CU08 -> no cambia.
-| Un plan nunca se borra: DELETE = baja lógica (`activo = false`).
 */
+
+// Catálogo de planes
 Route::prefix('planes')->group(function () {
-    // Consultar / buscar (admin y secretaría).
     Route::get('/', [PlanInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);
     Route::get('/{id}', [PlanInternetController::class, 'show'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:planes.view']);
-
-    Route::post('/', [PlanInternetController::class, 'store'])
-        ->middleware(['auth:sanctum', 'permission:planes.assign']);
-    Route::put('/{id}', [PlanInternetController::class, 'update'])
-        ->whereNumber('id')
-        ->middleware(['auth:sanctum', 'permission:planes.assign']);
-    Route::delete('/{id}', [PlanInternetController::class, 'destroy'])
-        ->whereNumber('id')
-        ->middleware(['auth:sanctum', 'permission:planes.assign']);
-    Route::put('/{id}/activar', [PlanInternetController::class, 'activar'])
-        ->whereNumber('id')
-        ->middleware(['auth:sanctum', 'permission:planes.assign']);
-    Route::put('/{id}/desactivar', [PlanInternetController::class, 'desactivar'])
-        ->whereNumber('id')
-        ->middleware(['auth:sanctum', 'permission:planes.assign']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| CU17 - ASIGNAR / CAMBIAR EL PLAN DE UN SERVICIO (entidad AsignacionPlan)
-|--------------------------------------------------------------------------
-| Historial que nunca se sobrescribe. Se mantiene la ruta existente
-| `cu08/servicios/{servicio}/planes` porque es el contrato que ya consume el
-| frontend (CU08 y CU17); solo cambia el controlador al de CU17.
-|   - planes.view   -> consultar el historial.
-|   - planes.assign -> asignar/cambiar plan (admin, secretaría).
-*/
+// Historial y asignación de plan de un servicio (nunca se sobrescribe)
 Route::prefix('cu08/servicios/{servicio}/planes')->group(function () {
     Route::get('/', [AsignacionPlanController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle2, Circle, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useCambiarPasswordController } from '../../../../controllers/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/useCambiarPasswordController';
 import { evaluatePassword } from '../../../../config/passwordPolicy';
-import './CambiarPasswordView.css';
 
 /**
  * CU01 - Cambiar contraseña del usuario autenticado.
@@ -60,7 +59,7 @@ export default function CambiarPasswordView() {
   const showMismatch = form.newPasswordConfirmation.length > 0 && !passwordsMatch;
 
   return (
-    <div className="view-panel cu01-change-password">
+    <div className="view-panel">
       <div className="view-header">
         <div>
           <h2>Cambiar contraseña</h2>
