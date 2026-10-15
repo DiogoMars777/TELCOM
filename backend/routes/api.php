@@ -130,7 +130,17 @@ Route::prefix('cu08')->group(function () {
     Route::get('/servicios', [ServicioInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:servicios.view']);
     // Registro / activación administrativa: admin, secretaría
+    Route::get('/servicios/{id}', [ServicioInternetController::class, 'show'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:servicios.view']);
+    Route::get('/zonas', [ZonaCoberturaController::class, 'index'])
+        ->middleware(['auth:sanctum', 'permission:servicios.manage']);
+    Route::get('/planes', [PlanInternetController::class, 'index'])
+        ->middleware(['auth:sanctum', 'permission:servicios.manage']);
     Route::post('/servicios', [ServicioInternetController::class, 'store'])
+        ->middleware(['auth:sanctum', 'permission:servicios.manage']);
+    Route::put('/servicios/{id}', [ServicioInternetController::class, 'update'])
+        ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
     Route::put('/servicios/{id}/activar', [ServicioInternetController::class, 'activar'])
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);

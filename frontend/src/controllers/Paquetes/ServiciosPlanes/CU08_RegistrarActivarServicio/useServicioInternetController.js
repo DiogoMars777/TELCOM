@@ -2,37 +2,46 @@ import { useState, useEffect } from 'react';
 import { servicioInternetService } from '../../../../models/Paquetes/ServiciosPlanes/CU08_RegistrarActivarServicio/servicioInternetModel';
 import { describeApiError } from '../../../../services/apiClient';
 
+// ─── Formulario vacío de registro ────────────────────────────────────────────
+const FORM_VACIO = {
+  idCliente:       '',
+  idZona:          '',
+  idPlan:          '',
+  fechaActivacion: new Date().toISOString().slice(0, 10),
+  fechaCorteBase:  new Date().toISOString().slice(0, 10),
+  direccion:       '',
+  referencia:      '',
+  latitud:         '',
+  longitud:        '',
+  usuarioWinbox:   '',
+  observacion:     '',
+  diaCorte:        10,
+  ipAsignada:      '',
+  macRouter:       '',
+};
+
 export function useServicioInternetController() {
-  const [servicios, setServicios] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);       // Error de carga del listado
-  const [formError, setFormError] = useState(null); // Error de contratación/activación
-  const [showModal, setShowModal] = useState(false);
-  const [showActivarModal, setShowActivarModal] = useState(false);
+  // ── Estado de datos ──────────────────────────────────────────────────────
+  const [servicios,    setServicios]    = useState([]);
+  const [loading,      setLoading]      = useState(false);
+  const [error,        setError]        = useState(null);
+  const [formError,    setFormError]    = useState(null);
+
+  // ── Modales ──────────────────────────────────────────────────────────────
+  const [showModal,       setShowModal]       = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedServicio, setSelectedServicio] = useState(null);
 
-  // Catálogos reales para el formulario (clientes y planes).
-  const [clientes, setClientes] = useState([]);
-  const [planes, setPlanes] = useState([]);
-  const [catalogError, setCatalogError] = useState(null);
+  // ── Catálogos ────────────────────────────────────────────────────────────
+  const [clientes,      setClientes]      = useState([]);
+  const [zonas,         setZonas]         = useState([]);
+  const [planes,        setPlanes]        = useState([]);
+  const [catalogError,  setCatalogError]  = useState(null);
 
-  const [formServicio, setFormServicio] = useState({
-    cliente_id: '',
-    plan_id: '',
-    plan_nombre: '',
-    velocidad_mbps: '',
-    precio_mensual: '',
-    direccion_instalacion: '',
-    dia_corte: 10,
-    ip_asignada: '',
-    mac_router: '',
-  });
+  // ── Formulario de registro ────────────────────────────────────────────────
+  const [formServicio, setFormServicio] = useState({ ...FORM_VACIO });
 
-  const [formActivar, setFormActivar] = useState({
-    ip_asignada: '',
-    mac_router: '',
-  });
-
+  // ── Cargar listado de servicios ──────────────────────────────────────────
   const loadServicios = async () => {
     setLoading(true);
     setError(null);
@@ -47,14 +56,17 @@ export function useServicioInternetController() {
     }
   };
 
+  // ── Cargar catálogos (clientes, zonas, planes) ───────────────────────────
   const loadCatalogos = async () => {
     setCatalogError(null);
     try {
-      const [clientesData, planesData] = await Promise.all([
+      const [clientesData, zonasData, planesData] = await Promise.all([
         servicioInternetService.fetchClientes(),
+        servicioInternetService.fetchZonas(),
         servicioInternetService.fetchPlanes(),
       ]);
       setClientes(clientesData);
+      setZonas(zonasData);
       setPlanes(planesData);
     } catch (e) {
       setCatalogError(describeApiError(e));
@@ -66,61 +78,58 @@ export function useServicioInternetController() {
     loadCatalogos();
   }, []);
 
-  // Al elegir un cliente se guarda su `cliente_id` real y se usa su dirección
-  // como valor por defecto editable de la dirección de instalación.
+  // ── Al elegir un cliente: pre-rellenar dirección ──────────────────────────
   const handleClienteChange = (value) => {
-    const id = value === '' ? '' : Number(value);
-    const cliente = clientes.find((c) => c.id === id);
+    const id      = value === '' ? '' : Number(value);
+    const cliente = clientes.find((c) => (c.id ?? c.idCliente) === id);
     setFormServicio((prev) => ({
       ...prev,
-      cliente_id: id,
-      direccion_instalacion: cliente?.direccion ?? '',
+      idCliente: id,
+      // Pre-rellena dirección e idZona si el cliente ya tiene zona
+      direccion: cliente?.direccion ?? prev.direccion,
+      idZona:    cliente?.idZona ?? cliente?.zona_id ?? prev.idZona,
     }));
   };
 
-  // Al elegir un plan se autocompletan nombre, velocidad y precio mensual.
+  // ── Al elegir un plan: actualizar diaCorte sugerido ───────────────────────
   const handlePlanChange = (value) => {
     const id = value === '' ? '' : Number(value);
-    const plan = planes.find((p) => p.id === id);
-    setFormServicio((prev) => ({
-      ...prev,
-      plan_id: id,
-      plan_nombre: plan?.nombre_plan ?? '',
-      velocidad_mbps: plan?.velocidad_mbps ?? '',
-      precio_mensual: plan?.precio_mensual ?? '',
-    }));
+    setFormServicio((prev) => ({ ...prev, idPlan: id }));
   };
 
+  // ── Registrar nuevo servicio (flujo CU08) ─────────────────────────────────
   const handleCrear = async (e) => {
     e.preventDefault();
     setLoading(true);
     setFormError(null);
+
+    // Validación mínima en cliente antes de enviar
+    if (!formServicio.idCliente) {
+      setFormError('Debe seleccionar un cliente.');
+      setLoading(false);
+      return;
+    }
+
     try {
       await servicioInternetService.registrarServicio({
-        cliente_id: formServicio.cliente_id,
-        plan_id: formServicio.plan_id ? Number(formServicio.plan_id) : undefined,
-        plan_nombre: formServicio.plan_nombre,
-        velocidad_mbps: Number(formServicio.velocidad_mbps),
-        precio_mensual: Number(formServicio.precio_mensual),
-        direccion_instalacion: formServicio.direccion_instalacion,
-        dia_corte: Number(formServicio.dia_corte),
-        ip_asignada: formServicio.ip_asignada?.trim() || undefined,
-        mac_router: formServicio.mac_router?.trim() || undefined,
+        idCliente:       Number(formServicio.idCliente),
+        idZona:          formServicio.idZona ? Number(formServicio.idZona) : undefined,
+        idPlan:          formServicio.idPlan ? Number(formServicio.idPlan) : undefined,
+        fechaActivacion: formServicio.fechaActivacion || new Date().toISOString().slice(0, 10),
+        fechaCorteBase:  formServicio.fechaCorteBase || new Date().toISOString().slice(0, 10),
+        direccion:       formServicio.direccion || 'Domicilio del cliente',
+        referencia:      formServicio.referencia || undefined,
+        latitud:         formServicio.latitud !== '' && !isNaN(Number(formServicio.latitud)) ? Number(formServicio.latitud) : 0,
+        longitud:        formServicio.longitud !== '' && !isNaN(Number(formServicio.longitud)) ? Number(formServicio.longitud) : 0,
+        usuarioWinbox:   formServicio.usuarioWinbox || undefined,
+        observacion:     formServicio.observacion || undefined,
+        diaCorte:        Number(formServicio.diaCorte) || 10,
+        ipAsignada:      formServicio.ipAsignada?.trim() || undefined,
+        macRouter:       formServicio.macRouter?.trim() || undefined,
       });
-      // Solo se cierra el modal cuando el backend confirmó. Se recarga el
-      // listado real en lugar de inventar el registro localmente.
+
       setShowModal(false);
-      setFormServicio({
-        cliente_id: '',
-        plan_id: '',
-        plan_nombre: '',
-        velocidad_mbps: '',
-        precio_mensual: '',
-        direccion_instalacion: '',
-        dia_corte: 10,
-        ip_asignada: '',
-        mac_router: '',
-      });
+      setFormServicio({ ...FORM_VACIO });
       await loadServicios();
     } catch (err) {
       setFormError(describeApiError(err));
@@ -129,45 +138,65 @@ export function useServicioInternetController() {
     }
   };
 
-  const handleActivar = async (e) => {
-    e.preventDefault();
-    if (!selectedServicio) return;
-    setLoading(true);
-    setFormError(null);
-    try {
-      await servicioInternetService.activarServicio(selectedServicio.id, formActivar);
-      setShowActivarModal(false);
-      setFormActivar({ ip_asignada: '', mac_router: '' });
-      await loadServicios();
-    } catch (err) {
-      setFormError(describeApiError(err));
-    } finally {
-      setLoading(false);
-    }
+  // ── Abrir modal de detalle ────────────────────────────────────────────────
+  const handleVerDetalle = (servicio) => {
+    setSelectedServicio(servicio);
+    setShowDetailModal(true);
   };
+
+  // ── Paso 5 del CU08: Datos y servicios actuales del cliente seleccionado ───
+  const clienteSeleccionado = clientes.find(
+    (c) => (c.id ?? c.idCliente) === Number(formServicio.idCliente)
+  );
+
+  const serviciosClienteSeleccionado = formServicio.idCliente
+    ? servicios.filter(
+        (s) => (s.idCliente ?? s.cliente_id) === Number(formServicio.idCliente)
+      )
+    : [];
+
+  // Excepción 6: Detectar duplicidad temprana en el frontend
+  const posibleDuplicado = Boolean(
+    formServicio.idCliente &&
+    formServicio.idZona &&
+    formServicio.idPlan &&
+    serviciosClienteSeleccionado.some((s) => {
+      const mismaZona = (s.idZona ?? s.zona_id) === Number(formServicio.idZona);
+      const mismoPlan = (s.asignacionPlanActual?.idPlan ?? s.idPlan) === Number(formServicio.idPlan);
+      return mismaZona && mismoPlan;
+    })
+  );
 
   return {
+    // datos
     servicios,
     loading,
     error,
     formError,
+    // modales
     showModal,
     setShowModal,
-    showActivarModal,
-    setShowActivarModal,
+    showDetailModal,
+    setShowDetailModal,
     selectedServicio,
     setSelectedServicio,
+    // catálogos
     clientes,
+    zonas,
     planes,
     catalogError,
+    // selección y servicios actuales (Paso 5)
+    clienteSeleccionado,
+    serviciosClienteSeleccionado,
+    posibleDuplicado,
+    // formulario
     formServicio,
     setFormServicio,
-    formActivar,
-    setFormActivar,
+    // handlers
     handleClienteChange,
     handlePlanChange,
     handleCrear,
-    handleActivar,
+    handleVerDetalle,
     reload: loadServicios,
   };
 }
