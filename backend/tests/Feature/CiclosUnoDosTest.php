@@ -377,6 +377,7 @@ class CiclosUnoDosTest extends TestCase
         $secretaria = $this->usuarioConRol('secretaria');
         $headers = $this->bearer($secretaria);
         $servicio = $this->servicioSembrado();
+        $plan = $servicio->asignacionPlanActual?->plan ?? \App\Models\Paquetes\ServiciosPlanes\Planes\PlanInternet::first();
         $mensualidad = $this->crearMensualidad($servicio, ['monto' => 250.00]);
 
         $this->withHeaders($headers)->postJson('/api/cu10/pagos', [
