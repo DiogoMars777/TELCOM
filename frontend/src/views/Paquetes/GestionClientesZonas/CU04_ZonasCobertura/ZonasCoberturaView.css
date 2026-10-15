@@ -177,3 +177,14 @@
     line-height: 34px;
   }
 }
+
+/* Ocultar barra vertical solo en esta pantalla (sin overflow:hidden) */
+.content-body:has(.cu04-view) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.content-body:has(.cu04-view)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

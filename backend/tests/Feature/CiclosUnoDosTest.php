@@ -296,6 +296,8 @@ class CiclosUnoDosTest extends TestCase
         $secretaria = $this->usuarioConRol('secretaria');
         $headers = $this->bearer($secretaria);
         $servicio = $this->servicioSembrado();
+        $plan = $servicio->asignacionPlanActual?->plan;
+        $this->assertNotNull($plan);
         $mensualidad = $this->crearMensualidad($servicio, ['monto' => 250.00]);
 
         // Monto incorrecto (parcial) -> 422
@@ -320,9 +322,55 @@ class CiclosUnoDosTest extends TestCase
         ])->assertStatus(422);
     }
 
+    public function test_cu10_portal_cliente_consulta_ci_no_registrado_retorna_404(): void
+    {
+        $res = $this->getJson('/api/cu10/portal-cliente/consultar/9999999999');
+        $res->assertStatus(404);
+        $res->assertJsonFragment(['success' => false]);
+    }
+
+    public function test_cu10_portal_cliente_consulta_con_deuda_y_pago_en_linea(): void
+    {
+        $servicio = $this->servicioSembrado();
+        $cliente = $servicio->cliente;
+        $ci = $cliente->ci;
+
+        // Crear una factura pendiente
+        $mensualidad = $this->crearMensualidad($servicio, ['monto' => 180.00]);
+
+        // Consulta pública por CI
+        $resConsulta = $this->getJson('/api/cu10/portal-cliente/consultar/' . $ci);
+        $resConsulta->assertStatus(200);
+        $resConsulta->assertJsonPath('data.tiene_deuda', true);
+        $resConsulta->assertJsonPath('data.factura.id', $mensualidad->id);
+        $this->assertNotEmpty($resConsulta->json('data.fecha_corte'));
+        $this->assertNotNull($resConsulta->json('data.dias_habiles_restantes'));
+
+        // Pago en línea mediante QR
+        $resPago = $this->postJson('/api/cu10/portal-cliente/pagar', [
+            'mensualidad_id' => $mensualidad->id,
+            'monto_pagado'   => 180.00,
+            'metodo_pago'    => 'QR',
+        ]);
+        $resPago->assertStatus(201);
+        $this->assertNotEmpty($resPago->json('data.recibo.codigo_recibo'));
+
+        // Comprobar que en la base de datos la mensualidad ahora está pagada
+        $this->assertEquals('PAGADO', $mensualidad->fresh()->estado_pago);
+
+        // Volver a consultar por CI: si no hay más facturas pendientes, tiene_deuda debe ser false
+        $resPostPago = $this->getJson('/api/cu10/portal-cliente/consultar/' . $ci);
+        $resPostPago->assertStatus(200);
+        // Si no quedan otras facturas pendientes de este cliente
+        $facturasRestantes = MensualidadFacturacion::where('idCliente', $cliente->id)
+            ->where('estado_pago', 'PENDIENTE')->count();
+        $this->assertEquals($facturasRestantes > 0, $resPostPago->json('data.tiene_deuda'));
+    }
+
     // ------------------------------------------------------------------
     // CU11 - Historial de pagos
     // ------------------------------------------------------------------
+
 
     public function test_cu11_historial_filtra_por_metodo(): void
     {
@@ -352,6 +400,11 @@ class CiclosUnoDosTest extends TestCase
             ->assertJsonCount(1, 'data.data');
 
         $this->withHeaders($headers)
+            ->getJson("/api/cu11/historial?plan_id={$plan->idPlan}")
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data.data');
+
+        $this->withHeaders($headers)
             ->getJson("/api/cu11/historial/{$pagoId}")
             ->assertStatus(200)
             ->assertJsonPath('data.id', $pagoId)
@@ -360,7 +413,11 @@ class CiclosUnoDosTest extends TestCase
         $this->withHeaders($headers)
             ->getJson('/api/cu11/historial/filtros')
             ->assertStatus(200)
-            ->assertJsonPath('data.servicios.0.codigo', 'SRV-88201');
+            ->assertJsonFragment([
+                'id' => $plan->idPlan,
+                'nombre' => $plan->nombrePlan,
+                'velocidad_mbps' => $plan->velocidadMbps,
+            ]);
     }
 
     // ------------------------------------------------------------------

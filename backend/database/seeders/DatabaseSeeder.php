@@ -91,8 +91,12 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'cortes.register', 'nombre' => 'Registrar Corte Realizado', 'modulo' => 'CU14'],
             // CU15 - Reactivaciones
             ['slug' => 'reactivaciones.manage', 'nombre' => 'Gestionar Reactivaciones', 'modulo' => 'CU15'],
-            // Planes (módulo previsto)
+            // Planes (CU16 catálogo, CU17 asignación)
+            //   - planes.view   -> consultar/buscar planes (admin y secretaría).
+            //   - planes.manage -> crear/editar/activar/desactivar (solo admin).
+            //   - planes.assign -> asignar/cambiar el plan de un servicio (admin y secretaría).
             ['slug' => 'planes.view', 'nombre' => 'Consultar Planes', 'modulo' => 'PLANES'],
+            ['slug' => 'planes.manage', 'nombre' => 'Gestionar Catálogo de Planes', 'modulo' => 'PLANES'],
             ['slug' => 'planes.assign', 'nombre' => 'Asignar Planes', 'modulo' => 'PLANES'],
             // Equipos / comodato (módulo previsto)
             ['slug' => 'equipos.view', 'nombre' => 'Consultar Equipos', 'modulo' => 'EQUIPOS'],
@@ -198,18 +202,29 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 8. Plan de Internet (UML)
-        $plan = PlanInternet::firstOrCreate(
-            [
-                'nombrePlan'    => 'Fibra 200 Mbps',
-                'velocidadMbps' => 200,
-            ],
-            [
-                'precioMensual' => 250.00,
-                'descripcion'   => 'Plan inicial de datos de ejemplo.',
-                'activo'        => true,
-            ]
-        );
+        // 8. Planes de Internet (UML)
+        $planesCatalogo = [
+            ['nombrePlan' => 'Plan Básico 30 Mbps', 'velocidadMbps' => 30, 'precioMensual' => 130.00, 'descripcion' => 'Plan residencial esencial.'],
+            ['nombrePlan' => 'Plan Hogar Plus 50 Mbps', 'velocidadMbps' => 50, 'precioMensual' => 160.00, 'descripcion' => 'Plan ideal para el hogar.'],
+            ['nombrePlan' => 'Plan Fibra Ultra 100 Mbps', 'velocidadMbps' => 100, 'precioMensual' => 200.00, 'descripcion' => 'Alta velocidad para streaming y trabajo.'],
+            ['nombrePlan' => 'Fibra 200 Mbps', 'velocidadMbps' => 200, 'precioMensual' => 250.00, 'descripcion' => 'Plan corporativo y gamer.'],
+        ];
+
+        $plan = null;
+        foreach ($planesCatalogo as $pData) {
+            $createdPlan = PlanInternet::firstOrCreate(
+                ['nombrePlan' => $pData['nombrePlan']],
+                [
+                    'velocidadMbps' => $pData['velocidadMbps'],
+                    'precioMensual' => $pData['precioMensual'],
+                    'descripcion'   => $pData['descripcion'],
+                    'activo'        => true,
+                ]
+            );
+            if ($pData['nombrePlan'] === 'Fibra 200 Mbps') {
+                $plan = $createdPlan;
+            }
+        }
 
         // 9. Servicio de Internet inicial (CU08)
         $servicio = ServicioInternet::firstOrCreate(

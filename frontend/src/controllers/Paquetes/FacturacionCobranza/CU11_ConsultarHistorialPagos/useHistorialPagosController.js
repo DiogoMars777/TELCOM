@@ -3,14 +3,14 @@ import { historialPagosService } from '../../../../models/Paquetes/FacturacionCo
 import { describeApiError } from '../../../../services/apiClient.js';
 
 const FILTROS_INICIALES = {
-  buscar: '', servicio_id: '', periodo: '', metodo_pago: '', fecha_desde: '', fecha_hasta: '', por_pagina: 20,
+  buscar: '', plan_id: '', periodo: '', metodo_pago: '', fecha_desde: '', fecha_hasta: '', por_pagina: 20,
 };
 
 export function useHistorialPagosController() {
   const [pagos, setPagos] = useState([]);
   const [filtros, setFiltros] = useState(FILTROS_INICIALES);
   const [filtrosAplicados, setFiltrosAplicados] = useState(FILTROS_INICIALES);
-  const [opciones, setOpciones] = useState({ servicios: [], metodos: [] });
+  const [opciones, setOpciones] = useState({ planes: [], metodos: [] });
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [detalle, setDetalle] = useState(null);
   const [loading, setLoading] = useState(true);

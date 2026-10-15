@@ -6,30 +6,30 @@ export const mockHistorialPagos = [
     id: 1, codigo_recibo: 'REC-2026-0001', monto_pagado: 200, metodo_pago: 'QR',
     fecha_pago: '2026-10-13 10:30:00', cajero_nombre: 'Secretaría TELCOM',
     cliente_nombre: 'Carlos Mendoza', cliente_codigo: 'CLI-001', cliente_ci: '7845123',
-    servicio_id: 1, servicio_codigo: 'SRV-001', periodos: ['2026-10'], detalles: [],
+    servicio_id: 1, servicio_codigo: 'SRV-001', plan_id: 1, plan_nombre: 'Fibra Básico', velocidad_mbps: 30, periodos: ['2026-10'], detalles: [],
   },
   {
     id: 2, codigo_recibo: 'REC-2026-0002', monto_pagado: 150, metodo_pago: 'EFECTIVO',
     fecha_pago: '2026-09-18 15:45:00', cajero_nombre: 'Secretaría TELCOM',
     cliente_nombre: 'María Rojas', cliente_codigo: 'CLI-002', cliente_ci: '6312458',
-    servicio_id: 2, servicio_codigo: 'SRV-002', periodos: ['2026-09'], detalles: [],
+    servicio_id: 2, servicio_codigo: 'SRV-002', plan_id: 2, plan_nombre: 'Fibra Hogar', velocidad_mbps: 50, periodos: ['2026-09'], detalles: [],
   },
   {
     id: 3, codigo_recibo: 'REC-2026-0003', monto_pagado: 300, metodo_pago: 'TRANSFERENCIA',
     fecha_pago: '2026-08-05 09:10:00', cajero_nombre: 'Administrador TELCOM',
     cliente_nombre: 'Luis Fernández', cliente_codigo: 'CLI-003', cliente_ci: '9256741',
-    servicio_id: 3, servicio_codigo: 'SRV-003', periodos: ['2026-07', '2026-08'], detalles: [],
+    servicio_id: 3, servicio_codigo: 'SRV-003', plan_id: 3, plan_nombre: 'Fibra Plus', velocidad_mbps: 100, periodos: ['2026-07', '2026-08'], detalles: [],
   },
 ];
 
 function filtrarDemostracion(filters = {}) {
   const termino = String(filters.buscar || '').trim().toLocaleLowerCase('es');
   return mockHistorialPagos.filter((pago) => {
-    const texto = [pago.codigo_recibo, pago.cliente_nombre, pago.cliente_codigo, pago.cliente_ci, pago.servicio_codigo]
+    const texto = [pago.codigo_recibo, pago.cliente_nombre, pago.cliente_codigo, pago.cliente_ci, pago.servicio_codigo, pago.plan_nombre]
       .filter(Boolean).join(' ').toLocaleLowerCase('es');
     const fecha = String(pago.fecha_pago || '').slice(0, 10);
     return (!termino || texto.includes(termino))
-      && (!filters.servicio_id || Number(filters.servicio_id) === Number(pago.servicio_id))
+      && (!filters.plan_id || Number(filters.plan_id) === Number(pago.plan_id))
       && (!filters.periodo || pago.periodos.includes(filters.periodo))
       && (!filters.metodo_pago || pago.metodo_pago === filters.metodo_pago)
       && (!filters.fecha_desde || fecha >= filters.fecha_desde)
@@ -43,6 +43,8 @@ function normalizePago(pago) {
   const primera = mensualidades[0] || pago.mensualidad || {};
   const cliente = primera.cliente || {};
   const servicio = primera.servicio || {};
+  const asignacion = servicio.asignacion_plan_actual || servicio.asignacionPlanActual || {};
+  const plan = asignacion.plan || {};
   const metodoRelacionado = typeof pago.metodo_pago === 'object'
     ? pago.metodo_pago?.nombreMetodo
     : null;
@@ -63,6 +65,9 @@ function normalizePago(pago) {
     cliente_ci: cliente.documento_identidad || cliente.ci || null,
     servicio_codigo: servicio.codigo_servicio || servicio.codigoServicio || null,
     servicio_id: servicio.id || servicio.idServicio || primera.servicio_id || primera.idServicio,
+    plan_id: plan.id || plan.idPlan || asignacion.plan_id || asignacion.idPlan || null,
+    plan_nombre: plan.nombre_plan || plan.nombrePlan || null,
+    velocidad_mbps: plan.velocidad_mbps || plan.velocidadMbps || null,
     periodos: [...new Set(mensualidades.map((m) => m.periodo).filter(Boolean))],
     mensualidades,
     detalles,
@@ -91,14 +96,13 @@ export const historialPagosService = {
 
   async fetchFiltros() {
     if (isDemoMode()) return {
-      servicios: mockHistorialPagos.map((p) => ({
-        id: p.servicio_id, codigo: p.servicio_codigo, cliente_id: p.id,
-        cliente_codigo: p.cliente_codigo, cliente_nombre: p.cliente_nombre, cliente_ci: p.cliente_ci,
-      })),
+      planes: [...new Map(mockHistorialPagos.map((p) => [p.plan_id, {
+        id: p.plan_id, nombre: p.plan_nombre, velocidad_mbps: p.velocidad_mbps,
+      }])).values()],
       metodos: [...new Set(mockHistorialPagos.map((p) => p.metodo_pago))],
     };
     const response = await apiClient.get('/cu11/historial/filtros');
-    return response?.data || { servicios: [], metodos: [] };
+    return response?.data || { planes: [], metodos: [] };
   },
 
   async fetchDetalle(id) {

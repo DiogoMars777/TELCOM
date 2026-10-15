@@ -9,9 +9,11 @@ import {
   Phone,
   Mail,
   ArrowRight,
+  CreditCard,
 } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
 import { plans } from '../../config/plans';
+import PortalClienteModal from '../Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PortalClienteModal';
 import './public.css';
 
 // Año actual calculado una sola vez (fuera del render).
@@ -45,7 +47,7 @@ function scrollToId(id) {
 }
 
 /* ============================ Encabezado ============================ */
-function PublicHeader({ onEnterPortal }) {
+function PublicHeader({ onEnterPortal, portalLabel, onOpenPortalCliente }) {
   return (
     <header className="pub-header">
       <div className="pub-container pub-header-inner">
@@ -71,13 +73,24 @@ function PublicHeader({ onEnterPortal }) {
           ))}
         </nav>
 
-        <button className="pub-portal-btn" onClick={onEnterPortal}>
-          {siteConfig.nav.portalLabel}
-        </button>
+        <div className="pub-header-actions">
+          <button
+            type="button"
+            className="pub-portal-btn pub-pay-btn"
+            onClick={onOpenPortalCliente}
+          >
+            <CreditCard size={15} />
+            Pagar Mi Servicio
+          </button>
+          <button type="button" className="pub-portal-btn" onClick={onEnterPortal}>
+            {portalLabel || siteConfig.nav.portalLabel}
+          </button>
+        </div>
       </div>
     </header>
   );
 }
+
 
 /* ============================ Formulario de correo ============================ */
 function EmailCapture({ placeholder, buttonLabel }) {
@@ -165,7 +178,7 @@ function HeroVisual() {
 }
 
 /* ============================ Sección principal ============================ */
-function Hero() {
+function Hero({ onOpenPortalCliente }) {
   const { hero } = siteConfig;
 
   return (
@@ -192,6 +205,17 @@ function Hero() {
           <p className="pub-hero-sub">{hero.subtitle}</p>
 
           <EmailCapture placeholder={hero.emailPlaceholder} buttonLabel={hero.cta} />
+
+          <div className="pub-hero-client-shortcut">
+            <button
+              type="button"
+              className="pub-hero-pay-link"
+              onClick={onOpenPortalCliente}
+            >
+              <CreditCard size={15} />
+              ¿Ya eres cliente? Consulta tu estado y paga tu servicio con tu C.I.
+            </button>
+          </div>
         </div>
 
         <HeroVisual />
@@ -405,16 +429,28 @@ function PublicFooter() {
 }
 
 /* ============================ Vista completa ============================ */
-export default function LandingView({ onEnterPortal }) {
+export default function LandingView({ onEnterPortal, portalLabel }) {
+  const [portalClienteOpen, setPortalClienteOpen] = useState(false);
+
   return (
     <div className="pub-root">
-      <PublicHeader onEnterPortal={onEnterPortal} />
-      <Hero />
+      <PublicHeader
+        onEnterPortal={onEnterPortal}
+        portalLabel={portalLabel}
+        onOpenPortalCliente={() => setPortalClienteOpen(true)}
+      />
+      <Hero onOpenPortalCliente={() => setPortalClienteOpen(true)} />
       <Plans />
       <Coverage />
       <About />
-      <FinalCta />
+      <FinalCta onOpenPortalCliente={() => setPortalClienteOpen(true)} />
       <PublicFooter />
+
+      {/* Modal de Autoservicio Portal Cliente (CU10 - Gestionar Pago de Mensualidad) */}
+      <PortalClienteModal
+        isOpen={portalClienteOpen}
+        onClose={() => setPortalClienteOpen(false)}
+      />
     </div>
   );
 }

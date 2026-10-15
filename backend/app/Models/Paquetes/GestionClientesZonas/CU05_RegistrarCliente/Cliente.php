@@ -36,6 +36,7 @@ class Cliente extends Model
         // alias de compatibilidad
         'codigo_cliente',
         'documento_identidad',
+        'nombre_completo',
         'nombres',
         'apellidos',
         'telefono',
@@ -49,6 +50,7 @@ class Cliente extends Model
         'id',
         'codigo_cliente',
         'documento_identidad',
+        'nombre_completo',
         'nombres',
         'apellidos',
         'telefono',
@@ -88,7 +90,7 @@ class Cliente extends Model
             {
                 return match ($column) {
                     'id', 'cliente_id' => 'idCliente',
-                    'documento_identidad' => 'ci',
+                    'documento_identidad', 'documentoIdentidad' => 'ci',
                     'codigo_cliente' => 'codigoCliente',
                     'telefono' => 'telefonoPrincipal',
                     'zona_id' => 'idZona',
@@ -131,6 +133,54 @@ class Cliente extends Model
                     $column = $this->normalizeColumn($column);
                 }
                 return parent::orWhereLike($column, $value, $caseSensitive);
+            }
+
+            public function select($columns = ['*'])
+            {
+                if (is_array($columns)) {
+                    $cols = $columns;
+                } else {
+                    $cols = func_get_args();
+                }
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::select(array_values(array_unique($normalized)));
+            }
+
+            public function addSelect($column)
+            {
+                $cols = is_array($column) ? $column : func_get_args();
+                $normalized = [];
+                foreach ($cols as $c) {
+                    if (is_string($c)) {
+                        $normalized[] = $this->normalizeColumn($c);
+                    } else {
+                        $normalized[] = $c;
+                    }
+                }
+                return parent::addSelect(array_values(array_unique($normalized)));
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
             }
 
             public function latest($column = 'fechaRegistro')
@@ -221,6 +271,22 @@ class Cliente extends Model
     public function setEstadoAttribute(?string $value): void
     {
         $this->attributes['estadoCliente'] = $value;
+    }
+
+    public function getNombreCompletoAttribute(): ?string
+    {
+        if (!empty($this->attributes['nombreCompleto'])) {
+            return $this->attributes['nombreCompleto'];
+        }
+        $n = $this->nombres ?? '';
+        $a = $this->apellidos ?? '';
+        $full = trim("{$n} {$a}");
+        return $full !== '' ? $full : ($this->attributes['nombreCompleto'] ?? null);
+    }
+
+    public function setNombreCompletoAttribute(?string $value): void
+    {
+        $this->attributes['nombreCompleto'] = $value;
     }
 
     public function getNombresAttribute(): ?string

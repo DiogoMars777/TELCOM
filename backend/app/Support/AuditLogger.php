@@ -32,7 +32,7 @@ class AuditLogger
                 'ipOrigen'     => request()->ip(),
                 'datosPrevios' => $previos,
                 'datosNuevos'  => $nuevos,
-                'fechaHora'    => now(),
+                'fechaHora'    => now()->timezone('America/La_Paz'),
             ]);
         } catch (Throwable $e) {
             report($e);

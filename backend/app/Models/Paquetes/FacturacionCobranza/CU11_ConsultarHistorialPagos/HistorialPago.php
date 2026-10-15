@@ -19,4 +19,12 @@ class HistorialPago extends PagoMensualidad
         return $query->whereHas('detalles.mensualidad', fn (Builder $mensualidad) =>
             $mensualidad->where('idServicio', $servicioId));
     }
+
+    public function scopePorPlan(Builder $query, int $planId): Builder
+    {
+        return $query->whereHas(
+            'detalles.mensualidad.servicio.asignacionPlanActual',
+            fn (Builder $asignacion) => $asignacion->where('idPlan', $planId)
+        );
+    }
 }

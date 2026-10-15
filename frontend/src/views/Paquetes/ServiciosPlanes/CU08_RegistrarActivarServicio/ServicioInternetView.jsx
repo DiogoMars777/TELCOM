@@ -86,44 +86,59 @@ export default function ServicioInternetView({ user }) {
                 <td colSpan={8} style={{ textAlign: 'center', color: '#94a3b8' }}>Sin registros</td>
               </tr>
             )}
-            {servicios.map((s) => (
-              <tr key={s.id}>
-                <td><strong>{s.codigo_servicio}</strong></td>
-                <td>{s.cliente_nombre || '—'}</td>
-                <td>{s.plan_nombre}</td>
-                <td><span className="badge badge-info">{s.velocidad_mbps} Mbps</span></td>
-                <td>Bs. {s.precio_mensual}</td>
-                <td>
-                  {s.ip_asignada ? (
-                    <div>
-                      <small>IP: <code>{s.ip_asignada}</code></small><br/>
-                      <small>MAC: <code>{s.mac_router}</code></small>
-                    </div>
-                  ) : (
-                    <span style={{ color: '#94a3b8' }}>Sin IP/MAC</span>
-                  )}
-                </td>
-                <td>
-                  <span className={`badge badge-${s.estado_servicio === 'ACTIVO' ? 'success' : 'warning'}`}>
-                    {s.estado_servicio}
-                  </span>
-                </td>
-                <td>
-                  {s.estado_servicio === 'PENDIENTE_INSTALACION' && puedeGestionar && (
-                    <button
-                      className="btn btn-sm btn-success"
-                      onClick={() => {
-                        setSelectedServicio(s);
-                        setFormActivar({ ip_asignada: '', mac_router: '' });
-                        setShowActivarModal(true);
-                      }}
-                    >
-                      <Zap size={14} /> Activar
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {servicios.map((s) => {
+              const planNombre = s.plan_nombre || s.asignacion_plan_actual?.plan?.nombre_plan || s.asignacion_plan_actual?.plan?.nombrePlan || '—';
+              const velocidad = s.velocidad_mbps ?? s.asignacion_plan_actual?.plan?.velocidad_mbps ?? s.asignacion_plan_actual?.plan?.velocidadMbps ?? null;
+              const precio = s.precio_mensual ?? s.asignacion_plan_actual?.precio_aplicado ?? s.asignacion_plan_actual?.plan?.precio_mensual ?? null;
+              const ip = s.ip_asignada || s.ipAsignada;
+              const mac = s.mac_router || s.macRouter;
+              const estado = s.estado_servicio || s.estadoServicio || 'PENDIENTE_INSTALACION';
+
+              return (
+                <tr key={s.id || s.idServicio}>
+                  <td><strong>{s.codigo_servicio || s.codigoServicio}</strong></td>
+                  <td>{s.cliente_nombre || (s.cliente ? `${s.cliente.nombres ?? ''} ${s.cliente.apellidos ?? ''}`.trim() : '—')}</td>
+                  <td>{planNombre}</td>
+                  <td>
+                    {velocidad ? (
+                      <span className="badge badge-info">{velocidad} Mbps</span>
+                    ) : (
+                      <span style={{ color: '#94a3b8' }}>—</span>
+                    )}
+                  </td>
+                  <td>{precio ? `Bs. ${Number(precio).toFixed(2)}` : '—'}</td>
+                  <td>
+                    {ip ? (
+                      <div>
+                        <small>IP: <code>{ip}</code></small><br/>
+                        <small>MAC: <code>{mac || '—'}</code></small>
+                      </div>
+                    ) : (
+                      <span style={{ color: '#94a3b8' }}>Sin IP/MAC</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`badge badge-${estado === 'ACTIVO' ? 'success' : 'warning'}`}>
+                      {estado}
+                    </span>
+                  </td>
+                  <td>
+                    {estado === 'PENDIENTE_INSTALACION' && puedeGestionar && (
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={() => {
+                          setSelectedServicio(s);
+                          setFormActivar({ ip_asignada: '', mac_router: '' });
+                          setShowActivarModal(true);
+                        }}
+                      >
+                        <Zap size={14} /> Activar
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -201,6 +216,37 @@ export default function ServicioInternetView({ user }) {
                   onChange={(e) => setFormServicio({ ...formServicio, dia_corte: e.target.value })}
                 />
               </div>
+
+              <div style={{ margin: '1rem 0 0.5rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.75rem' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Parámetros de Red y Equipos (Opcional)
+                </span>
+                <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0.75rem 0' }}>
+                  Si ingresa la IP y MAC ahora, el servicio quedará <strong>ACTIVO</strong>. Si lo deja vacío, quedará como <strong>PENDIENTE DE INSTALACIÓN</strong>.
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="form-group">
+                  <label>Dirección IP Asignada</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. 10.10.0.45"
+                    value={formServicio.ip_asignada || ''}
+                    onChange={(e) => setFormServicio({ ...formServicio, ip_asignada: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>MAC del Router / ONT</label>
+                  <input
+                    type="text"
+                    placeholder="Ej. E4:8D:8C:1A:2B:3C"
+                    value={formServicio.mac_router || ''}
+                    onChange={(e) => setFormServicio({ ...formServicio, mac_router: e.target.value })}
+                  />
+                </div>
+              </div>
+
               {formError && (
                 <div className="alert alert-danger" role="alert">
                   <AlertCircle size={18} /> {formError}

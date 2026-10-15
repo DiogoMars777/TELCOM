@@ -10,9 +10,7 @@ import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_I
 import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
 import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
 import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
-import ClienteRegistroView from './views/Paquetes/GestionClientesZonas/CU05_RegistrarCliente/ClienteRegistroView';
-import ClienteConsultaView from './views/Paquetes/GestionClientesZonas/CU06_ConsultarBuscarClientes/ClienteConsultaView';
-import ClienteMantenimientoView from './views/Paquetes/GestionClientesZonas/CU07_ActualizarBajaCliente/ClienteMantenimientoView';
+import ClientesView from './views/Paquetes/GestionClientesZonas/ClientesView';
 import ServicioInternetView from './views/Paquetes/ServiciosPlanes/CU08_RegistrarActivarServicio/ServicioInternetView';
 import MensualidadGeneracionView from './views/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/MensualidadGeneracionView';
 import PagoMensualidadView from './views/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PagoMensualidadView';
@@ -21,12 +19,15 @@ import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_Vi
 import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
 import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
+import PlanCatalogoView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanCatalogoView';
+import AsignacionPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarPlanServicio/AsignacionPlanView';
 
 // Iconos de cada módulo del panel
 import {
   Radio, LogOut, History, Users, MapPin,
   UserPlus, Search, Edit3, Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
+  ClipboardList, ArrowRightLeft,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -60,7 +61,14 @@ export default function App() {
       authService,
       onAuthenticated: (user) => {
         setCurrentUser(user);
-        setView('admin');
+        // Solo ir directamente al panel si la URL lo solicita explícitamente (?view=admin).
+        // Al levantar el frontend, se muestra por defecto la Landing Page pública.
+        if (typeof window !== 'undefined') {
+          const q = new URLSearchParams(window.location.search);
+          if (q.get('view') === 'admin') {
+            setView('admin');
+          }
+        }
       },
       onBooted: () => setBooting(false),
     });
@@ -136,14 +144,16 @@ export default function App() {
     {
       title: 'Abonados & Clientes',
       items: [
-        { id: 'CU05', label: 'Registrar Nuevo Cliente', icon: UserPlus },
-        { id: 'CU06', label: 'Consultar / Buscar Clientes', icon: Search },
-        { id: 'CU07', label: 'Actualizar / Baja Cliente', icon: Edit3 },
+        { id: 'CU06', label: 'Clientes', icon: Users },
       ],
     },
     {
       title: 'Servicios de Internet',
-      items: [{ id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi }],
+      items: [
+        { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
+        { id: 'CU16', label: 'Catálogo de Planes', icon: ClipboardList },
+        { id: 'CU17', label: 'Asignar Plan a Servicio', icon: ArrowRightLeft },
+      ],
     },
     {
       title: 'Mensualidades & Pagos',
@@ -185,7 +195,8 @@ export default function App() {
   const activeSectionLabel =
     menuSections
       .flatMap((section) => section.items)
-      .find((item) => item.id === effectiveCu)?.label || 'Panel de Gestión';
+      .find((item) => item.id === effectiveCu)?.label ||
+    (effectiveCu === 'CU05' || effectiveCu === 'CU07' ? 'Clientes' : 'Panel de Gestión');
 
   const handleIrACorte = (servicio) => {
     setCorteServicioSelected(servicio);
@@ -208,13 +219,15 @@ export default function App() {
       case 'CU04':
         return <ZonasCoberturaView user={currentUser} />;
       case 'CU05':
-        return <ClienteRegistroView onClienteCreated={() => setActiveCU('CU06')} />;
       case 'CU06':
-        return <ClienteConsultaView />;
       case 'CU07':
-        return <ClienteMantenimientoView />;
+        return <ClientesView user={currentUser} />;
       case 'CU08':
         return <ServicioInternetView user={currentUser} />;
+      case 'CU16':
+        return <PlanCatalogoView user={currentUser} />;
+      case 'CU17':
+        return <AsignacionPlanView user={currentUser} />;
       case 'CU09':
         return <MensualidadGeneracionView user={currentUser} />;
       case 'CU10':
@@ -230,7 +243,7 @@ export default function App() {
       case 'CU15':
         return <ReactivacionesView user={currentUser} />;
       default:
-        return <ClienteConsultaView />;
+        return <ClientesView user={currentUser} />;
     }
   };
 
@@ -244,9 +257,20 @@ export default function App() {
     );
   }
 
-  // --- Página pública ---
+  // --- Página pública (Landing Page de inicio) ---
   if (view === 'landing') {
-    return <LandingView onEnterPortal={() => setView('login')} />;
+    return (
+      <LandingView
+        portalLabel={currentUser ? 'Ir al Panel de Gestión' : undefined}
+        onEnterPortal={() => {
+          if (currentUser) {
+            setView('admin');
+          } else {
+            setView('login');
+          }
+        }}
+      />
+    );
   }
 
   // --- Protección de rutas: sin sesión no se entra al panel ---
@@ -328,6 +352,16 @@ export default function App() {
           </div>
 
           <div className="top-bar-right">
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => setView('landing')}
+              title="Ver Landing Page pública"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginRight: '0.75rem' }}
+            >
+              <Radio size={14} />
+              <span>Ver Sitio Web</span>
+            </button>
             <div className="top-bar-user">
               <div className="user-avatar" aria-hidden="true">
                 {(currentUser?.name || 'U').charAt(0).toUpperCase()}

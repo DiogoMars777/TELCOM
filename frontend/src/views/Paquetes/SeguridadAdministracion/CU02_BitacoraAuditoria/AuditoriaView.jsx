@@ -18,9 +18,10 @@ export default function AuditoriaView() {
 
   const nombreUsuario = (log) => log.user?.name || 'Usuario eliminado';
   const correoUsuario = (log) => log.user?.email || 'sin correo';
+  const fechaFormateada = (log) => log.created_at || log.fechaHora || log.fecha_hora || '-';
 
   return (
-    <div className="view-panel">
+    <div className="view-panel cu02-view">
       <div className="view-header">
         <div>
           <h2>Consultar Bitácora de Auditoría</h2>
@@ -81,7 +82,7 @@ export default function AuditoriaView() {
                 <tr>
                   <th className="audit-col-id">ID</th>
                   <th className="audit-col-user">Usuario</th>
-                  <th className="audit-col-module">Módulo</th>
+
                   <th className="audit-col-action">Acción</th>
                   <th className="audit-col-details">Detalles Operación</th>
                   <th className="audit-col-ip">IP Origen</th>
@@ -98,15 +99,13 @@ export default function AuditoriaView() {
                         <small>{correoUsuario(log)}</small>
                       </div>
                     </td>
-                    <td className="audit-col-module">
-                      <span className="badge badge-info">{log.modulo}</span>
-                    </td>
+
                     <td className="audit-col-action">
                       <span className="badge badge-warning">{log.accion}</span>
                     </td>
                     <td className="audit-col-details">{log.detalles}</td>
                     <td className="audit-col-ip"><code>{log.ip_origen}</code></td>
-                    <td className="audit-col-date">{log.created_at}</td>
+                    <td className="audit-col-date">{fechaFormateada(log)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -119,14 +118,13 @@ export default function AuditoriaView() {
               <article className="audit-card" key={log.id}>
                 <div className="audit-card-top">
                   <span className="audit-card-id">#{log.id}</span>
-                  <span className="audit-card-date">{log.created_at}</span>
+                  <span className="audit-card-date">{fechaFormateada(log)}</span>
                 </div>
                 <div className="audit-card-user">
                   <strong>{nombreUsuario(log)}</strong>
                   <small>{correoUsuario(log)}</small>
                 </div>
                 <div className="audit-card-badges">
-                  <span className="badge badge-info">{log.modulo}</span>
                   <span className="badge badge-warning">{log.accion}</span>
                 </div>
                 <p className="audit-card-details">{log.detalles}</p>

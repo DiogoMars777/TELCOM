@@ -131,6 +131,53 @@
   box-shadow: 0 0 0 1px rgba(92, 200, 255, 0.35), 0 8px 26px rgba(31, 111, 240, 0.25);
 }
 
+.pub-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.pub-pay-btn {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.22) 0%, rgba(3, 105, 161, 0.38) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  color: #38bdf8;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pub-pay-btn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.38);
+}
+
+.pub-hero-client-shortcut {
+  margin-top: 1rem;
+}
+
+.pub-hero-pay-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.pub-hero-pay-link:hover {
+  color: #38bdf8;
+}
+
+
 /* ============================ HERO ============================ */
 .pub-hero {
   padding: 4.5rem 0 3rem;

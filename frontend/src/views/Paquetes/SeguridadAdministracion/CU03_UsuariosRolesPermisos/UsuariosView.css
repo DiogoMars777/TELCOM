@@ -59,6 +59,17 @@
   white-space: nowrap;
 }
 
+/* Ocultar barra vertical solo en esta pantalla (sin overflow:hidden) */
+.content-body:has(.cu03-view) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.content-body:has(.cu03-view)::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 /* ------------------------------------------------------------------ */
 /* Estado (cargando / sin registros) visible solo en celulares         */
 /* ------------------------------------------------------------------ */

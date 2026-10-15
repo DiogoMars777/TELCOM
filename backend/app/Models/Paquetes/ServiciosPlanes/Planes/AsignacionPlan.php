@@ -44,29 +44,67 @@ class AsignacionPlan extends Model
     public function newEloquentBuilder($query)
     {
         return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            protected function normalizeColumn(string $column): string
+            {
+                return match ($column) {
+                    'id', 'asignacion_id' => 'idAsignacionPlan',
+                    'servicio_id' => 'idServicio',
+                    'plan_id' => 'idPlan',
+                    'user_id' => 'idUsuario',
+                    'fecha_inicio', 'created_at' => 'fechaInicio',
+                    'fecha_fin' => 'fechaFin',
+                    'precio_aplicado' => 'precioAplicado',
+                    'motivo_cambio' => 'motivoCambio',
+                    default => $column,
+                };
+            }
+
             public function where($column, $operator = null, $value = null, $boolean = 'and')
             {
                 if (is_string($column)) {
-                    $column = match ($column) {
-                        'servicio_id' => 'idServicio',
-                        'plan_id' => 'idPlan',
-                        'user_id' => 'idUsuario',
-                        'fecha_inicio' => 'fechaInicio',
-                        'fecha_fin' => 'fechaFin',
-                        'precio_aplicado' => 'precioAplicado',
-                        'motivo_cambio' => 'motivoCambio',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::where($column, $operator, $value, $boolean);
             }
 
             public function whereNull($columns, $boolean = 'and', $not = false)
             {
-                if ($columns === 'fecha_fin') {
-                    $columns = 'fechaFin';
+                if (is_string($columns)) {
+                    $columns = $this->normalizeColumn($columns);
                 }
                 return parent::whereNull($columns, $boolean, $not);
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
+            public function latest($column = 'fechaInicio')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::latest($column ?? 'fechaInicio');
+            }
+
+            public function oldest($column = 'fechaInicio')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::oldest($column ?? 'fechaInicio');
             }
 
             public function update(array $values)
@@ -76,16 +114,7 @@ class AsignacionPlan extends Model
                     if ($key === 'updated_at' || $key === 'created_at') {
                         continue;
                     }
-                    $k = match ($key) {
-                        'fecha_fin' => 'fechaFin',
-                        'fecha_inicio' => 'fechaInicio',
-                        'precio_aplicado' => 'precioAplicado',
-                        'motivo_cambio' => 'motivoCambio',
-                        'servicio_id' => 'idServicio',
-                        'plan_id' => 'idPlan',
-                        'user_id' => 'idUsuario',
-                        default => $key,
-                    };
+                    $k = $this->normalizeColumn((string)$key);
                     $mapped[$k] = $val;
                 }
                 return parent::update($mapped);

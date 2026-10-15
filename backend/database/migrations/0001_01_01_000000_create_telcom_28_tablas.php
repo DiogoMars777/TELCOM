@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
+     * En PostgreSQL, evitar transacciones para que cada CREATE TABLE se confirme de inmediato.
+     */
+    public $withinTransaction = false;
+
+    /**
      * Esquema Canónico TELCOM (28 Tablas Relacionales).
      */
     public function up(): void

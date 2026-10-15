@@ -71,6 +71,20 @@ export const authService = {
     }, { throwOnError: true });
   },
 
+  // Alias para compatibilidad con flujos de recuperación
+  async forgotPassword(email) {
+    return await this.solicitarRecuperacionPassword(email);
+  },
+
+  async resetPassword({ email, code, newPassword, newPasswordConfirmation }) {
+    return await this.restablecerPassword({
+      email,
+      codigo: code,
+      password: newPassword,
+      passwordConfirmation: newPasswordConfirmation,
+    });
+  },
+
   getToken() {
     return authToken.get();
   },

@@ -56,19 +56,58 @@ class ZonaCobertura extends Model
     public function newEloquentBuilder($query)
     {
         return new class($query) extends \Illuminate\Database\Eloquent\Builder {
+            protected function normalizeColumn(string $column): string
+            {
+                return match ($column) {
+                    'id', 'zona_id' => 'idZona',
+                    'nombre', 'nombre_zona' => 'nombreZona',
+                    'activo' => 'estado',
+                    'capacidad_nodos' => 'capacidadNodos',
+                    'area_mapa' => 'areaMapa',
+                    'estado_cobertura' => 'estadoCobertura',
+                    'created_at' => 'idZona',
+                    default => $column,
+                };
+            }
+
             public function where($column, $operator = null, $value = null, $boolean = 'and')
             {
                 if (is_string($column)) {
-                    $column = match ($column) {
-                        'nombre' => 'nombreZona',
-                        'activo' => 'estado',
-                        'capacidad_nodos' => 'capacidadNodos',
-                        'area_mapa' => 'areaMapa',
-                        'estado_cobertura' => 'estadoCobertura',
-                        default => $column,
-                    };
+                    $column = $this->normalizeColumn($column);
                 }
                 return parent::where($column, $operator, $value, $boolean);
+            }
+
+            public function orderBy($column, $direction = 'asc')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, $direction);
+            }
+
+            public function orderByDesc($column)
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::orderBy($column, 'desc');
+            }
+
+            public function latest($column = 'idZona')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::latest($column ?? 'idZona');
+            }
+
+            public function oldest($column = 'idZona')
+            {
+                if (is_string($column)) {
+                    $column = $this->normalizeColumn($column);
+                }
+                return parent::oldest($column ?? 'idZona');
             }
         };
     }

@@ -54,9 +54,13 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\Planes\AsignacionPlanControlle
 // CU01: Iniciar y cerrar sesión
 Route::prefix('cu01')->group(function () {
     // Pública: necesaria para obtener el token Bearer
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('login.throttle');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+
+    // Recuperación de contraseña
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
     // Cambiar la contraseña del usuario AUTENTICADO. Todos los roles internos
     // (Administrador, Secretaría y Soporte Técnico) poseen `auth.login`, por lo
@@ -139,9 +143,17 @@ Route::prefix('cu09')->group(function () {
         ->middleware(['auth:sanctum', 'permission:mensualidades.generate']);
 });
 
-// CU10: Gestionar pago de mensualidad (admin, secretaría)
-Route::prefix('cu10')->middleware(['auth:sanctum', 'permission:pagos.register'])->group(function () {
-    Route::post('/pagos', [PagoMensualidadController::class, 'store']);
+// CU10: Gestionar pago de mensualidad y portal cliente
+Route::prefix('cu10')->group(function () {
+    // Portal de autoservicio para clientes (consulta por C.I. y pago en línea por QR, Transferencia y PayPal)
+    Route::get('/portal-cliente/consultar/{ci}', [PagoMensualidadController::class, 'consultarPorCI']);
+    Route::post('/portal-cliente/pagar', [PagoMensualidadController::class, 'pagarEnLinea']);
+
+    // Cobranza interna y caja (requiere autenticación y permisos)
+    Route::middleware(['auth:sanctum', 'permission:pagos.register'])->group(function () {
+        Route::get('/pendientes', [PagoMensualidadController::class, 'pendientes']);
+        Route::post('/pagos', [PagoMensualidadController::class, 'store']);
+    });
 });
 
 // CU11: Consultar historial de pagos (admin, secretaría)
@@ -184,11 +196,26 @@ Route::prefix('cu15')->middleware(['auth:sanctum', 'permission:reactivaciones.ma
 
 // Catálogo de planes
 Route::prefix('planes')->group(function () {
+    // Consultar / buscar (admin y secretaría).
     Route::get('/', [PlanInternetController::class, 'index'])
         ->middleware(['auth:sanctum', 'permission:planes.view']);
     Route::get('/{id}', [PlanInternetController::class, 'show'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:planes.view']);
+
+    // CU16 - Gestión del catálogo (SOLO administrador).
+    Route::post('/', [PlanInternetController::class, 'store'])
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    Route::put('/{id}', [PlanInternetController::class, 'update'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    // Activar/desactivar: nunca se borra un plan con historial.
+    Route::put('/{id}/activar', [PlanInternetController::class, 'activar'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
+    Route::put('/{id}/desactivar', [PlanInternetController::class, 'desactivar'])
+        ->whereNumber('id')
+        ->middleware(['auth:sanctum', 'permission:planes.manage']);
 });
 
 // Historial y asignación de plan de un servicio (nunca se sobrescribe)

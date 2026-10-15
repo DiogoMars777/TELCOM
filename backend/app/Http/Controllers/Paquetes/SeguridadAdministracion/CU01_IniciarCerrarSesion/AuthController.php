@@ -3,14 +3,18 @@
 namespace App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetCodeMail;
 use App\Models\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\UserSession;
 use App\Models\User;
 use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -164,6 +168,133 @@ class AuthController extends Controller
         );
 
         return $this->success(null, 'Contraseña actualizada correctamente.');
+    }
+
+    /**
+     * Solicitar código de verificación para recuperar contraseña.
+     * Respuesta genérica para no revelar si el correo existe.
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+
+        // Limpiar códigos caducados y usados
+        DB::table('password_verification_codes')
+            ->where('expires_at', '<', now())
+            ->orWhereNotNull('used_at')
+            ->delete();
+
+        // Intentos de reenvío limitados (máx 3 en 10 min por correo)
+        $recentCount = DB::table('password_verification_codes')
+            ->where('email', $email)
+            ->where('created_at', '>=', now()->subMinutes(10))
+            ->count();
+        if ($recentCount >= 3) {
+            return $this->success(null, 'Si el correo existe, recibirás un código de verificación.');
+        }
+
+        if (User::where('email', $email)->exists()) {
+            $code = str_pad((string) random_int(100000, 999999), 6, '0');
+            DB::table('password_verification_codes')->insert([
+                'email' => $email,
+                'code_hash' => Hash::make($code),
+                'expires_at' => now()->addMinutes(10),
+                'attempts' => 0,
+                'used_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            try {
+                Mail::to($email)->send(new PasswordResetCodeMail($code));
+            } catch (\Exception $e) {
+                // No exponer error al cliente
+            }
+        }
+
+        return $this->success(null, 'Si el correo existe, recibirás un código de verificación.');
+    }
+
+    /**
+     * Verificar código y permitir cambio de contraseña.
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|string|size:6',
+            'new_password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%&*]).+$/',
+                'confirmed',
+            ],
+        ], [
+            'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+            'new_password.regex' => 'La nueva contraseña debe incluir al menos una letra mayúscula, una minúscula, un número y un carácter especial (! @ # $ % & *).',
+            'new_password.confirmed' => 'La confirmación no coincide con la nueva contraseña.',
+        ]);
+
+        $email = strtolower(trim($validated['email']));
+        $code = $validated['code'];
+
+        $record = DB::table('password_verification_codes')
+            ->where('email', $email)
+            ->whereNull('used_at')
+            ->where('expires_at', '>', now())
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (!$record) {
+            return $this->error('Código inválido o vencido.', 422);
+        }
+
+        if ($record->attempts >= 3) {
+            return $this->error('Demasiados intentos. Solicita un nuevo código.', 429);
+        }
+
+        if (!Hash::check($code, $record->code_hash)) {
+            DB::table('password_verification_codes')
+                ->where('id', $record->id)
+                ->increment('attempts');
+            return $this->error('Código incorrecto.', 422);
+        }
+
+        $user = User::where('email', $email)->first();
+        if (!$user || !$user->activo) {
+            return $this->success(null, 'Contraseña restablecida correctamente.');
+        }
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        DB::table('password_verification_codes')
+            ->where('id', $record->id)
+            ->update(['used_at' => now()]);
+
+        // Revocar tokens previos si es posible
+        if (method_exists($user, 'tokens')) {
+            try {
+                $user->tokens()->delete();
+            } catch (\Exception $e) {
+                //
+            }
+        }
+
+        AuditLogger::log(
+            'CU01',
+            'RESTAURAR_PASSWORD',
+            "El usuario {$user->email} restableció su contraseña mediante código de verificación.",
+            null,
+            null,
+            $user->id
+        );
+
+        return $this->success(null, 'Contraseña restablecida correctamente.');
     }
 
     /**

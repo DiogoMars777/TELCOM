@@ -74,7 +74,7 @@ export default function UsuariosView({ user, onPermissionsUpdated }) {
   );
 
   return (
-    <div className="view-panel">
+    <div className="view-panel cu03-view">
       <div className="view-header">
         <div>
           <h2>Usuarios, Roles y Permisos</h2>

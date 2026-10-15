@@ -27,6 +27,7 @@ const { clienteConsultaService } = await import('../src/models/Paquetes/GestionC
 const { mensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/mensualidadModel.js');
 const { alertasService } = await import('../src/models/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/alertaVencimientoModel.js');
 const { historialPagosService } = await import('../src/models/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/historialPagoModel.js');
+const { pagoMensualidadService } = await import('../src/models/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/pagoMensualidadModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -143,13 +144,14 @@ test('CU11 normaliza el pago, cliente, servicio y periodos desde DetallePago', a
   assert.deepEqual(resultado.pagos[0].periodos, ['2026-10']);
 });
 
-test('CU11 obtiene las opciones reales de filtros sin datos ficticios', async () => {
+test('CU11 obtiene tipos de servicio del catálogo de planes, no comprobantes', async () => {
   stubFetch(jsonResponse(200, {
     success: true,
-    data: { servicios: [{ id: 9, codigo: 'SRV-7' }], metodos: ['QR', 'EFECTIVO'] },
+    data: { planes: [{ id: 9, nombre: 'Fibra Plus', velocidad_mbps: 100 }], metodos: ['QR', 'EFECTIVO'] },
   }));
   const opciones = await historialPagosService.fetchFiltros();
-  assert.equal(opciones.servicios[0].codigo, 'SRV-7');
+  assert.equal(opciones.planes[0].nombre, 'Fibra Plus');
+  assert.equal(opciones.planes[0].velocidad_mbps, 100);
   assert.deepEqual(opciones.metodos, ['QR', 'EFECTIVO']);
 });
 
@@ -166,9 +168,54 @@ test('CU11 aplica búsqueda y filtros también en el modo demostración', async 
   assert.equal(porMetodoPeriodo.pagos.length, 1);
   assert.equal(porMetodoPeriodo.pagos[0].codigo_recibo, 'REC-2026-0003');
 
+  const porTipoServicio = await historialPagosService.fetchHistorial({ plan_id: 2 });
+  assert.equal(porTipoServicio.pagos.length, 1);
+  assert.equal(porTipoServicio.pagos[0].plan_nombre, 'Fibra Hogar');
+
   const sinResultados = await historialPagosService.fetchHistorial({ fecha_desde: '2026-11-01' });
   assert.equal(sinResultados.pagos.length, 0);
   assert.equal(sinResultados.meta.total, 0);
+});
+
+test('CU10 consultarPorCI envía GET a /cu10/portal-cliente/consultar/{ci}', async () => {
+  let calledUrl = '';
+  globalThis.fetch = async (url) => {
+    calledUrl = String(url);
+    return jsonResponse(200, {
+      success: true,
+      data: {
+        tiene_deuda: true,
+        cliente: { ci: '8492019' },
+        factura: { id: 1, monto: 220 },
+      },
+    });
+  };
+  const res = await pagoMensualidadService.consultarPorCI('8492019');
+  assert.ok(calledUrl.includes('/cu10/portal-cliente/consultar/8492019'));
+  assert.equal(res.tiene_deuda, true);
+});
+
+test('CU10 pagarEnLinea envía POST a /cu10/portal-cliente/pagar con datos correctos', async () => {
+  let calledUrl = '';
+  let sentBody = null;
+  globalThis.fetch = async (url, opts) => {
+    calledUrl = String(url);
+    sentBody = JSON.parse(opts.body);
+    return jsonResponse(201, {
+      success: true,
+      data: {
+        recibo: { codigo_recibo: 'REC-ONL-123' },
+      },
+    });
+  };
+  const res = await pagoMensualidadService.pagarEnLinea({
+    mensualidad_id: 1,
+    monto_pagado: 220,
+    metodo_pago: 'QR',
+  });
+  assert.ok(calledUrl.includes('/cu10/portal-cliente/pagar'));
+  assert.equal(sentBody.metodo_pago, 'QR');
+  assert.equal(res.recibo.codigo_recibo, 'REC-ONL-123');
 });
 
 test.after(() => {
