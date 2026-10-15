@@ -4,7 +4,10 @@ import { describeApiError } from '../../../../services/apiClient';
 
 export function useMensualidadGeneracionController() {
   const [mensualidades, setMensualidades] = useState([]);
-  const [periodo, setPeriodo] = useState('2026-10');
+  const [periodo, setPeriodo] = useState(() => {
+    const fecha = new Date();
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);         // Error de carga del listado
   const [resultMsg, setResultMsg] = useState(null); // Resultado de la facturación
