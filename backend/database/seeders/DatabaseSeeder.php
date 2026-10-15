@@ -10,6 +10,7 @@ use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\EstadoServ
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\Paquetes\ServiciosPlanes\Planes\AsignacionPlan;
 use App\Models\Paquetes\ServiciosPlanes\Planes\PlanInternet;
+use App\Models\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadFacturacion;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -251,6 +252,62 @@ class DatabaseSeeder extends Seeder
                 'precioAplicado' => $plan->precioMensual,
                 'motivoCambio'   => 'Carga inicial de datos de ejemplo.',
             ]);
+        }
+
+        // 10. Datos de prueba para moras y cortes (CU13) - para entorno de desarrollo y pruebas manuales
+        if (!app()->runningUnitTests()) {
+            $cliente2 = Cliente::firstOrCreate(
+                ['ci' => '5928103'],
+                [
+                    'codigoCliente'     => 'CLI-10002',
+                    'nombreCompleto'    => 'Juan Pablo Camacho Ortiz',
+                    'telefonoPrincipal' => '+591 71234567',
+                    'correo'            => 'juanpablo.camacho@email.com',
+                    'direccion'         => 'Av. Cristo Redentor #450, Edif. Torre Duo',
+                    'idZona'            => ZonaCobertura::where('codigo', 'ZON-SUR')->value('idZona'),
+                    'estadoCliente'     => 'ACTIVO',
+                ]
+            );
+
+            $servicioCorte1 = ServicioInternet::firstOrCreate(
+                ['codigoServicio' => 'SRV-88204'],
+                [
+                    'idCliente'        => $cliente2->idCliente,
+                    'idEstadoServicio' => $estadosCreados['ACTIVO']->idEstadoServicio,
+                    'idZona'           => $cliente2->idZona,
+                    'ipAsignada'       => '192.168.10.92',
+                    'macRouter'        => 'BC:5F:F4:11:22:33',
+                    'direccion'        => $cliente2->direccion,
+                    'fechaActivacion'  => now()->subMonths(4)->toDateString(),
+                    'diaCorte'         => 10,
+                ]
+            );
+
+            if ($servicioCorte1->asignacionesPlan()->doesntExist()) {
+                AsignacionPlan::create([
+                    'idServicio'     => $servicioCorte1->idServicio,
+                    'idPlan'         => $plan->idPlan,
+                    'idUsuario'      => null,
+                    'fechaInicio'    => $servicioCorte1->fechaActivacion,
+                    'precioAplicado' => $plan->precioMensual,
+                    'motivoCambio'   => 'Alta de servicio.',
+                ]);
+            }
+
+            // Mensualidades en mora para SRV-88204 (elegible para CU13)
+            if (MensualidadFacturacion::where('idServicio', $servicioCorte1->idServicio)->doesntExist()) {
+                MensualidadFacturacion::create([
+                    'idServicio'       => $servicioCorte1->idServicio,
+                    'idCliente'        => $cliente2->idCliente,
+                    'periodo'          => now()->subMonths(1)->format('Y-m'),
+                    'fechaEmision'     => now()->subMonths(1)->startOfMonth()->toDateString(),
+                    'fechaVencimiento' => now()->subDays(15)->toDateString(),
+                    'monto'            => 250.00,
+                    'montoPagado'      => 0.00,
+                    'estado'           => 'PENDIENTE',
+                    'codigoFactura'    => 'FAC-88204-01',
+                ]);
+            }
         }
     }
 }

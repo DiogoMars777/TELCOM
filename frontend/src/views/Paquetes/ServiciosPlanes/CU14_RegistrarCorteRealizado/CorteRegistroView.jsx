@@ -84,8 +84,15 @@ export default function CorteRegistroView({ initialServicio }) {
                     if (found) setSelectedServicio(found);
                   }}
                 >
-                  {selectedServicio == null && (
+                  {selectedServicio == null && servicios.length === 0 && (
                     <option value="">— No hay servicios disponibles —</option>
+                  )}
+                  {selectedServicio && !servicios.some(s => s.id === selectedServicio.id) && (
+                    <option value={selectedServicio.id}>
+                      {selectedServicio.codigo_servicio} - {selectedServicio.cliente_nombre || '—'}
+                      {selectedServicio.dias_mora != null ? ` - Mora: ${selectedServicio.dias_mora} días` : ''}
+                      {selectedServicio.monto_deuda != null ? ` (Bs. ${selectedServicio.monto_deuda})` : ''}
+                    </option>
                   )}
                   {servicios.map(s => (
                     <option key={s.id} value={s.id}>

@@ -27,7 +27,7 @@ class ServiciosCorteController extends Controller
         $buscar   = trim((string) $request->input('buscar', ''));
 
         $query = ServicioParaCorte::query()
-            ->with(['cliente', 'zona'])
+            ->with(['cliente', 'zona', 'asignacionPlanActual.plan'])
             ->with(['mensualidades' => function ($q) {
                 $q->where('estado_pago', '!=', 'PAGADO')->orderBy('fecha_vencimiento');
             }])
@@ -41,33 +41,42 @@ class ServiciosCorteController extends Controller
                         ->orWhere('ipAsignada', 'like', "%{$buscar}%")
                         ->orWhereHas('cliente', function ($c) use ($buscar) {
                             $c->where('nombreCompleto', 'like', "%{$buscar}%")
-                              ->orWhere('ci', 'like', "%{$buscar}%");
+                              ->orWhere('ci', 'like', "%{$buscar}%")
+                              ->orWhere('codigoCliente', 'like', "%{$buscar}%");
                         });
                 });
             })
             ->latest('id');
 
         $exportAll = $request->boolean('todos');
-        $servicios = $exportAll ? $query->get() : $query->paginate(15);
+        $perPage   = max(1, min(100, $request->integer('per_page', 15)));
+        $servicios = $exportAll ? $query->get() : $query->paginate($perPage);
         $coleccion = $exportAll ? $servicios : $servicios->getCollection();
 
         $coleccion->transform(function (ServicioParaCorte $servicio) {
             $cliente = $servicio->cliente;
             $zona = $servicio->zona;
+            $planActual = $servicio->asignacionPlanActual?->plan;
             $impagas = $servicio->mensualidades;
             $hoy = now()->startOfDay();
 
+            // Calcular días de mora considerando facturas vencidas
+            $vencidas = $impagas->filter(fn ($m) => $m->fecha_vencimiento && $m->fecha_vencimiento->startOfDay()->lte($hoy));
+            $maxMora = $vencidas->isEmpty()
+                ? (int) $impagas->map(fn ($m) => $m->fecha_vencimiento ? max(0, (int) $m->fecha_vencimiento->startOfDay()->diffInDays($hoy)) : 0)->max()
+                : (int) $vencidas->map(fn ($m) => (int) $m->fecha_vencimiento->startOfDay()->diffInDays($hoy))->max();
+
             $servicio->setAttribute('zona_id', $servicio->idZona);
-            $servicio->setAttribute('zona_nombre', $zona?->nombreZona ?? $zona?->nombre ?? 'Sin zona');
+            $servicio->setAttribute('zona_nombre', $zona?->nombreZona ?? $zona?->nombre ?? 'Sin zona asignada');
+            $servicio->setAttribute('plan_nombre', $planActual?->nombrePlan ?? $servicio->plan_nombre ?? 'Plan estándar');
+            $servicio->setAttribute('velocidad_mbps', $planActual?->velocidadMbps ?? $servicio->velocidad_mbps ?? null);
             $servicio->setAttribute('cliente_nombre', $cliente?->nombreCompleto ?? trim(($cliente?->nombres ?? '') . ' ' . ($cliente?->apellidos ?? '')));
-            $servicio->setAttribute('cliente_ci', $cliente?->ci ?? $cliente?->documento_identidad);
-            $servicio->setAttribute('cliente_telefono', $cliente?->telefonoPrincipal ?? $cliente?->telefono);
-            $servicio->setAttribute('cliente_direccion', $servicio->direccion ?? $cliente?->direccion);
+            $servicio->setAttribute('cliente_ci', $cliente?->ci ?? $cliente?->documento_identidad ?? '—');
+            $servicio->setAttribute('cliente_telefono', $cliente?->telefonoPrincipal ?? $cliente?->telefono ?? '—');
+            $servicio->setAttribute('cliente_direccion', $servicio->direccion ?? $cliente?->direccion ?? '—');
             $servicio->setAttribute('mensualidades_pendientes', $impagas->count());
             $servicio->setAttribute('monto_deuda', round((float) $impagas->sum('monto'), 2));
-            $servicio->setAttribute('dias_mora', (int) $impagas->map(
-                fn ($m) => (int) $m->fecha_vencimiento->startOfDay()->diffInDays($hoy)
-            )->max());
+            $servicio->setAttribute('dias_mora', max(0, (int) $maxMora));
 
             return $servicio->makeHidden('mensualidades');
         });

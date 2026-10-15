@@ -9,10 +9,12 @@ export function useServiciosCorteController() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Filtros interactivos
+  // Filtros interactivos y paginación
   const [diasMora, setDiasMora] = useState(5);
   const [zonaId, setZonaId] = useState('');
   const [buscar, setBuscar] = useState('');
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0, per_page: 15 });
 
   // Cargar catálogo de zonas para el filtro
   useEffect(() => {
@@ -36,19 +38,46 @@ export function useServiciosCorteController() {
         dias_mora: diasMora,
         zona_id: zonaId,
         buscar: buscar.trim(),
+        page,
       });
       setServicios(data);
+      if (data?.meta) {
+        setMeta(data.meta);
+      }
     } catch (e) {
       setServicios([]);
+      setMeta({ current_page: 1, last_page: 1, total: 0, per_page: 15 });
       setError(describeApiError(e));
     } finally {
       setLoading(false);
     }
-  }, [diasMora, zonaId, buscar]);
+  }, [diasMora, zonaId, buscar, page]);
 
   useEffect(() => {
     loadServicios();
   }, [loadServicios]);
+
+  const handleSetDiasMora = (val) => {
+    setDiasMora(val);
+    setPage(1);
+  };
+
+  const handleSetZonaId = (val) => {
+    setZonaId(val);
+    setPage(1);
+  };
+
+  const handleSetBuscar = (val) => {
+    setBuscar(val);
+    setPage(1);
+  };
+
+  const limpiarFiltros = () => {
+    setDiasMora(5);
+    setZonaId('');
+    setBuscar('');
+    setPage(1);
+  };
 
   // Exportar listado a Excel / CSV con codificación UTF-8 BOM
   const exportarCsv = async () => {
@@ -117,11 +146,15 @@ export function useServiciosCorteController() {
     error,
     reload: loadServicios,
     diasMora,
-    setDiasMora,
+    setDiasMora: handleSetDiasMora,
     zonaId,
-    setZonaId,
+    setZonaId: handleSetZonaId,
     buscar,
-    setBuscar,
+    setBuscar: handleSetBuscar,
+    page,
+    setPage,
+    meta,
+    limpiarFiltros,
     exportarCsv,
     imprimirHojaRuta,
   };
