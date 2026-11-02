@@ -44,6 +44,8 @@ use App\Http\Controllers\Paquetes\EquiposInventario\CU18_RegistrarCatalogoEquipo
 use App\Http\Controllers\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
 // CU20: Reemplazar o retirar equipo de un servicio
 use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
+// CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)
+use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
 use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
 
@@ -312,6 +314,53 @@ Route::prefix('cu19')->middleware('auth:sanctum')->group(function () {
         ->middleware('permission:equipos.assign');
 });
 
+// CU20: Reemplazar o retirar equipo conservando el historial (admin, secretaría y técnico).
+Route::prefix('cu20')->middleware('auth:sanctum')->group(function () {
+    Route::get('/servicios/{servicio}/equipo', [EquipoReemplazoRetiroController::class, 'consultar'])
+        ->middleware('permission:equipos.view');
+    Route::get('/equipos/disponibles', [EquipoReemplazoRetiroController::class, 'disponibles'])
+        ->middleware('permission:equipos.view');
+    Route::post('/servicios/{servicio}/equipo/reemplazar', [EquipoReemplazoRetiroController::class, 'reemplazar'])
+        ->middleware('permission:equipos.assign');
+    Route::post('/servicios/{servicio}/equipo/retirar', [EquipoReemplazoRetiroController::class, 'retirar'])
+        ->middleware('permission:equipos.assign');
+});
+
+/*
+|--------------------------------------------------------------------------
+| CU21 - REGISTRAR SOLICITUD DE INSTALACIÓN (InstalacionesTecnicas)
+|--------------------------------------------------------------------------
+| Permisos RBAC:
+|   - instalaciones.view     -> consultar listado de solicitudes y detalle.
+|   - instalaciones.schedule -> registrar solicitudes internas y cancelar.
+|   - Ruta pública           -> portal web de clientes (sin auth).
+|--------------------------------------------------------------------------
+*/
+Route::prefix('cu21')->group(function () {
+    // Portal público para clientes en landing page (con limitación de tasa)
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/solicitudes/publica', [SolicitudInstalacionController::class, 'storePublica']);
+        Route::get('/zonas-cobertura', [SolicitudInstalacionController::class, 'zonasPublicas']);
+    });
+
+    // Operaciones administrativas internas (Admin / Secretaría)
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/solicitudes', [SolicitudInstalacionController::class, 'index'])
+            ->middleware('permission:instalaciones.view');
+        Route::get('/solicitudes/{id}', [SolicitudInstalacionController::class, 'show'])
+            ->whereNumber('id')
+            ->middleware('permission:instalaciones.view');
+        Route::get('/clientes-disponibles', [SolicitudInstalacionController::class, 'clientesDisponibles'])
+            ->middleware('permission:instalaciones.view');
+
+        Route::post('/solicitudes', [SolicitudInstalacionController::class, 'store'])
+            ->middleware('permission:instalaciones.schedule');
+        Route::put('/solicitudes/{id}/cancelar', [SolicitudInstalacionController::class, 'cancelar'])
+            ->whereNumber('id')
+            ->middleware('permission:instalaciones.schedule');
+    });
+});
+
 /*
 |--------------------------------------------------------------------------
 | CU23 - REGISTRAR ÓRDENES DE INSTALACIÓN TÉCNICA (InstalacionesTecnicas)
@@ -337,16 +386,4 @@ Route::prefix('cu23/instalaciones')->group(function () {
     Route::put('/{id}/finalizar', [InstalacionRegistroController::class, 'finalizar'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:instalaciones.execute']);
-});
-
-// CU20: Reemplazar o retirar equipo conservando el historial (admin, secretaría y técnico).
-Route::prefix('cu20')->middleware('auth:sanctum')->group(function () {
-    Route::get('/servicios/{servicio}/equipo', [EquipoReemplazoRetiroController::class, 'consultar'])
-        ->middleware('permission:equipos.view');
-    Route::get('/equipos/disponibles', [EquipoReemplazoRetiroController::class, 'disponibles'])
-        ->middleware('permission:equipos.view');
-    Route::post('/servicios/{servicio}/equipo/reemplazar', [EquipoReemplazoRetiroController::class, 'reemplazar'])
-        ->middleware('permission:equipos.assign');
-    Route::post('/servicios/{servicio}/equipo/retirar', [EquipoReemplazoRetiroController::class, 'retirar'])
-        ->middleware('permission:equipos.assign');
 });

@@ -24,6 +24,7 @@ import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambia
 import EquiposView from './views/Paquetes/EquiposInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
 import AsignarEquipoComodatoView from './views/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
 import EquipoReemplazoRetiroView from './views/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
+import SolicitudInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
 import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
@@ -31,7 +32,7 @@ import {
   Radio, LogOut, History, Users, MapPin,
   Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
-  Router, ArrowRightLeft, Package, Wrench, HardDrive,
+  Router, ArrowRightLeft, Package, Wrench, HardDrive, ClipboardList,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -247,6 +248,7 @@ export default function App() {
         { id: 'CU12', label: 'Alertas de Vencimiento', icon: AlertTriangle },
         { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
         { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
+        { id: 'CU21', label: 'Solicitudes de Instalación', icon: ClipboardList },
         { id: 'CU23', label: 'Órdenes de Instalación', icon: Wrench },
       ],
     },
@@ -322,6 +324,8 @@ export default function App() {
         return <AsignarEquipoComodatoView user={currentUser} />;
       case 'CU20':
         return <EquipoReemplazoRetiroView user={currentUser} />;
+      case 'CU21':
+        return <SolicitudInstalacionView user={currentUser} />;
       case 'CU23':
         return <InstalacionesView user={currentUser} />;
       default:

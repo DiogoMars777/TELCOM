@@ -1133,3 +1133,62 @@ Relaciones: `ServicioInternet [1] → AsignacionPlan [1..*]` (`asignacionesPlan`
   5. CU17 actualiza `plan_nombre`/`velocidad_mbps`/`precio_mensual` sobre `ServicioInternet`, que **no** son columnas físicas (setters virtuales); los valores se derivan de `asignacionPlanActual`.
 
 Para comprobar cualquier dato: `backend/routes/api.php`, `backend/app/Http/Controllers/...`, `backend/app/Models/...`, `frontend/src/{views,controllers,models}/...`, `backend/database/migrations/0001_01_01_000000_create_telcom_28_tablas.php` y `backend/database/seeders/DatabaseSeeder.php`.
+<a id="cu21"></a>
+## 24. CU21 — Registrar solicitud de instalación
+
+**1. Objetivo y estado.** Registrar formalmente una nueva solicitud de servicio de Internet por parte de un cliente o del personal administrativo, estableciendo la ubicación geográfica satelital (GPS), referencias domiciliarias y validación de cobertura técnica en la zona para su posterior programación de instalación (CU22) y ejecución (CU23). **Implementado (verificado).**
+
+**2. Actores y permisos.**
+| Actor | Acceso | Permiso |
+| :--- | :--- | :--- |
+| Administrador | Registrar solicitud interna, consultar listado y comprobante, cancelar solicitudes pendientes | `instalaciones.view`, `instalaciones.schedule` |
+| Secretaría | Registrar solicitud interna, consultar listado y comprobante, cancelar solicitudes pendientes | `instalaciones.view`, `instalaciones.schedule` |
+| Cliente / Visitante | Registrar solicitud pública desde el portal web / Landing Page | *(público, throttle 30/min)* |
+
+**3. Flujo / precondiciones / resultado / errores.**
+- **Flujo interno:** Secretaría/Admin accede al módulo CU21 → busca y selecciona un cliente registrado → ingresa dirección, referencia de domicilio, captura o digita coordenadas GPS (latitud y longitud) y zona → confirma → el sistema genera número correlativo único `ORD-YYYY-XXXXX`, estado `PENDIENTE`, registra en tabla canónica `SolicitudInstalacion` y bitácora de auditoría → emite comprobante.
+- **Flujo público (web):** Cliente accede a la Landing Page → hace clic en "Solicitar Instalación" → ingresa CI, nombre, teléfono, zona y dirección con geolocalización → el sistema registra al prospecto en `Cliente` y genera la orden en `SolicitudInstalacion` en estado `PENDIENTE`.
+- **Precondiciones:** Cliente registrado (para trámite interno) o datos válidos (portal web); zona con cobertura activa (no saturada).
+- **Resultado:** Orden registrada con identificador único y estado `PENDIENTE`, lista para programación técnica (CU22).
+- **Errores:** `422 Datos obligatorios incompletos`, `422 Zona saturada`, `403 No autorizado`, `404 Cliente no encontrado`.
+
+**4. Componentes para el diagrama de comunicación.**
+| Elemento | Nombre exacto | Archivo |
+| :--- | :--- | :--- |
+| Actor | Administrador / Secretaría / Cliente | — |
+| Vista/Frontera | `SolicitudInstalacionView`, `RegistrarSolicitudModal`, `DetalleSolicitudModal`, `PortalSolicitudModal` | `frontend/src/views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/*` y `frontend/src/views/Public/PortalSolicitudModal.jsx` |
+| Controlador frontend | `useSolicitudInstalacionController` | `frontend/src/controllers/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/useSolicitudInstalacionController.js` |
+| Servicio/Modelo API | `solicitudInstalacionService` | `frontend/src/models/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/solicitudInstalacionModel.js` |
+| Ruta HTTP | `/api/cu21/solicitudes`, `/api/cu21/solicitudes/publica`, `/api/cu21/zonas-cobertura`, `/api/cu21/clientes-disponibles` | `backend/routes/api.php` |
+| Controlador backend | `SolicitudInstalacionController` | `backend/app/Http/Controllers/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionController.php` |
+| Modelos | `SolicitudInstalacion`, `Cliente`, `Zona`, `Bitacora` | `backend/app/Models/...` |
+| Tablas | `SolicitudInstalacion`, `Cliente`, `Zona`, `Bitacora` | Migraciones / PostgreSQL |
+
+**5. Mensajes numerados.**
+1. `Actor → UI_SolicitudInstalacion`: ingresa datos de la solicitud (cliente, dirección, referencia, GPS).
+2. `UI_SolicitudInstalacion → useSolicitudInstalacionController`: `registrarSolicitud(formData)`.
+3. `useSolicitudInstalacionController → solicitudInstalacionService`: `crearSolicitud(payload)`.
+4. `solicitudInstalacionService → apiClient`: `POST /cu21/solicitudes`.
+5. `apiClient → SolicitudInstalacionController`: `store(Request)`.
+6. `SolicitudInstalacionController → Cliente`: `findOrFail(cliente_id)`.
+7. `SolicitudInstalacionController → Zona`: verifica estado de cobertura (`!= 'Saturada'`).
+8. `SolicitudInstalacionController → SolicitudInstalacion`: `create(numeroOrden, fecha, direccion, latitud, longitud, 'PENDIENTE', idCliente)`.
+9. `SolicitudInstalacionController → AuditLogger`: `log('CU21', 'REGISTRAR_SOLICITUD_INSTALACION', …)`.
+10. `SolicitudInstalacionController → apiClient`: `201 {success: true, data: SolicitudInstalacion}`.
+11. `apiClient → UI_SolicitudInstalacion`: muestra mensaje de éxito y abre comprobante de orden (`DetalleSolicitudModal`).
+
+**6. Elementos para el diagrama de análisis de clases.**
+| Clase/artefacto | Archivo | Responsabilidad | Métodos / estado | Relaciones |
+| :--- | :--- | :--- | :--- | :--- |
+| `SolicitudInstalacionController` | `.../CU21.../SolicitudInstalacionController.php` | Gestión de solicitudes de instalación | `index`, `store`, `storePublica`, `show`, `clientesDisponibles`, `zonasPublicas`, `cancelar` | usa `SolicitudInstalacion`, `Cliente`, `Zona`, `AuditLogger` |
+| `SolicitudInstalacion` | `.../CU21.../SolicitudInstalacion.php` | Entidad canónica de solicitud | `cliente()`, mutadores y accesores camel/snake; `$table='SolicitudInstalacion'` | `cliente → Cliente` |
+| `Cliente` | `backend/app/Models/.../Cliente.php` | Datos del abonado solicitante | `zona()`, `solicitudes()` | `idCliente` |
+| `Zona` | `backend/app/Models/.../Zona.php` | Cobertura geográfica y estado técnico | `estadoCobertura`, `areaMapa` | `idZona` |
+
+**7. Validaciones y campos.**
+- `cliente_id`: obligatorio (en registro interno), debe existir en `Cliente`.
+- `direccion`: obligatorio, texto hasta 500 caracteres.
+- `latitud` / `longitud`: decimales entre -90..90 y -180..180.
+- `zona_id`: opcional en interno, obligatorio en público, valida que no esté en estado `Saturada`.
+
+**8. Referencias.** `routes/api.php`; `SolicitudInstalacionController.php`; `SolicitudInstalacion.php`; tests `backend/tests/Feature/CU21_RegistroSolicitudInstalacionTest.php` y `frontend/tests/solicitudInstalacion.test.js`.
