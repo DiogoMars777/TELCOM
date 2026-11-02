@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones;
+namespace App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion;
 
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use Illuminate\Database\Eloquent\Builder;

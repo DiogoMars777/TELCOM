@@ -8,7 +8,7 @@ use App\Models\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\Cliente;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\EstadoServicio;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadFacturacion;
-use App\Models\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionServicio;
+use App\Models\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionServicio;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

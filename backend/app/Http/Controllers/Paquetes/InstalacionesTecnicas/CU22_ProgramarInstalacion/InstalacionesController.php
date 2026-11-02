@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones;
+namespace App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion;
 
 use App\Http\Controllers\Controller;
-use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones\Instalacion;
-use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones\SolicitudInstalacion;
-use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones\Tecnico;
+use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion\Instalacion;
+use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion\SolicitudInstalacion;
+use App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion\Tecnico;
 use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;

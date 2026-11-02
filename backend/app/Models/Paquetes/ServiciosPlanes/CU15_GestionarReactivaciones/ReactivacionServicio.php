@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones;
+namespace App\Models\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones;
 
 use App\Models\Paquetes\FacturacionCobranza\CU10_GestionarPagoMensualidad\Pago;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;

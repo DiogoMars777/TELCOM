@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones;
+namespace App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones;
 
 use App\Http\Controllers\Controller;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\EstadoServicio;
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
-use App\Models\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionServicio;
+use App\Models\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionServicio;
 use App\Support\AuditLogger;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
