@@ -213,11 +213,12 @@ export default function App() {
       ],
     },
     {
-      title: 'Servicios y Planes',
+      title: 'Servicio y Planes de Internet',
       items: [
         { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
         { id: 'CU16', label: 'Gestionar Planes de Internet', icon: Router },
         { id: 'CU17', label: 'Asignar / Cambiar Plan de Servicio', icon: ArrowRightLeft },
+        { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
       ],
     },
     {
@@ -233,7 +234,6 @@ export default function App() {
       items: [
         { id: 'CU12', label: 'Alertas de Vencimiento', icon: AlertTriangle },
         { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
-        { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
         { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
       ],
     },

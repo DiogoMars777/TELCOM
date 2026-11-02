@@ -186,6 +186,9 @@ Route::prefix('cu13')->middleware(['auth:sanctum', 'permission:cortes.list'])->g
 
 // CU14: Registrar corte realizado (admin, secretaría)
 Route::prefix('cu14')->middleware(['auth:sanctum', 'permission:cortes.register'])->group(function () {
+    Route::get('/cortes', [CorteRegistroController::class, 'index']);
+    Route::get('/cortes/servicios-activos', [CorteRegistroController::class, 'serviciosActivos']);
+    Route::get('/cortes/{id}', [CorteRegistroController::class, 'show'])->whereNumber('id');
     Route::post('/cortes', [CorteRegistroController::class, 'store']);
 });
 

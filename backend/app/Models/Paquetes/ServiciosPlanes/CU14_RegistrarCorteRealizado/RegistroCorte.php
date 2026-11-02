@@ -45,15 +45,27 @@ class RegistroCorte extends AccionServicio
     protected static function booted()
     {
         static::addGlobalScope('tipoAccion', function (Builder $builder) {
-            $builder->where('tipoAccion', 'CORTE');
+            $builder->where(function ($q) {
+                $q->where('tipoAccion', 'CORTE')
+                  ->orWhere('tipoAccion', 'like', 'CORTE%')
+                  ->orWhereIn('tipoAccion', ['LOGICO', 'FISICO']);
+            });
         });
 
         static::creating(function (RegistroCorte $model) {
-            if (empty($model->attributes['tipoAccion'])) {
+            if (empty($model->attributes['tipoAccion']) || in_array($model->attributes['tipoAccion'], ['LOGICO', 'FISICO'])) {
+                $tipo = !empty($model->attributes['tipoAccion']) ? $model->attributes['tipoAccion'] : 'LOGICO';
                 $model->attributes['tipoAccion'] = 'CORTE';
+                $obs = $model->attributes['observacion'] ?? '';
+                if (!str_contains($obs, '[Tipo:')) {
+                    $model->attributes['observacion'] = trim("[Tipo: {$tipo}] " . $obs);
+                }
             }
             if (empty($model->attributes['fechaEjecucion'])) {
                 $model->attributes['fechaEjecucion'] = now();
+            }
+            if (empty($model->attributes['fechaSolicitud'])) {
+                $model->attributes['fechaSolicitud'] = now();
             }
             if (empty($model->attributes['estado'])) {
                 $model->attributes['estado'] = 'COMPLETADO';
@@ -128,7 +140,7 @@ class RegistroCorte extends AccionServicio
 
     public function getCodigoOrdenCorteAttribute(): ?string
     {
-        return 'COR-' . ($this->idAccion ?? '0');
+        return 'COR-' . str_pad($this->idAccion ?? 0, 5, '0', STR_PAD_LEFT);
     }
 
     public function setCodigoOrdenCorteAttribute(?string $value): void
@@ -158,12 +170,29 @@ class RegistroCorte extends AccionServicio
 
     public function getTipoCorteAttribute(): ?string
     {
-        return $this->attributes['tipoAccion'] ?? 'CORTE';
+        $tipo = $this->attributes['tipoAccion'] ?? '';
+        if (str_contains($tipo, 'FISICO')) return 'FISICO';
+        if (str_contains($tipo, 'LOGICO')) return 'LOGICO';
+
+        $obs = $this->attributes['observacion'] ?? '';
+        if (preg_match('/\[Tipo:\s*(LOGICO|FISICO)\]/i', $obs, $m)) {
+            return strtoupper($m[1]);
+        }
+        if (stripos($obs, 'FISICO') !== false) return 'FISICO';
+        if (stripos($obs, 'LOGICO') !== false) return 'LOGICO';
+
+        return 'LOGICO';
     }
 
     public function setTipoCorteAttribute(?string $value): void
     {
-        $this->attributes['tipoAccion'] = $value;
+        if ($value) {
+            $tipo = strtoupper($value);
+            $obs = $this->attributes['observacion'] ?? '';
+            if (!str_contains($obs, '[Tipo:')) {
+                $this->attributes['observacion'] = trim("[Tipo: {$tipo}] " . $obs);
+            }
+        }
     }
 
     public function getFechaCorteAttribute(): ?string
