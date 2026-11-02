@@ -40,6 +40,7 @@ export const CU_PERMISSIONS = {
   CU19: 'equipos.assign',
   CU20: 'equipos.view',
   CU21: 'instalaciones.schedule',
+  CU22: 'instalaciones.schedule',
   CU23: 'instalaciones.view',
 };
 
@@ -49,7 +50,7 @@ export const CU_PERMISSIONS = {
  */
 export const CU_ORDER = [
   'CU06', 'CU05', 'CU07', 'CU08', 'CU16', 'CU17', 'CU18', 'CU19', 'CU20', 'CU09', 'CU10', 'CU11',
-  'CU12', 'CU13', 'CU14', 'CU15', 'CU21', 'CU23', 'CU02', 'CU03', 'CU04', 'CU01',
+  'CU12', 'CU13', 'CU14', 'CU15', 'CU21', 'CU22', 'CU23', 'CU02', 'CU03', 'CU04', 'CU01',
 ];
 
 /**

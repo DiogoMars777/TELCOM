@@ -22,7 +22,7 @@ use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\HistorialE
 use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\AccionServicio;
 use App\Models\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\RegistroCorte;
-use App\Models\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionServicio;
+use App\Models\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionServicio;
 use App\Models\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternet;
 use App\Models\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlan;
 use App\Models\User;

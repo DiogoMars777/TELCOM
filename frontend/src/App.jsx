@@ -25,6 +25,7 @@ import EquiposView from './views/Paquetes/EquiposInventario/CU18_RegistrarCatalo
 import AsignarEquipoComodatoView from './views/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
 import EquipoReemplazoRetiroView from './views/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
 import SolicitudInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
+import ProgramarInstalacionView from './views/Paquetes/ServiciosPlanes/CU22_ProgramacionInstalaciones/InstalacionesView';
 import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
@@ -249,6 +250,7 @@ export default function App() {
         { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
         { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
         { id: 'CU21', label: 'Solicitudes de Instalación', icon: ClipboardList },
+        { id: 'CU22', label: 'Programar Instalaciones', icon: Calendar },
         { id: 'CU23', label: 'Órdenes de Instalación', icon: Wrench },
       ],
     },
@@ -326,6 +328,8 @@ export default function App() {
         return <EquipoReemplazoRetiroView user={currentUser} />;
       case 'CU21':
         return <SolicitudInstalacionView user={currentUser} />;
+      case 'CU22':
+        return <ProgramarInstalacionView user={currentUser} />;
       case 'CU23':
         return <InstalacionesView user={currentUser} />;
       default:

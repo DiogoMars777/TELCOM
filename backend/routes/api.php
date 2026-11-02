@@ -33,7 +33,7 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU13_ListadoServiciosCorte\Ser
 // CU14: Registrar corte realizado
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
 // CU15: Gestionar lista y registro de reactivaciones
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivaciones\ReactivacionesController;
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionesController;
 // CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
@@ -46,6 +46,8 @@ use App\Http\Controllers\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\A
 use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
 // CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)
 use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
+// CU22: Programar instalación y asignar técnico
+use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion\InstalacionesController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
 use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
 
@@ -205,7 +207,16 @@ Route::prefix('cu14')->middleware(['auth:sanctum', 'permission:cortes.register']
 // CU15: Gestionar lista y registro de reactivaciones (admin, secretaría)
 Route::prefix('cu15')->middleware(['auth:sanctum', 'permission:reactivaciones.manage'])->group(function () {
     Route::get('/reactivaciones', [ReactivacionesController::class, 'index']);
+    Route::get('/servicios-cortados', [ReactivacionesController::class, 'serviciosCortados']);
     Route::post('/reactivaciones', [ReactivacionesController::class, 'store']);
+});
+
+// CU22: Programar instalación y asignar cuadrilla técnica
+Route::prefix('cu22')->middleware(['auth:sanctum'])->group(function () {
+    Route::get('/instalaciones', [InstalacionesController::class, 'index'])
+        ->middleware('permission:instalaciones.view');
+    Route::post('/instalaciones', [InstalacionesController::class, 'store'])
+        ->middleware('permission:instalaciones.schedule');
 });
 
 /*
