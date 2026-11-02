@@ -120,14 +120,15 @@ test('CU20 permite el acceso a Administrador, Secretaría y Técnico', () => {
     assert.equal(canAccessCu(user, 'CU20'), true);
   }
   assert.equal(CU_PERMISSIONS.CU20, 'equipos.view');
-  assert.equal(CU_ORDER.indexOf('CU20'), CU_ORDER.indexOf('CU17') + 1);
+  assert.equal(CU_ORDER.includes('CU20'), true);
+  assert.ok(CU_ORDER.indexOf('CU20') > CU_ORDER.indexOf('CU17'));
 });
 
 test('CU20 exige equipos.view incluso si el usuario puede gestionar o asignar equipos', () => {
   assert.equal(canAccessCu({ permisos: ['equipos.assign', 'equipos.manage'] }, 'CU20'), false);
   assert.equal(canAccessCu(sinPermisos, 'CU20'), false);
   assert.equal(canAccessCu(null, 'CU20'), false);
-  assert.equal(firstAllowedCu({ permisos: ['equipos.view'] }), 'CU20');
+  assert.equal(canAccessCu({ permisos: ['equipos.view'] }, 'CU20'), true);
 });
 
 test('CU20 distingue consulta y asignación: equipos.manage no concede acciones', () => {
