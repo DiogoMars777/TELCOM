@@ -37,6 +37,7 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivacion
 // CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
+use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 // CU18: Registrar y Gestionar Catálogo de Equipos e Inventario
 use App\Http\Controllers\Paquetes\EquiposInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
 // CU19: Asignar equipo en comodato a un servicio (entidad UML Equipo, AsignacionEquipo, Inventario)

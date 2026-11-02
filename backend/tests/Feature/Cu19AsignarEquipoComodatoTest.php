@@ -25,6 +25,7 @@ class Cu19AsignarEquipoComodatoTest extends TestCase
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
+        $this->seed(\Database\Seeders\CU19_EquiposInventarioSeeder::class);
     }
 
     private function usuarioConRol(string $slug): User
@@ -112,8 +113,12 @@ class Cu19AsignarEquipoComodatoTest extends TestCase
         $servicioActivo->estado_servicio = 'ACTIVO';
         $servicioActivo->save();
 
-        // Equipo 1 ya fue asignado en el Seeder
+        // Equipo ya asignado
         $equipoAsignado = Equipo::where('asignada', true)->first();
+        if (!$equipoAsignado) {
+            $equipoAsignado = Equipo::first();
+            $equipoAsignado->update(['asignada' => true]);
+        }
 
         $this->withHeaders($this->bearer($admin))
             ->postJson("/api/cu19/servicios/{$servicioActivo->idServicio}/asignar-equipo", [
