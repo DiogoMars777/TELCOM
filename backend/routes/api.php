@@ -37,9 +37,10 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivacion
 // CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 // CU18: Registrar y Gestionar Catálogo de Equipos e Inventario
 use App\Http\Controllers\Paquetes\EquiposInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
+// CU19: Asignar equipo en comodato a un servicio (entidad UML Equipo, AsignacionEquipo, Inventario)
+use App\Http\Controllers\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
 use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
 
@@ -276,6 +277,36 @@ Route::prefix('cu18/equipos')->group(function () {
     Route::post('/{id}/unidades', [CatalogoEquiposController::class, 'registrarUnidadFisica'])
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:equipos.manage']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| CU19 - ASIGNAR EQUIPO EN COMODATO A UN SERVICIO (entidad AsignacionEquipo)
+|--------------------------------------------------------------------------
+| Permite registrar la entrega formal de un equipo (ONU, Router, Modem)
+| en comodato a un servicio activo, validando stock y registrando auditoría.
+| Actores: Administrador, Secretaría, Técnico.
+| Permisos RBAC:
+|   - equipos.view   -> Consultar equipos en stock y comodatos del servicio.
+|   - equipos.assign -> Asignar / entregar y retirar equipos en comodato.
+*/
+Route::prefix('cu19')->middleware('auth:sanctum')->group(function () {
+    Route::get('/equipos-disponibles', [AsignacionEquipoComodatoController::class, 'equiposDisponibles'])
+        ->middleware('permission:equipos.view');
+    Route::get('/servicios-activos', [AsignacionEquipoComodatoController::class, 'serviciosActivos'])
+        ->middleware('permission:equipos.view');
+    Route::get('/servicios/{id}/equipos', [AsignacionEquipoComodatoController::class, 'showServicioEquipos'])
+        ->whereNumber('id')
+        ->middleware('permission:equipos.view');
+    Route::get('/asignaciones', [AsignacionEquipoComodatoController::class, 'index'])
+        ->middleware('permission:equipos.view');
+
+    Route::post('/servicios/{id}/asignar-equipo', [AsignacionEquipoComodatoController::class, 'asignar'])
+        ->whereNumber('id')
+        ->middleware('permission:equipos.assign');
+    Route::post('/asignaciones/{id}/retirar', [AsignacionEquipoComodatoController::class, 'desvincular'])
+        ->whereNumber('id')
+        ->middleware('permission:equipos.assign');
 });
 
 /*

@@ -37,6 +37,7 @@ export const CU_PERMISSIONS = {
   CU16: 'planes.manage',
   CU17: 'planes.view',
   CU18: 'equipos.view',
+  CU19: 'equipos.assign',
   CU23: 'instalaciones.view',
 };
 
@@ -45,7 +46,7 @@ export const CU_PERMISSIONS = {
  * El primero permitido para el usuario será el que se muestre.
  */
 export const CU_ORDER = [
-  'CU06', 'CU05', 'CU07', 'CU08', 'CU16', 'CU17', 'CU18', 'CU09', 'CU10', 'CU11',
+  'CU06', 'CU05', 'CU07', 'CU08', 'CU16', 'CU17', 'CU18', 'CU19', 'CU09', 'CU10', 'CU11',
   'CU12', 'CU13', 'CU14', 'CU15', 'CU23', 'CU02', 'CU03', 'CU04', 'CU01',
 ];
 

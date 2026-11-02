@@ -22,6 +22,7 @@ import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegis
 import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
 import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
 import EquiposView from './views/Paquetes/EquiposInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
+import AsignarEquipoComodatoView from './views/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
 import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
@@ -29,7 +30,7 @@ import {
   Radio, LogOut, History, Users, MapPin,
   Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
-  Router, ArrowRightLeft, Package, Wrench,
+  Router, ArrowRightLeft, Package, Wrench, HardDrive,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -220,6 +221,7 @@ export default function App() {
         { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
         { id: 'CU16', label: 'Gestionar Planes de Internet', icon: Router },
         { id: 'CU17', label: 'Asignar / Cambiar Plan de Servicio', icon: ArrowRightLeft },
+<<<<<<< HEAD
         { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
       ],
     },
@@ -227,6 +229,7 @@ export default function App() {
       title: 'Equipos & Almacén',
       items: [
         { id: 'CU18', label: 'Catálogo de Equipos e Inventario', icon: Package },
+        { id: 'CU19', label: 'Asignar Equipo en Comodato', icon: HardDrive },
       ],
     },
     {
@@ -314,6 +317,8 @@ export default function App() {
         return <AsignarPlanView user={currentUser} />;
       case 'CU18':
         return <EquiposView user={currentUser} />;
+      case 'CU19':
+        return <AsignarEquipoComodatoView user={currentUser} />;
       case 'CU23':
         return <InstalacionesView user={currentUser} />;
       default:
