@@ -42,13 +42,15 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInterne
 use App\Http\Controllers\Paquetes\EquiposInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
 // CU19: Asignar equipo en comodato a un servicio (entidad UML Equipo, AsignacionEquipo, Inventario)
 use App\Http\Controllers\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
+// CU20: Reemplazar o retirar equipo de un servicio
+use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
 use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
 
 /*
 |--------------------------------------------------------------------------
 | RUTAS API - TELCOM SISTEMA DE TELECOMUNICACIONES
-| Estructura MVC orientada a Casos de Uso (CU01 - CU17)
+| Estructura MVC orientada a Casos de Uso (CU01 - CU17, CU20)
 |--------------------------------------------------------------------------
 | - CU01 /login es la ÚNICA ruta pública (permite obtener el token).
 | - CU01 /logout y /me, y TODAS las rutas CU02-CU15 exigen auth:sanctum.
@@ -337,3 +339,14 @@ Route::prefix('cu23/instalaciones')->group(function () {
         ->middleware(['auth:sanctum', 'permission:instalaciones.execute']);
 });
 
+// CU20: Reemplazar o retirar equipo conservando el historial (admin, secretaría y técnico).
+Route::prefix('cu20')->middleware('auth:sanctum')->group(function () {
+    Route::get('/servicios/{servicio}/equipo', [EquipoReemplazoRetiroController::class, 'consultar'])
+        ->middleware('permission:equipos.view');
+    Route::get('/equipos/disponibles', [EquipoReemplazoRetiroController::class, 'disponibles'])
+        ->middleware('permission:equipos.view');
+    Route::post('/servicios/{servicio}/equipo/reemplazar', [EquipoReemplazoRetiroController::class, 'reemplazar'])
+        ->middleware('permission:equipos.assign');
+    Route::post('/servicios/{servicio}/equipo/retirar', [EquipoReemplazoRetiroController::class, 'retirar'])
+        ->middleware('permission:equipos.assign');
+});

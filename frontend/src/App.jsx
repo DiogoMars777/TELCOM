@@ -6,7 +6,7 @@ import LoginView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerr
 import SesionView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
 import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/CambiarPasswordView';
 
-// Vistas de los Casos de Uso (módulos administrativos, CU02-CU17)
+// Vistas de los Casos de Uso (módulos administrativos)
 import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
 import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
 import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
@@ -23,6 +23,7 @@ import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarC
 import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
 import EquiposView from './views/Paquetes/EquiposInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
 import AsignarEquipoComodatoView from './views/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
+import EquipoReemplazoRetiroView from './views/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
 import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
@@ -221,7 +222,6 @@ export default function App() {
         { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
         { id: 'CU16', label: 'Gestionar Planes de Internet', icon: Router },
         { id: 'CU17', label: 'Asignar / Cambiar Plan de Servicio', icon: ArrowRightLeft },
-<<<<<<< HEAD
         { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
       ],
     },
@@ -230,6 +230,7 @@ export default function App() {
       items: [
         { id: 'CU18', label: 'Catálogo de Equipos e Inventario', icon: Package },
         { id: 'CU19', label: 'Asignar Equipo en Comodato', icon: HardDrive },
+        { id: 'CU20', label: 'Reemplazar / Retirar Equipo', icon: Router },
       ],
     },
     {
@@ -319,6 +320,8 @@ export default function App() {
         return <EquiposView user={currentUser} />;
       case 'CU19':
         return <AsignarEquipoComodatoView user={currentUser} />;
+      case 'CU20':
+        return <EquipoReemplazoRetiroView user={currentUser} />;
       case 'CU23':
         return <InstalacionesView user={currentUser} />;
       default:
