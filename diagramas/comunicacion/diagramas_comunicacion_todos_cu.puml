@@ -610,3 +610,41 @@ frame "sd CU17 Asignar o cambiar plan de Internet" {
     AsignacionPlanController -down- PlanInternet : <font color=#800000>2.2: findOrFail(planId) →</font>
 }
 @enduml
+
+@startuml cu21_registrar_solicitud_instalacion
+skinparam backgroundColor white
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam interfaceBackgroundColor transparent
+skinparam interfaceBorderColor transparent
+skinparam actorBackgroundColor #FEFECE
+skinparam actorBorderColor #A80036
+skinparam boundaryBackgroundColor #CCEEFF
+skinparam boundaryBorderColor #0088CC
+skinparam controlBackgroundColor #CCEEFF
+skinparam controlBorderColor #0088CC
+skinparam entityBackgroundColor #CCEEFF
+skinparam entityBorderColor #0088CC
+
+frame "sd CU21 Registrar solicitud de instalación" {
+    () " " as spacer
+    actor "Administrador / Secretaría / Cliente" as ActorCU21
+    boundary UI_SolicitudInstalacion
+    control SolicitudInstalacionController
+    entity SolicitudInstalacion
+    entity Cliente
+    entity Zona
+    entity Bitacora
+
+    spacer -[hidden]down- ActorCU21
+
+    ActorCU21 -right- UI_SolicitudInstalacion : <font color=#000000>1: listarSolicitudes(filtros) →</font>\n<font color=#800000>2: registrarSolicitud(datos, gps) →</font>\n<font color=#008000>3: consultarDetalleSolicitud(id) →</font>\n<font color=#000080>4: cancelarSolicitud(id, motivo) →</font>
+
+    UI_SolicitudInstalacion -right- SolicitudInstalacionController : <font color=#000000>1.1: index(Request) →</font>\n<font color=#800000>2.1: store(Request) →</font>\n<font color=#008000>3.1: show(id) →</font>\n<font color=#000080>4.1: cancelar(Request, id) →</font>
+
+    SolicitudInstalacionController -down- Cliente : <font color=#800000>2.2: findOrFail(idCliente) →</font>
+    SolicitudInstalacionController -down- Zona : <font color=#800000>2.3: verificarCobertura(idZona) →</font>
+    SolicitudInstalacionController -right- SolicitudInstalacion : <font color=#000000>1.2: with('cliente')->paginate() →</font>\n<font color=#800000>2.4: create(numeroOrden, 'PENDIENTE') →</font>\n<font color=#008000>3.2: with('cliente')->findOrFail(id) →</font>\n<font color=#000080>4.2: update(['estadoSolicitud' => 'CANCELADA']) →</font>
+    SolicitudInstalacionController -up- Bitacora : <font color=#800000>2.5: log('CU21', 'REGISTRAR_SOLICITUD', ...) →</font>
+}
+@enduml

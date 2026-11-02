@@ -38,6 +38,8 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_ListaRegistroReactivacion
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
+// CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)
+use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -246,3 +248,39 @@ Route::prefix('cu08/servicios/{servicio}/planes')->group(function () {
     Route::post('/', [AsignacionPlanController::class, 'store'])
         ->middleware(['auth:sanctum', 'permission:planes.assign']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| CU21 - REGISTRAR SOLICITUD DE INSTALACIÓN (InstalacionesTecnicas)
+|--------------------------------------------------------------------------
+| Permisos RBAC:
+|   - instalaciones.view     -> consultar listado de solicitudes y detalle.
+|   - instalaciones.schedule -> registrar solicitudes internas y cancelar.
+|   - Ruta pública           -> portal web de clientes (sin auth).
+|--------------------------------------------------------------------------
+*/
+Route::prefix('cu21')->group(function () {
+    // Portal público para clientes en landing page (con limitación de tasa)
+    Route::middleware('throttle:30,1')->group(function () {
+        Route::post('/solicitudes/publica', [SolicitudInstalacionController::class, 'storePublica']);
+        Route::get('/zonas-cobertura', [SolicitudInstalacionController::class, 'zonasPublicas']);
+    });
+
+    // Operaciones administrativas internas (Admin / Secretaría)
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/solicitudes', [SolicitudInstalacionController::class, 'index'])
+            ->middleware('permission:instalaciones.view');
+        Route::get('/solicitudes/{id}', [SolicitudInstalacionController::class, 'show'])
+            ->whereNumber('id')
+            ->middleware('permission:instalaciones.view');
+        Route::get('/clientes-disponibles', [SolicitudInstalacionController::class, 'clientesDisponibles'])
+            ->middleware('permission:instalaciones.view');
+
+        Route::post('/solicitudes', [SolicitudInstalacionController::class, 'store'])
+            ->middleware('permission:instalaciones.schedule');
+        Route::put('/solicitudes/{id}/cancelar', [SolicitudInstalacionController::class, 'cancelar'])
+            ->whereNumber('id')
+            ->middleware('permission:instalaciones.schedule');
+    });
+});
+

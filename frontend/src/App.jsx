@@ -21,13 +21,14 @@ import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCo
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
 import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
 import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
+import SolicitudInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
 
 // Iconos de cada módulo del panel
 import {
   Radio, LogOut, History, Users, MapPin,
   Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
-  Router, ArrowRightLeft,
+  Router, ArrowRightLeft, ClipboardList,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -235,6 +236,7 @@ export default function App() {
         { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
         { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
         { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
+        { id: 'CU21', label: 'Solicitudes de Instalación', icon: ClipboardList },
       ],
     },
     {
@@ -303,6 +305,8 @@ export default function App() {
         return <PlanesInternetView user={currentUser} />;
       case 'CU17':
         return <AsignarPlanView user={currentUser} />;
+      case 'CU21':
+        return <SolicitudInstalacionView user={currentUser} />;
       default:
         return <ClientesView user={currentUser} />;
     }

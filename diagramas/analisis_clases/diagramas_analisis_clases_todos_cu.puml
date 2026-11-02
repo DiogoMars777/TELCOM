@@ -1538,3 +1538,113 @@ frame "sd Diagrama de anÃ¡lisis de clases - CU17 Asignar o cambiar el plan de 
     AsignacionPlan "0..*" -down- "1" Usuario
 }
 @enduml
+
+@startuml cu21_analisis_registrar_solicitud_instalacion
+allowmixing
+
+skinparam backgroundColor white
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam classFontSize 12
+skinparam classAttributeIconSize 0
+hide circle
+
+skinparam class {
+    BackgroundColor #FFF2E6
+    BorderColor #8A4B38
+    RoundCorner 6
+    HeaderBackgroundColor #FFF2E6
+    ArrowColor black
+}
+
+skinparam actor {
+    BackgroundColor #FEFECE
+    BorderColor #A80036
+}
+
+frame "sd Diagrama de análisis de clases - CU21 Registrar solicitud de instalación" {
+    actor "Administrador / Secretaría / Cliente" as ActorCU21
+
+    class UI_SolicitudInstalacion {
+        + mostrarFormularioRegistro(): void
+        + buscarClienteAbonado(): void
+        + capturarCoordenadasGPS(): void
+        + validarCoberturaZona(): void
+        + confirmarSolicitud(): void
+        + emitirComprobanteOrden(): void
+        + cancelarSolicitud(): void
+    }
+
+    class SolicitudInstalacionController {
+        + index(Request): JsonResponse
+        + store(Request): JsonResponse
+        + storePublica(Request): JsonResponse
+        + show(id): JsonResponse
+        + clientesDisponibles(Request): JsonResponse
+        + zonasPublicas(): JsonResponse
+        + cancelar(Request, id): JsonResponse
+    }
+
+    class SolicitudInstalacion {
+        - idSolicitud: int
+        - numeroOrden: string
+        - fechaSolicitud: date
+        - direccion: text
+        - referencia: text
+        - latitud: decimal
+        - longitud: decimal
+        - estadoSolicitud: string
+        - observacion: text
+        - idCliente: int
+        --
+        + create(): SolicitudInstalacion
+        + find(): SolicitudInstalacion
+        + where(): Builder
+        + cliente(): BelongsTo
+    }
+
+    class Cliente {
+        - idCliente: int
+        - codigoCliente: string
+        - ci: string
+        - nombreCompleto: string
+        - telefonoPrincipal: string
+        - direccion: string
+        - estadoCliente: string
+        - idZona: int
+        --
+        + find(): Cliente
+        + solicitudes(): HasMany
+    }
+
+    class Zona {
+        - idZona: int
+        - nombreZona: string
+        - estadoCobertura: string
+        - estado: boolean
+        --
+        + find(): Zona
+    }
+
+    class Bitacora {
+        - idBitacora: int
+        - fechaHora: timestamp
+        - accion: string
+        - descripcion: text
+        - modulo: string
+        --
+        + create(): Bitacora
+    }
+
+    ActorCU21 -right- UI_SolicitudInstalacion
+    UI_SolicitudInstalacion -right- SolicitudInstalacionController
+    SolicitudInstalacionController -right- SolicitudInstalacion
+
+    SolicitudInstalacionController -down- Cliente
+    SolicitudInstalacionController -down- Zona
+    SolicitudInstalacionController -up- Bitacora
+
+    SolicitudInstalacion "0..*" -right- "1" Cliente
+    Cliente "0..*" -right- "1" Zona
+}
+@enduml

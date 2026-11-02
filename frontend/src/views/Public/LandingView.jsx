@@ -14,6 +14,7 @@ import {
 import { siteConfig } from '../../config/siteConfig';
 import { plans } from '../../config/plans';
 import PortalClienteModal from '../Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PortalClienteModal';
+import PortalSolicitudModal from './PortalSolicitudModal';
 import './public.css';
 
 // Año actual calculado una sola vez (fuera del render).
@@ -47,7 +48,7 @@ function scrollToId(id) {
 }
 
 /* ============================ Encabezado ============================ */
-function PublicHeader({ onEnterPortal, portalLabel, onOpenPortalCliente }) {
+function PublicHeader({ onEnterPortal, portalLabel, onOpenPortalCliente, onOpenSolicitud }) {
   return (
     <header className="pub-header">
       <div className="pub-container pub-header-inner">
@@ -74,6 +75,15 @@ function PublicHeader({ onEnterPortal, portalLabel, onOpenPortalCliente }) {
         </nav>
 
         <div className="pub-header-actions">
+          <button
+            type="button"
+            className="pub-portal-btn pub-pay-btn"
+            onClick={onOpenSolicitud}
+            style={{ background: "#2563EB", color: "#FFFFFF", borderColor: "#2563EB" }}
+          >
+            <Wifi size={15} />
+            Solicitar Instalación
+          </button>
           <button
             type="button"
             className="pub-portal-btn pub-pay-btn"
@@ -431,6 +441,7 @@ function PublicFooter() {
 /* ============================ Vista completa ============================ */
 export default function LandingView({ onEnterPortal, portalLabel }) {
   const [portalClienteOpen, setPortalClienteOpen] = useState(false);
+  const [portalSolicitudOpen, setPortalSolicitudOpen] = useState(false);
 
   return (
     <div className="pub-root">
@@ -438,6 +449,7 @@ export default function LandingView({ onEnterPortal, portalLabel }) {
         onEnterPortal={onEnterPortal}
         portalLabel={portalLabel}
         onOpenPortalCliente={() => setPortalClienteOpen(true)}
+        onOpenSolicitud={() => setPortalSolicitudOpen(true)}
       />
       <Hero onOpenPortalCliente={() => setPortalClienteOpen(true)} />
       <Plans />
