@@ -264,6 +264,8 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Panels & Cards */
@@ -301,6 +303,8 @@ body {
   border-radius: var(--radius-md);
   overflow-x: auto;
   box-shadow: var(--shadow-sm);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .data-table {
@@ -331,6 +335,13 @@ body {
   background-color: var(--bg-card-hover);
 }
 
+.cell-nowrap,
+.nowrap,
+.data-table th.cell-nowrap,
+.data-table td.cell-nowrap {
+  white-space: nowrap;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -343,6 +354,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
   border: none;
+  white-space: nowrap;
 }
 
 .btn-primary {
@@ -385,6 +397,7 @@ body {
   border-radius: 9999px;
   font-size: 0.72rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 .badge-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 .badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -681,6 +694,8 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .modal-footer {
@@ -1356,4 +1371,34 @@ input:focus, select:focus, textarea:focus {
   .sidebar {
     transition: none;
   }
+}
+
+
+/* ==========================================================================
+   Scrollbars Invisibles (Ocultar visualmente manteniendo desplazamiento)
+   ========================================================================== */
+
+/* Ocultar scrollbar para Chrome, Safari, Edge (Chromium) y Opera */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.content-body::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar,
+.users-table-wrap::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Ocultar scrollbar para IE, Edge y Firefox */
+html,
+body,
+.no-scrollbar,
+.modal-body,
+.content-body,
+.table-responsive,
+.users-table-wrap {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;     /* Firefox */
 }

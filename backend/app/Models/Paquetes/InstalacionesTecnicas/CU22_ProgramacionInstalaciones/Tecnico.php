@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Paquetes\ServiciosPlanes\CU22_ProgramacionInstalaciones;
+namespace App\Models\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

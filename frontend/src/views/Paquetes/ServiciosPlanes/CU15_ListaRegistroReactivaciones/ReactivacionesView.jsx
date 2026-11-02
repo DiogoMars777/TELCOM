@@ -168,11 +168,11 @@ export default function ReactivacionesView() {
               <th>Código</th>
               <th>Servicio</th>
               <th>Cliente</th>
-              <th>Costo Reconexión</th>
-              <th>Fecha / Hora</th>
+              <th className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>Costo Reconexión</th>
+              <th className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>Fecha / Hora</th>
               <th>Operador</th>
               <th>Observaciones</th>
-              <th>Estado</th>
+              <th className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -196,15 +196,15 @@ export default function ReactivacionesView() {
                 <td><strong>{r.codigo_reactivacion}</strong></td>
                 <td><span className="badge badge-info">{r.servicio_codigo}</span></td>
                 <td>{r.cliente_nombre || '—'}</td>
-                <td><strong>Bs. {Number(r.costo_reactivacion || 0).toFixed(2)}</strong></td>
-                <td>{r.fecha_reactivacion || '—'}</td>
+                <td className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}><strong>Bs. {Number(r.costo_reactivacion || 0).toFixed(2)}</strong></td>
+                <td className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>{r.fecha_reactivacion || '—'}</td>
                 <td>{r.operador_nombre || '—'}</td>
                 <td>
                   <span style={{ fontSize: '0.78rem', color: r.observaciones ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                     {r.observaciones || '—'}
                   </span>
                 </td>
-                <td>
+                <td className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>
                   <span className={`badge badge-${r.estado_servicio === 'ACTIVO' ? 'success' : 'warning'}`}>
                     {r.estado_servicio === 'ACTIVO' && <CheckCircle2 size={12} />} {r.estado_servicio || 'ACTIVO'}
                   </span>

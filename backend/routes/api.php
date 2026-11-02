@@ -39,7 +39,7 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\P
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 // CU22: Programar instalación y asignar técnico
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU22_ProgramacionInstalaciones\InstalacionesController;
+use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU22_ProgramacionInstalaciones\InstalacionesController;
 
 /*
 |--------------------------------------------------------------------------

@@ -187,10 +187,10 @@ export default function InstalacionesView() {
               <th>Fecha Solicitud</th>
               <th>Abonado / Cliente</th>
               <th>Ubicación / Dirección</th>
-              <th>Estado</th>
+              <th className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>Estado</th>
               <th>Cuadrilla Asignada</th>
-              <th>Fecha Programada</th>
-              <th style={{ textAlign: 'center' }}>Acción</th>
+              <th className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>Fecha Programada</th>
+              <th className="cell-nowrap" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>Acción</th>
             </tr>
           </thead>
           <tbody>
@@ -236,7 +236,7 @@ export default function InstalacionesView() {
                       </span>
                     </div>
                   </td>
-                  <td>
+                  <td className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>
                     <span className={`badge ${esPendiente ? 'badge-warning' : 'badge-success'}`}>
                       {esPendiente ? <Clock size={12} /> : <ShieldCheck size={12} />}
                       {sol.estado_solicitud}
@@ -252,7 +252,7 @@ export default function InstalacionesView() {
                       <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Sin asignar</span>
                     )}
                   </td>
-                  <td>
+                  <td className="cell-nowrap" style={{ whiteSpace: 'nowrap' }}>
                     {inst?.fecha_programada || inst?.fechaProgramada ? (
                       <div>
                         <strong>{inst.fecha_programada || inst.fechaProgramada}</strong>
@@ -267,7 +267,7 @@ export default function InstalacionesView() {
                       <span style={{ color: '#94a3b8' }}>—</span>
                     )}
                   </td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td className="cell-nowrap" style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                     <button
                       type="button"
                       className={`btn btn-sm ${esPendiente ? 'btn-primary' : 'btn-secondary'}`}
