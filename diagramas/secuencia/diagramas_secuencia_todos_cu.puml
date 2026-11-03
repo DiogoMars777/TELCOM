@@ -2,6 +2,10 @@
 ' TELCOM - DIAGRAMAS DE SECUENCIA (CU01 INICIAR Y CERRAR SESIÓN)
 ' Estilo: Enterprise Architect (Actor - Boundary - Control - Entity)
 ' Basado en la implementación real de controladores, modelos y rutas del sistema
+' Incluye:
+'   - Flujo 1: Iniciar Sesión (Login)
+'   - Flujo 2: Cerrar Sesión (Logout)
+'   - Flujo 3: Recuperar Contraseña (Forgot & Reset Password con código de 6 dígitos)
 ' ==============================================================================
 
 @startuml cu01_secuencia_iniciar_cerrar_sesion
@@ -29,10 +33,12 @@ skinparam sequence {
 }
 
 actor "Usuario / Administrador" as UserActor
-boundary "UI_Sesion\n(LoginView)" as UI
+boundary "UI_Sesion\n(Login / ResetView)" as UI
 control "AuthController" as Auth
 entity "Usuario\n(User)" as UserEntity
 entity "UserSession" as SessionEntity
+entity "PasswordVerificationCode\n(password_verification_codes)" as CodeEntity
+entity "Mail\n(PasswordResetCodeMail)" as MailService
 entity "Bitacora" as AuditEntity
 
 == Flujo 1: Iniciar Sesión (Login) ==
@@ -75,7 +81,7 @@ else Credenciales válidas y cuenta activa
     Auth --> UI: 200 OK: { user: presentUser(user), token: token }
     deactivate Auth
 
-    UI -> UI: Guardar token en localStorage y actualizar estado de autenticación
+    UI -> UI: Guardar token en localStorage y actualizar estado
     UI --> UserActor: Redireccionar a vista principal (Dashboard)
     deactivate UI
 end
@@ -109,5 +115,82 @@ deactivate Auth
 UI -> UI: Limpiar credenciales y token local
 UI --> UserActor: Redireccionar a pantalla de Login
 deactivate UI
+
+== Flujo 3: Recuperar Contraseña (Olvido de contraseña) ==
+
+UserActor -> UI: Clic en "¿Olvidaste tu contraseña?" e ingresar email
+activate UI
+
+UI -> Auth: POST /api/forgot-password {email}
+activate Auth
+
+Auth -> Auth: validate([email])
+Auth -> CodeEntity: where('expires_at', '<', now())->orWhereNotNull('used_at')->delete()
+
+Auth -> UserEntity: where('email', email)->exists()
+activate UserEntity
+UserEntity --> Auth: bool $exists
+deactivate UserEntity
+
+opt Si el usuario existe
+    Auth -> Auth: Generar código numérico aleatorio (6 dígitos)
+    Auth -> CodeEntity: insert(['email' => email, 'code_hash' => Hash::make(code), 'expires_at' => +10min])
+    activate CodeEntity
+    CodeEntity --> Auth: Código de verificación persistido
+    deactivate CodeEntity
+
+    Auth -> MailService: send(new PasswordResetCodeMail(code))
+    activate MailService
+    MailService --> Auth: Correo con código enviado al usuario
+    deactivate MailService
+end
+
+Auth --> UI: 200 OK: "Si el correo existe, recibirás un código de verificación."
+deactivate Auth
+
+UI --> UserActor: Mostrar formulario de ingreso de código y nueva contraseña
+
+UserActor -> UI: Ingresar código recibido (6 dígitos), nueva contraseña y confirmar
+UI -> Auth: POST /api/reset-password {email, code, new_password, new_password_confirmation}
+activate Auth
+
+Auth -> Auth: validate([email, code, new_password (min:8, regex, confirmed)])
+
+Auth -> CodeEntity: where('email', email)->whereNull('used_at')->where('expires_at', '>', now())->first()
+activate CodeEntity
+CodeEntity --> Auth: Retorna registro de verificación
+deactivate CodeEntity
+
+alt Código inexistente, vencido o intentos excedidos (>= 3)
+    Auth --> UI: 422 Unprocessable / 429 Too Many: "Código inválido o vencido."
+    UI --> UserActor: Mostrar mensaje de error
+else Código coincide (Hash::check)
+    Auth -> UserEntity: where('email', email)->first()
+    activate UserEntity
+    Auth -> UserEntity: update(['password' => Hash::make(new_password)])
+    UserEntity --> Auth: Contraseña actualizada en BD
+    deactivate UserEntity
+
+    Auth -> CodeEntity: update(['used_at' => now()])
+    activate CodeEntity
+    CodeEntity --> Auth: Código marcado como utilizado
+    deactivate CodeEntity
+
+    Auth -> UserEntity: tokens()->delete()
+    activate UserEntity
+    UserEntity --> Auth: Tokens previos revocados
+    deactivate UserEntity
+
+    Auth -> AuditEntity: log('CU01', 'RESTAURAR_PASSWORD', "El usuario restableció su contraseña...", ...)
+    activate AuditEntity
+    AuditEntity --> Auth: Registro de auditoría guardado
+    deactivate AuditEntity
+
+    Auth --> UI: 200 OK: "Contraseña restablecida correctamente."
+    deactivate Auth
+
+    UI --> UserActor: Notificar éxito y redireccionar a Login
+    deactivate UI
+end
 
 @enduml
