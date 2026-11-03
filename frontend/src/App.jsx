@@ -2,31 +2,31 @@ import React, { useEffect, useState } from 'react';
 
 // Vistas públicas
 import LandingView from './views/Public/LandingView';
-import LoginView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/LoginView';
-import SesionView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
-import CambiarPasswordView from './views/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/CambiarPasswordView';
+import LoginView from './views/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/LoginView';
+import SesionView from './views/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/SesionView';
+import CambiarPasswordView from './views/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/CambiarPasswordView';
 
 // Vistas de los Casos de Uso (módulos administrativos)
-import AuditoriaView from './views/Paquetes/SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
-import UsuariosView from './views/Paquetes/SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
-import ZonasCoberturaView from './views/Paquetes/GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
-import ClientesView from './views/Paquetes/GestionClientesZonas/ClientesView';
-import ServicioInternetView from './views/Paquetes/ServiciosPlanes/CU08_RegistrarActivarServicio/ServicioInternetView';
-import MensualidadGeneracionView from './views/Paquetes/FacturacionCobranza/CU09_GenerarMensualidades/MensualidadGeneracionView';
-import PagoMensualidadView from './views/Paquetes/FacturacionCobranza/CU10_GestionarPagoMensualidad/PagoMensualidadView';
-import HistorialPagosView from './views/Paquetes/FacturacionCobranza/CU11_ConsultarHistorialPagos/HistorialPagosView';
-import AlertasVencimientoView from './views/Paquetes/FacturacionCobranza/CU12_VisualizarAlertasVencimiento/AlertasVencimientoView';
-import ServiciosCorteView from './views/Paquetes/ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
-import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
-import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
-import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
-import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
-import EquiposView from './views/Paquetes/EquiposProveedoresInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
-import AsignarEquipoComodatoView from './views/Paquetes/EquiposProveedoresInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
-import EquipoReemplazoRetiroView from './views/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
-import SolicitudInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
-import ProgramarInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU22_ProgramarInstalacion/InstalacionesView';
-import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
+import AuditoriaView from './views/Paquetes/P1_SeguridadAdministracion/CU02_BitacoraAuditoria/AuditoriaView';
+import UsuariosView from './views/Paquetes/P1_SeguridadAdministracion/CU03_UsuariosRolesPermisos/UsuariosView';
+import ZonasCoberturaView from './views/Paquetes/P2_GestionClientesZonas/CU04_ZonasCobertura/ZonasCoberturaView';
+import ClientesView from './views/Paquetes/P2_GestionClientesZonas/ClientesView';
+import ServicioInternetView from './views/Paquetes/P3_ServiciosPlanes/CU08_RegistrarActivarServicio/ServicioInternetView';
+import MensualidadGeneracionView from './views/Paquetes/P4_FacturacionCobranza/CU09_GenerarMensualidades/MensualidadGeneracionView';
+import PagoMensualidadView from './views/Paquetes/P4_FacturacionCobranza/CU10_GestionarPagoMensualidad/PagoMensualidadView';
+import HistorialPagosView from './views/Paquetes/P4_FacturacionCobranza/CU11_ConsultarHistorialPagos/HistorialPagosView';
+import AlertasVencimientoView from './views/Paquetes/P4_FacturacionCobranza/CU12_VisualizarAlertasVencimiento/AlertasVencimientoView';
+import ServiciosCorteView from './views/Paquetes/P3_ServiciosPlanes/CU13_ListadoServiciosCorte/ServiciosCorteView';
+import CorteRegistroView from './views/Paquetes/P3_ServiciosPlanes/CU14_RegistrarCorteRealizado/CorteRegistroView';
+import ReactivacionesView from './views/Paquetes/P3_ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
+import PlanesInternetView from './views/Paquetes/P3_ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
+import AsignarPlanView from './views/Paquetes/P3_ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
+import EquiposView from './views/Paquetes/P5_EquiposProveedoresInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
+import AsignarEquipoComodatoView from './views/Paquetes/P5_EquiposProveedoresInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
+import EquipoReemplazoRetiroView from './views/Paquetes/P5_EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
+import SolicitudInstalacionView from './views/Paquetes/P6_InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
+import ProgramarInstalacionView from './views/Paquetes/P6_InstalacionesTecnicas/CU22_ProgramarInstalacion/InstalacionesView';
+import InstalacionesView from './views/Paquetes/P6_InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
 import {
@@ -36,8 +36,8 @@ import {
   Router, ArrowRightLeft, Package, Wrench, HardDrive, ClipboardList,
 } from 'lucide-react';
 
-import { authService } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
-import { runAuthBootstrap } from './models/Paquetes/SeguridadAdministracion/CU01_IniciarCerrarSesion/authBootstrap';
+import { authService } from './models/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
+import { runAuthBootstrap } from './models/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/authBootstrap';
 import { canAccessCu, firstAllowedCu } from './config/access';
 
 /**

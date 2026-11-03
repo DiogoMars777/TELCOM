@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Models\Paquetes\EquiposProveedoresInventario\CU18_RegistrarCatalogoUnidadesEquipos\Equipo;
-use App\Models\Paquetes\EquiposProveedoresInventario\CU18_RegistrarCatalogoUnidadesEquipos\ProductoEquipo;
-use App\Models\Paquetes\EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipo;
-use App\Models\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\Bitacora;
-use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
-use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU18_RegistrarCatalogoUnidadesEquipos\Equipo;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU18_RegistrarCatalogoUnidadesEquipos\ProductoEquipo;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipo;
+use App\Models\Paquetes\P1_SeguridadAdministracion\CU02_BitacoraAuditoria\Bitacora;
+use App\Models\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
+use App\Models\Paquetes\P3_ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;

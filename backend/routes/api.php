@@ -3,53 +3,53 @@
 use Illuminate\Support\Facades\Route;
 
 // CU01: Iniciar y cerrar sesión
-use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\AuthController;
-use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU01_IniciarCerrarSesion\RecuperarPasswordController;
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU01_IniciarCerrarSesion\AuthController;
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU01_IniciarCerrarSesion\RecuperarPasswordController;
 // CU02: Consultar bitácora de auditoría
-use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\AuditoriaController;
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU02_BitacoraAuditoria\AuditoriaController;
 // CU03: Gestionar usuarios internos, roles y permisos
-use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\UsuarioController;
-use App\Http\Controllers\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\RolController;
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\UsuarioController;
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\RolController;
 // CU04: Gestionar zonas de cobertura
-use App\Http\Controllers\Paquetes\GestionClientesZonas\CU04_ZonasCobertura\ZonaCoberturaController;
+use App\Http\Controllers\Paquetes\P2_GestionClientesZonas\CU04_ZonasCobertura\ZonaCoberturaController;
 // CU05: Registrar nuevo cliente
-use App\Http\Controllers\Paquetes\GestionClientesZonas\CU05_RegistrarCliente\ClienteRegistroController;
+use App\Http\Controllers\Paquetes\P2_GestionClientesZonas\CU05_RegistrarCliente\ClienteRegistroController;
 // CU06: Consultar y buscar clientes
-use App\Http\Controllers\Paquetes\GestionClientesZonas\CU06_ConsultarBuscarClientes\ClienteConsultaController;
+use App\Http\Controllers\Paquetes\P2_GestionClientesZonas\CU06_ConsultarBuscarClientes\ClienteConsultaController;
 // CU07: Actualizar datos y dar baja lógica a cliente
-use App\Http\Controllers\Paquetes\GestionClientesZonas\CU07_ActualizarBajaCliente\ClienteMantenimientoController;
+use App\Http\Controllers\Paquetes\P2_GestionClientesZonas\CU07_ActualizarBajaCliente\ClienteMantenimientoController;
 // CU08: Registrar y activar servicio de Internet
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternetController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternetController;
 // CU09: Generar mensualidades de servicios
-use App\Http\Controllers\Paquetes\FacturacionCobranza\CU09_GenerarMensualidades\MensualidadGeneracionController;
+use App\Http\Controllers\Paquetes\P4_FacturacionCobranza\CU09_GenerarMensualidades\MensualidadGeneracionController;
 // CU10: Gestionar pago de mensualidad
-use App\Http\Controllers\Paquetes\FacturacionCobranza\CU10_GestionarPagoMensualidad\PagoMensualidadController;
+use App\Http\Controllers\Paquetes\P4_FacturacionCobranza\CU10_GestionarPagoMensualidad\PagoMensualidadController;
 // CU11: Consultar historial de pagos
-use App\Http\Controllers\Paquetes\FacturacionCobranza\CU11_ConsultarHistorialPagos\HistorialPagosController;
+use App\Http\Controllers\Paquetes\P4_FacturacionCobranza\CU11_ConsultarHistorialPagos\HistorialPagosController;
 // CU12: Visualizar alertas de vencimiento
-use App\Http\Controllers\Paquetes\FacturacionCobranza\CU12_VisualizarAlertasVencimiento\AlertasVencimientoController;
+use App\Http\Controllers\Paquetes\P4_FacturacionCobranza\CU12_VisualizarAlertasVencimiento\AlertasVencimientoController;
 // CU13: Consultar listado de servicios para corte
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU13_ListadoServiciosCorte\ServiciosCorteController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU13_ListadoServiciosCorte\ServiciosCorteController;
 // CU14: Registrar corte realizado
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU14_RegistrarCorteRealizado\CorteRegistroController;
 // CU15: Gestionar lista y registro de reactivaciones
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionesController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU15_GestionarReactivaciones\ReactivacionesController;
 // CU16: Gestionar Planes de Internet (catálogo: entidad UML PlanInternet)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU16_GestionarCatalogoPlanes\PlanInternetController;
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
-use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
+use App\Http\Controllers\Paquetes\P3_ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 // CU18: Registrar y Gestionar Catálogo de Equipos e Inventario
-use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
+use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
 // CU19: Asignar equipo en comodato a un servicio (entidad UML Equipo, AsignacionEquipo, Inventario)
-use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
+use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
 // CU20: Reemplazar o retirar equipo de un servicio
-use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
+use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
 // CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)
-use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
+use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
 // CU22: Programar instalación y asignar técnico
-use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU22_ProgramarInstalacion\InstalacionesController;
+use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU22_ProgramarInstalacion\InstalacionesController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
-use App\Http\Controllers\Paquetes\InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
+use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
 
 /*
 |--------------------------------------------------------------------------

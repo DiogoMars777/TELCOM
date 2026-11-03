@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\AsignacionEquipo;
-use App\Models\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\Equipo;
-use App\Models\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\Inventario;
-use App\Models\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\ProductoEquipo;
-use App\Models\Paquetes\SeguridadAdministracion\CU02_BitacoraAuditoria\Bitacora;
-use App\Models\Paquetes\SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
-use App\Models\Paquetes\ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipo;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\Equipo;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\Inventario;
+use App\Models\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\ProductoEquipo;
+use App\Models\Paquetes\P1_SeguridadAdministracion\CU02_BitacoraAuditoria\Bitacora;
+use App\Models\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\Rol;
+use App\Models\Paquetes\P3_ServiciosPlanes\CU08_RegistrarActivarServicio\ServicioInternet;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

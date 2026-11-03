@@ -17,7 +17,7 @@ globalThis.Event = class Event { constructor(type) { this.type = type; } };
 globalThis.window = { dispatchEvent: () => {} };
 
 const { canAccessCu } = await import('../src/config/access.js');
-const { asignacionEquipoModel } = await import('../src/models/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/asignacionEquipoModel.js');
+const { asignacionEquipoModel } = await import('../src/models/Paquetes/P5_EquiposProveedoresInventario/CU19_AsignarEquipoComodato/asignacionEquipoModel.js');
 
 function jsonResponse(status, body) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };

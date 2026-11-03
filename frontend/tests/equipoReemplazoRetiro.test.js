@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { equipoReemplazoRetiroService as service } from '../src/models/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/equipoReemplazoRetiroModel.js';
+import { equipoReemplazoRetiroService as service } from '../src/models/Paquetes/P5_EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/equipoReemplazoRetiroModel.js';
 import { describeApiError } from '../src/services/apiClient.js';
 
 const originalFetch = globalThis.fetch;
