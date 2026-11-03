@@ -1,11 +1,13 @@
 ' ==============================================================================
 ' TELCOM - DIAGRAMAS DE SECUENCIA (CU01 INICIAR Y CERRAR SESIÓN)
 ' Estilo: Enterprise Architect (Actor - Boundary - Control - Entity)
-' Basado en la implementación real de controladores, modelos y rutas del sistema
-' Incluye:
+' Entidades canónicas de la base de datos: Usuario, UserSession
+' Controlador: AuthController
+' Interfaz: UI_Sesion
+' Flujos:
 '   - Flujo 1: Iniciar Sesión (Login)
 '   - Flujo 2: Cerrar Sesión (Logout)
-'   - Flujo 3: Recuperar Contraseña (Forgot & Reset Password con código de 6 dígitos)
+'   - Flujo 3: Recuperar Contraseña (Olvido de contraseña)
 ' ==============================================================================
 
 @startuml cu01_secuencia_iniciar_cerrar_sesion
@@ -32,165 +34,128 @@ skinparam sequence {
     DividerBorderColor #8A4B38
 }
 
-actor "Usuario / Administrador" as UserActor
-boundary "UI_Sesion\n(Login / ResetView)" as UI
-control "AuthController" as Auth
-entity "Usuario\n(User)" as UserEntity
-entity "UserSession" as SessionEntity
-entity "PasswordVerificationCode\n(password_verification_codes)" as CodeEntity
-entity "Mail\n(PasswordResetCodeMail)" as MailService
-entity "Bitacora" as AuditEntity
+actor "Usuario / Administrador" as UsuarioActor
+boundary UI_Sesion
+control AuthController
+entity Usuario
+entity UserSession
 
 == Flujo 1: Iniciar Sesión (Login) ==
 
-UserActor -> UI: Ingresar credenciales (email, password) y solicitar login
-activate UI
+UsuarioActor -> UI_Sesion: 1: iniciarSesion(email, password)
+activate UI_Sesion
 
-UI -> Auth: POST /api/login {email, password}
-activate Auth
+UI_Sesion -> AuthController: 1.1: login(Request)
+activate AuthController
 
-Auth -> Auth: validate([email, password])
+AuthController -> AuthController: validate([email, password])
 
-Auth -> UserEntity: where('email', email)->first()
-activate UserEntity
-UserEntity --> Auth: Retorna instancia User / null
-deactivate UserEntity
+AuthController -> Usuario: 1.2: where('email', email)->first()
+activate Usuario
+Usuario --> AuthController: $user / null
+deactivate Usuario
 
-alt Credenciales inválidas o usuario no existe
-    Auth --> UI: 401 Unauthorized: "Credenciales incorrectas."
-    UI --> UserActor: Mostrar error en formulario
+alt Credenciales incorrectas o usuario no encontrado
+    AuthController --> UI_Sesion: error('Credenciales incorrectas.', 401)
+    UI_Sesion --> UsuarioActor: mostrarError()
 else Cuenta desactivada (!user->activo)
-    Auth --> UI: 403 Forbidden: "Tu cuenta está desactivada."
-    UI --> UserActor: Mostrar alerta de cuenta inactiva
+    AuthController --> UI_Sesion: error('Tu cuenta está desactivada.', 403)
+    UI_Sesion --> UsuarioActor: mostrarAlertaInactivo()
 else Credenciales válidas y cuenta activa
-    Auth -> UserEntity: createToken('auth_token')->plainTextToken
-    activate UserEntity
-    UserEntity --> Auth: Retorna string $token
-    deactivate UserEntity
+    AuthController -> Usuario: createToken('auth_token')->plainTextToken
+    activate Usuario
+    Usuario --> AuthController: $token
+    deactivate Usuario
 
-    Auth -> SessionEntity: create(['user_id' => id, 'ip_address' => ip, 'login_at' => now(), 'is_active' => true])
-    activate SessionEntity
-    SessionEntity --> Auth: Sesión registrada
-    deactivate SessionEntity
+    AuthController -> UserSession: 1.3: create(['user_id' => id, 'ip_address' => ip, 'login_at' => now(), 'is_active' => true])
+    activate UserSession
+    UserSession --> AuthController: sesionRegistrada
+    deactivate UserSession
 
-    Auth -> AuditEntity: log('CU01', 'INICIAR_SESION', "El usuario inició sesión", ...)
-    activate AuditEntity
-    AuditEntity --> Auth: Registro guardado
-    deactivate AuditEntity
+    AuthController --> UI_Sesion: success(['user' => presentUser, 'token' => token])
+    deactivate AuthController
 
-    Auth --> UI: 200 OK: { user: presentUser(user), token: token }
-    deactivate Auth
-
-    UI -> UI: Guardar token en localStorage y actualizar estado
-    UI --> UserActor: Redireccionar a vista principal (Dashboard)
-    deactivate UI
+    UI_Sesion -> UI_Sesion: guardarTokenLocalStorage()
+    UI_Sesion --> UsuarioActor: redireccionarDashboard()
+    deactivate UI_Sesion
 end
 
 == Flujo 2: Cerrar Sesión (Logout) ==
 
-UserActor -> UI: Clic en "Cerrar Sesión"
-activate UI
+UsuarioActor -> UI_Sesion: 2: cerrarSesion()
+activate UI_Sesion
 
-UI -> Auth: POST /api/logout (Bearer Token)
-activate Auth
+UI_Sesion -> AuthController: 2.1: logout(Request)
+activate AuthController
 
-Auth -> UserEntity: currentAccessToken()->delete()
-activate UserEntity
-UserEntity --> Auth: Token revocado
-deactivate UserEntity
+AuthController -> Usuario: currentAccessToken()->delete()
+activate Usuario
+Usuario --> AuthController: tokenRevocado
+deactivate Usuario
 
-Auth -> SessionEntity: where('user_id', id)->where('is_active', true)->update(['logout_at' => now(), 'is_active' => false])
-activate SessionEntity
-SessionEntity --> Auth: Registro de sesión finalizado
-deactivate SessionEntity
+AuthController -> UserSession: 2.2: where('user_id', id)->where('is_active', true)->update(['logout_at' => now(), 'is_active' => false])
+activate UserSession
+UserSession --> AuthController: sesionCerrada
+deactivate UserSession
 
-Auth -> AuditEntity: log('CU01', 'CERRAR_SESION', "El usuario cerró sesión", ...)
-activate AuditEntity
-AuditEntity --> Auth: Registro guardado
-deactivate AuditEntity
+AuthController --> UI_Sesion: success(null, 'Sesión finalizada exitosamente.')
+deactivate AuthController
 
-Auth --> UI: 200 OK: "Sesión finalizada exitosamente."
-deactivate Auth
-
-UI -> UI: Limpiar credenciales y token local
-UI --> UserActor: Redireccionar a pantalla de Login
-deactivate UI
+UI_Sesion -> UI_Sesion: limpiarLocalStorage()
+UI_Sesion --> UsuarioActor: redireccionarLogin()
+deactivate UI_Sesion
 
 == Flujo 3: Recuperar Contraseña (Olvido de contraseña) ==
 
-UserActor -> UI: Clic en "¿Olvidaste tu contraseña?" e ingresar email
-activate UI
+UsuarioActor -> UI_Sesion: 3: solicitarRecuperacion(email)
+activate UI_Sesion
 
-UI -> Auth: POST /api/forgot-password {email}
-activate Auth
+UI_Sesion -> AuthController: 3.1: forgotPassword(Request)
+activate AuthController
 
-Auth -> Auth: validate([email])
-Auth -> CodeEntity: where('expires_at', '<', now())->orWhereNotNull('used_at')->delete()
+AuthController -> AuthController: validate([email])
 
-Auth -> UserEntity: where('email', email)->exists()
-activate UserEntity
-UserEntity --> Auth: bool $exists
-deactivate UserEntity
+AuthController -> Usuario: 3.2: where('email', email)->exists()
+activate Usuario
+Usuario --> AuthController: bool $exists
+deactivate Usuario
 
-opt Si el usuario existe
-    Auth -> Auth: Generar código numérico aleatorio (6 dígitos)
-    Auth -> CodeEntity: insert(['email' => email, 'code_hash' => Hash::make(code), 'expires_at' => +10min])
-    activate CodeEntity
-    CodeEntity --> Auth: Código de verificación persistido
-    deactivate CodeEntity
+AuthController --> UI_Sesion: success('Si el correo existe, recibirás un código de verificación.')
+deactivate AuthController
 
-    Auth -> MailService: send(new PasswordResetCodeMail(code))
-    activate MailService
-    MailService --> Auth: Correo con código enviado al usuario
-    deactivate MailService
-end
+UI_Sesion --> UsuarioActor: mostrarFormularioCodigo()
 
-Auth --> UI: 200 OK: "Si el correo existe, recibirás un código de verificación."
-deactivate Auth
+UsuarioActor -> UI_Sesion: 4: restablecerPassword(email, codigo, nuevoPassword, confirmacion)
 
-UI --> UserActor: Mostrar formulario de ingreso de código y nueva contraseña
+UI_Sesion -> AuthController: 4.1: resetPassword(Request)
+activate AuthController
 
-UserActor -> UI: Ingresar código recibido (6 dígitos), nueva contraseña y confirmar
-UI -> Auth: POST /api/reset-password {email, code, new_password, new_password_confirmation}
-activate Auth
+AuthController -> AuthController: validate([email, code, new_password, new_password_confirmation])
 
-Auth -> Auth: validate([email, code, new_password (min:8, regex, confirmed)])
+AuthController -> Usuario: 4.2: where('email', email)->first()
+activate Usuario
+Usuario --> AuthController: $user
+deactivate Usuario
 
-Auth -> CodeEntity: where('email', email)->whereNull('used_at')->where('expires_at', '>', now())->first()
-activate CodeEntity
-CodeEntity --> Auth: Retorna registro de verificación
-deactivate CodeEntity
+alt Verificación fallida o código inválido
+    AuthController --> UI_Sesion: error('Código inválido o vencido.', 422)
+    UI_Sesion --> UsuarioActor: mostrarErrorValidacion()
+else Verificación exitosa
+    AuthController -> Usuario: 4.3: update(['password' => Hash::make(new_password)])
+    activate Usuario
+    Usuario --> AuthController: passwordActualizado
+    deactivate Usuario
 
-alt Código inexistente, vencido o intentos excedidos (>= 3)
-    Auth --> UI: 422 Unprocessable / 429 Too Many: "Código inválido o vencido."
-    UI --> UserActor: Mostrar mensaje de error
-else Código coincide (Hash::check)
-    Auth -> UserEntity: where('email', email)->first()
-    activate UserEntity
-    Auth -> UserEntity: update(['password' => Hash::make(new_password)])
-    UserEntity --> Auth: Contraseña actualizada en BD
-    deactivate UserEntity
+    AuthController -> Usuario: 4.4: tokens()->delete()
+    activate Usuario
+    Usuario --> AuthController: tokensRevocados
+    deactivate Usuario
 
-    Auth -> CodeEntity: update(['used_at' => now()])
-    activate CodeEntity
-    CodeEntity --> Auth: Código marcado como utilizado
-    deactivate CodeEntity
+    AuthController --> UI_Sesion: success(null, 'Contraseña restablecida correctamente.')
+    deactivate AuthController
 
-    Auth -> UserEntity: tokens()->delete()
-    activate UserEntity
-    UserEntity --> Auth: Tokens previos revocados
-    deactivate UserEntity
-
-    Auth -> AuditEntity: log('CU01', 'RESTAURAR_PASSWORD', "El usuario restableció su contraseña...", ...)
-    activate AuditEntity
-    AuditEntity --> Auth: Registro de auditoría guardado
-    deactivate AuditEntity
-
-    Auth --> UI: 200 OK: "Contraseña restablecida correctamente."
-    deactivate Auth
-
-    UI --> UserActor: Notificar éxito y redireccionar a Login
-    deactivate UI
+    UI_Sesion --> UsuarioActor: notificarExitoRedireccionarLogin()
+    deactivate UI_Sesion
 end
 
 @enduml
