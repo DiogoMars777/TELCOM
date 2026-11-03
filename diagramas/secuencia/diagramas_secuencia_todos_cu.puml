@@ -1,0 +1,113 @@
+' ==============================================================================
+' TELCOM - DIAGRAMAS DE SECUENCIA (CU01 INICIAR Y CERRAR SESIÓN)
+' Estilo: Enterprise Architect (Actor - Boundary - Control - Entity)
+' Basado en la implementación real de controladores, modelos y rutas del sistema
+' ==============================================================================
+
+@startuml cu01_secuencia_iniciar_cerrar_sesion
+autonumber
+skinparam backgroundColor white
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam sequenceArrowThickness 1.2
+skinparam roundcorner 6
+
+skinparam sequence {
+    ArrowColor black
+    ActorBorderColor #A80036
+    ActorBackgroundColor #FEFECE
+    LifeLineBorderColor #8A4B38
+    LifeLineBackgroundColor #FFF2E6
+    ParticipantBorderColor #8A4B38
+    ParticipantBackgroundColor #FFF2E6
+    BoxBorderColor #A80036
+    BoxBackgroundColor #FAFAFA
+    GroupBackgroundColor #F8F9FA
+    GroupBorderColor #8A4B38
+    DividerBackgroundColor #EFEFEF
+    DividerBorderColor #8A4B38
+}
+
+actor "Usuario / Administrador" as UserActor
+boundary "UI_Sesion\n(LoginView)" as UI
+control "AuthController" as Auth
+entity "Usuario\n(User)" as UserEntity
+entity "UserSession" as SessionEntity
+entity "Bitacora" as AuditEntity
+
+== Flujo 1: Iniciar Sesión (Login) ==
+
+UserActor -> UI: Ingresar credenciales (email, password) y solicitar login
+activate UI
+
+UI -> Auth: POST /api/login {email, password}
+activate Auth
+
+Auth -> Auth: validate([email, password])
+
+Auth -> UserEntity: where('email', email)->first()
+activate UserEntity
+UserEntity --> Auth: Retorna instancia User / null
+deactivate UserEntity
+
+alt Credenciales inválidas o usuario no existe
+    Auth --> UI: 401 Unauthorized: "Credenciales incorrectas."
+    UI --> UserActor: Mostrar error en formulario
+else Cuenta desactivada (!user->activo)
+    Auth --> UI: 403 Forbidden: "Tu cuenta está desactivada."
+    UI --> UserActor: Mostrar alerta de cuenta inactiva
+else Credenciales válidas y cuenta activa
+    Auth -> UserEntity: createToken('auth_token')->plainTextToken
+    activate UserEntity
+    UserEntity --> Auth: Retorna string $token
+    deactivate UserEntity
+
+    Auth -> SessionEntity: create(['user_id' => id, 'ip_address' => ip, 'login_at' => now(), 'is_active' => true])
+    activate SessionEntity
+    SessionEntity --> Auth: Sesión registrada
+    deactivate SessionEntity
+
+    Auth -> AuditEntity: log('CU01', 'INICIAR_SESION', "El usuario inició sesión", ...)
+    activate AuditEntity
+    AuditEntity --> Auth: Registro guardado
+    deactivate AuditEntity
+
+    Auth --> UI: 200 OK: { user: presentUser(user), token: token }
+    deactivate Auth
+
+    UI -> UI: Guardar token en localStorage y actualizar estado de autenticación
+    UI --> UserActor: Redireccionar a vista principal (Dashboard)
+    deactivate UI
+end
+
+== Flujo 2: Cerrar Sesión (Logout) ==
+
+UserActor -> UI: Clic en "Cerrar Sesión"
+activate UI
+
+UI -> Auth: POST /api/logout (Bearer Token)
+activate Auth
+
+Auth -> UserEntity: currentAccessToken()->delete()
+activate UserEntity
+UserEntity --> Auth: Token revocado
+deactivate UserEntity
+
+Auth -> SessionEntity: where('user_id', id)->where('is_active', true)->update(['logout_at' => now(), 'is_active' => false])
+activate SessionEntity
+SessionEntity --> Auth: Registro de sesión finalizado
+deactivate SessionEntity
+
+Auth -> AuditEntity: log('CU01', 'CERRAR_SESION', "El usuario cerró sesión", ...)
+activate AuditEntity
+AuditEntity --> Auth: Registro guardado
+deactivate AuditEntity
+
+Auth --> UI: 200 OK: "Sesión finalizada exitosamente."
+deactivate Auth
+
+UI -> UI: Limpiar credenciales y token local
+UI --> UserActor: Redireccionar a pantalla de Login
+deactivate UI
+
+@enduml
