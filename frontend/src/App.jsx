@@ -21,11 +21,11 @@ import CorteRegistroView from './views/Paquetes/ServiciosPlanes/CU14_RegistrarCo
 import ReactivacionesView from './views/Paquetes/ServiciosPlanes/CU15_ListaRegistroReactivaciones/ReactivacionesView';
 import PlanesInternetView from './views/Paquetes/ServiciosPlanes/CU16_GestionarCatalogoPlanes/PlanesInternetView';
 import AsignarPlanView from './views/Paquetes/ServiciosPlanes/CU17_AsignarCambiarPlanInternet/AsignarPlanView';
-import EquiposView from './views/Paquetes/EquiposInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
-import AsignarEquipoComodatoView from './views/Paquetes/EquiposInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
+import EquiposView from './views/Paquetes/EquiposProveedoresInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
+import AsignarEquipoComodatoView from './views/Paquetes/EquiposProveedoresInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
 import EquipoReemplazoRetiroView from './views/Paquetes/EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
 import SolicitudInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
-import ProgramarInstalacionView from './views/Paquetes/ServiciosPlanes/CU22_ProgramacionInstalaciones/InstalacionesView';
+import ProgramarInstalacionView from './views/Paquetes/InstalacionesTecnicas/CU22_ProgramarInstalacion/InstalacionesView';
 import InstalacionesView from './views/Paquetes/InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
 
 // Iconos de cada módulo del panel
@@ -202,33 +202,41 @@ export default function App() {
 
   const menuSections = [
     {
-      title: 'Seguridad & Auditoría',
+      title: 'P1: Seguridad y Administración del Sistema',
       items: [
         { id: 'CU02', label: 'Bitácora de Auditoría', icon: History },
         { id: 'CU03', label: 'Usuarios, Roles y Permisos', icon: Users },
       ],
     },
     {
-      title: 'Infraestructura',
-      items: [{ id: 'CU04', label: 'Zonas de Cobertura', icon: MapPin }],
-    },
-    {
-      title: 'Abonados & Clientes',
+      title: 'P2: Gestión de Clientes y Cobertura',
       items: [
-        { id: 'CU06', label: 'Clientes', icon: Users },
+        { id: 'CU04', label: 'Zonas de Cobertura', icon: MapPin },
+        { id: 'CU06', label: 'Gestión de Clientes', icon: Users },
       ],
     },
     {
-      title: 'Servicio y Planes de Internet',
+      title: 'P3: Servicios y Planes de Internet',
       items: [
         { id: 'CU08', label: 'Registrar / Activar Servicio', icon: Wifi },
         { id: 'CU16', label: 'Gestionar Planes de Internet', icon: Router },
         { id: 'CU17', label: 'Asignar / Cambiar Plan de Servicio', icon: ArrowRightLeft },
+        { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
         { id: 'CU14', label: 'Registrar Corte Realizado', icon: Scissors },
+        { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
       ],
     },
     {
-      title: 'Equipos & Almacén',
+      title: 'P4: Facturación, Cobranza y Vencimientos',
+      items: [
+        { id: 'CU09', label: 'Generar Mensualidades', icon: Calendar },
+        { id: 'CU10', label: 'Gestionar Pago de Mensualidad', icon: CreditCard },
+        { id: 'CU11', label: 'Historial de Pagos', icon: Clock },
+        { id: 'CU12', label: 'Alertas de Vencimiento', icon: AlertTriangle },
+      ],
+    },
+    {
+      title: 'P5: Equipos, Proveedores e Inventario',
       items: [
         { id: 'CU18', label: 'Catálogo de Equipos e Inventario', icon: Package },
         { id: 'CU19', label: 'Asignar Equipo en Comodato', icon: HardDrive },
@@ -236,19 +244,8 @@ export default function App() {
       ],
     },
     {
-      title: 'Mensualidades & Pagos',
+      title: 'P6: Instalaciones Técnicas',
       items: [
-        { id: 'CU09', label: 'Generar Mensualidades', icon: Calendar },
-        { id: 'CU10', label: 'Gestionar Pago de Mensualidad', icon: CreditCard },
-        { id: 'CU11', label: 'Historial de Pagos', icon: Clock },
-      ],
-    },
-    {
-      title: 'Operaciones Técnicas',
-      items: [
-        { id: 'CU12', label: 'Alertas de Vencimiento', icon: AlertTriangle },
-        { id: 'CU13', label: 'Servicios para Corte', icon: Scissors },
-        { id: 'CU15', label: 'Reactivaciones de Servicio', icon: RefreshCw },
         { id: 'CU21', label: 'Solicitudes de Instalación', icon: ClipboardList },
         { id: 'CU22', label: 'Programar Instalaciones', icon: Calendar },
         { id: 'CU23', label: 'Órdenes de Instalación', icon: Wrench },

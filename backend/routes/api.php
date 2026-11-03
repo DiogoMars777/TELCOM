@@ -39,9 +39,9 @@ use App\Http\Controllers\Paquetes\ServiciosPlanes\CU16_GestionarCatalogoPlanes\P
 // CU17: Asignar o cambiar el plan de un servicio (entidad UML AsignacionPlan)
 use App\Http\Controllers\Paquetes\ServiciosPlanes\CU17_AsignarCambiarPlanInternet\AsignacionPlanController;
 // CU18: Registrar y Gestionar Catálogo de Equipos e Inventario
-use App\Http\Controllers\Paquetes\EquiposInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
+use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU18_RegistrarCatalogoEquipos\CatalogoEquiposController;
 // CU19: Asignar equipo en comodato a un servicio (entidad UML Equipo, AsignacionEquipo, Inventario)
-use App\Http\Controllers\Paquetes\EquiposInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
+use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
 // CU20: Reemplazar o retirar equipo de un servicio
 use App\Http\Controllers\Paquetes\EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
 // CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)

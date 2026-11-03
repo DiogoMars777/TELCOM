@@ -1,5 +1,5 @@
 import React from 'react';
-import { useInstalacionesController } from '../../../../controllers/Paquetes/ServiciosPlanes/CU22_ProgramacionInstalaciones/useInstalacionesController';
+import { useInstalacionesController } from '../../../../controllers/Paquetes/InstalacionesTecnicas/CU22_ProgramarInstalacion/useInstalacionesController';
 import ProgramarInstalacionModal from './ProgramarInstalacionModal';
 import {
   Calendar,

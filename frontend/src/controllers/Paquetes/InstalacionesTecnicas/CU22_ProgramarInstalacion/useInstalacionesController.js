@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { instalacionesService } from '../../../../models/Paquetes/ServiciosPlanes/CU22_ProgramacionInstalaciones/instalacionesModel';
+import { instalacionesService } from '../../../../models/Paquetes/InstalacionesTecnicas/CU22_ProgramarInstalacion/instalacionesModel';
 import { describeApiError } from '../../../../services/apiClient';
 
 /**
