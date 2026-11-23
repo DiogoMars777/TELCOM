@@ -39,9 +39,17 @@ export const CU_PERMISSIONS = {
   CU18: 'equipos.view',
   CU19: 'equipos.assign',
   CU20: 'equipos.view',
+  CU24: 'proveedores.manage',
+  CU25: 'compras.manage',
   CU21: 'instalaciones.schedule',
   CU22: 'instalaciones.schedule',
   CU23: 'instalaciones.view',
+  CU26: 'reportes.view',
+  CU27: 'reportes.view',
+  CU28: 'backups.manage',
+  CU29: 'reportes.view',
+  CU30: 'voz.nlp',
+  CU31: 'reportes.view',
 };
 
 /**
@@ -49,8 +57,8 @@ export const CU_PERMISSIONS = {
  * El primero permitido para el usuario será el que se muestre.
  */
 export const CU_ORDER = [
-  'CU06', 'CU05', 'CU07', 'CU08', 'CU16', 'CU17', 'CU18', 'CU19', 'CU20', 'CU09', 'CU10', 'CU11',
-  'CU12', 'CU13', 'CU14', 'CU15', 'CU21', 'CU22', 'CU23', 'CU02', 'CU03', 'CU04', 'CU01',
+  'CU06', 'CU05', 'CU07', 'CU08', 'CU16', 'CU17', 'CU18', 'CU19', 'CU20', 'CU24', 'CU25', 'CU09', 'CU10', 'CU11',
+  'CU12', 'CU13', 'CU14', 'CU15', 'CU21', 'CU22', 'CU23', 'CU26', 'CU27', 'CU28', 'CU29', 'CU30', 'CU31', 'CU02', 'CU03', 'CU04', 'CU01',
 ];
 
 /**

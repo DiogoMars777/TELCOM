@@ -10,6 +10,8 @@ use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU02_BitacoraAudito
 // CU03: Gestionar usuarios internos, roles y permisos
 use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\UsuarioController;
 use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU03_UsuariosRolesPermisos\RolController;
+// CU28: Generar y restaurar copias de seguridad (Backup / Restore)
+use App\Http\Controllers\Paquetes\P1_SeguridadAdministracion\CU28_GenerarRestaurarCopiasSeguridad\CopiasSeguridadController;
 // CU04: Gestionar zonas de cobertura
 use App\Http\Controllers\Paquetes\P2_GestionClientesZonas\CU04_ZonasCobertura\ZonaCoberturaController;
 // CU05: Registrar nuevo cliente
@@ -44,12 +46,26 @@ use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU18_Registrar
 use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU19_AsignarEquipoComodato\AsignacionEquipoComodatoController;
 // CU20: Reemplazar o retirar equipo de un servicio
 use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU20_ReemplazarRetirarEquipo\EquipoReemplazoRetiroController;
+// CU25: Registrar compra de equipo y actualizar stock
+use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU25_RegistrarCompraEquipo\CompraEquipoRegistroController;
 // CU21: Registrar solicitud de instalación (entidad UML SolicitudInstalacion)
 use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU21_RegistrarSolicitudInstalacion\SolicitudInstalacionController;
 // CU22: Programar instalación y asignar técnico
 use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU22_ProgramarInstalacion\InstalacionesController;
 // CU23: Registrar y Gestionar Órdenes de Instalación Técnica
 use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU23_RegistrarInstalacion\InstalacionRegistroController;
+// CU24: Gestionar proveedores (Administrador)
+use App\Http\Controllers\Paquetes\P5_EquiposProveedoresInventario\CU24_GestionarProveedores\ProveedorController;
+// CU26: Visualizar Dashboard administrativo y financiero
+use App\Http\Controllers\Paquetes\P7_DashboardReportesInteligenciaVoz\CU26_VisualizarDashboardAdminFinanciero\DashboardAdminFinancieroController;
+// CU27: Generar y exportar reportes tradicionales
+use App\Http\Controllers\Paquetes\P7_DashboardReportesInteligenciaVoz\CU27_GenerarExportarReportesTradicionales\ReporteTradicionalController;
+// CU29: Capturar y transcribir comandos de voz
+use App\Http\Controllers\Paquetes\P7_DashboardReportesInteligenciaVoz\CU29_CapturarTranscribirComandosVoz\ComandoVozController;
+// CU30: Procesar intención de voz con IA (NLP)
+use App\Http\Controllers\Paquetes\P7_DashboardReportesInteligenciaVoz\CU30_ProcesarIntencionVozIA\IntencionVozController;
+// CU31: Generar reporte inteligente con voz / IA
+use App\Http\Controllers\Paquetes\P7_DashboardReportesInteligenciaVoz\CU31_GenerarReporteInteligenteVoz\ReporteInteligenteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +79,10 @@ use App\Http\Controllers\Paquetes\P6_InstalacionesTecnicas\CU23_RegistrarInstala
 |   y `rol_permiso`. Sin permiso -> HTTP 403.
 |--------------------------------------------------------------------------
 */
+
+// CU31: generar reportes mediante texto transcrito o intención estructurada (CU30).
+Route::post('cu31/reportes/generar', [ReporteInteligenteController::class, 'generar'])
+    ->middleware(['auth:sanctum', 'permission:reportes.view']);
 
 // CU01: Iniciar y cerrar sesión
 Route::prefix('cu01')->group(function () {
@@ -107,6 +127,16 @@ Route::prefix('cu03')->middleware(['auth:sanctum', 'permission:usuarios.manage']
     // Matriz editable de roles -> permisos.
     Route::get('/roles', [RolController::class, 'index']);
     Route::put('/roles/{id}/permisos', [RolController::class, 'updatePermisos'])->whereNumber('id');
+});
+
+// CU28: Generar y restaurar copias de seguridad (solo administrador)
+Route::prefix('cu28')->middleware(['auth:sanctum', 'permission:backups.manage'])->group(function () {
+    Route::get('/backups', [CopiasSeguridadController::class, 'index']);
+    Route::post('/backups', [CopiasSeguridadController::class, 'store']);
+    Route::get('/backups/{id}/download', [CopiasSeguridadController::class, 'download'])->whereNumber('id');
+    Route::post('/backups/{id}/restore', [CopiasSeguridadController::class, 'restore'])->whereNumber('id');
+    Route::post('/backups/restore-upload', [CopiasSeguridadController::class, 'restoreUpload']);
+    Route::delete('/backups/{id}', [CopiasSeguridadController::class, 'destroy'])->whereNumber('id');
 });
 
 // CU04: Gestionar zonas de cobertura (solo administrador)
@@ -156,6 +186,16 @@ Route::prefix('cu08')->group(function () {
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
     Route::put('/servicios/{id}/activar', [ServicioInternetController::class, 'activar'])
         ->middleware(['auth:sanctum', 'permission:servicios.manage']);
+});
+
+// CU24: Gestionar proveedores. Baja lógica mediante estado; sin ruta DELETE.
+Route::prefix('cu24/proveedores')->middleware(['auth:sanctum', 'permission:proveedores.manage'])->group(function () {
+    Route::get('/', [ProveedorController::class, 'index']);
+    Route::post('/', [ProveedorController::class, 'store']);
+    Route::get('/{proveedor}', [ProveedorController::class, 'show'])->whereNumber('proveedor');
+    Route::put('/{proveedor}', [ProveedorController::class, 'update'])->whereNumber('proveedor');
+    Route::put('/{proveedor}/activar', [ProveedorController::class, 'activar'])->whereNumber('proveedor');
+    Route::put('/{proveedor}/desactivar', [ProveedorController::class, 'desactivar'])->whereNumber('proveedor');
 });
 
 // CU09: Generar mensualidades de servicios (admin, secretaría)
@@ -339,6 +379,48 @@ Route::prefix('cu20')->middleware('auth:sanctum')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| CU27 - GENERAR Y EXPORTAR REPORTES TRADICIONALES
+|--------------------------------------------------------------------------
+| Permite al Administrador consultar, consolidar y exportar la información
+| administrativa, financiera y operativa de TELCOM en formatos PDF y Excel.
+| Actores: Administrador.
+| Permisos RBAC: reportes.view
+*/
+Route::prefix('cu27')->middleware(['auth:sanctum', 'permission:reportes.view'])->group(function () {
+    Route::get('/catalogo', [ReporteTradicionalController::class, 'catalogo']);
+    Route::get('/parametros', [ReporteTradicionalController::class, 'parametros']);
+    Route::get('/generar', [ReporteTradicionalController::class, 'generar']);
+    Route::get('/exportar-excel', [ReporteTradicionalController::class, 'exportarExcel']);
+    Route::get('/exportar-pdf', [ReporteTradicionalController::class, 'exportarPdf']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| CU25 - REGISTRAR COMPRA DE EQUIPO Y ACTUALIZAR STOCK
+|--------------------------------------------------------------------------
+| Permite registrar órdenes de compra a proveedores de hardware e insumos,
+| generando las líneas de detalle, calculando subtotales y actualizando
+| automáticamente las existencias en la tabla Inventario y unidades Equipo.
+|--------------------------------------------------------------------------
+*/
+Route::prefix('cu25/compras')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [CompraEquipoRegistroController::class, 'index'])
+        ->middleware('permission:compras.manage');
+    Route::get('/proveedores', [CompraEquipoRegistroController::class, 'proveedores'])
+        ->middleware('permission:compras.manage');
+    Route::get('/productos', [CompraEquipoRegistroController::class, 'productos'])
+        ->middleware('permission:compras.manage');
+    Route::get('/estados', [CompraEquipoRegistroController::class, 'estados'])
+        ->middleware('permission:compras.manage');
+    Route::post('/', [CompraEquipoRegistroController::class, 'store'])
+        ->middleware('permission:compras.manage');
+    Route::get('/{id}', [CompraEquipoRegistroController::class, 'show'])
+        ->whereNumber('id')
+        ->middleware('permission:compras.manage');
+});
+
+/*
+|--------------------------------------------------------------------------
 | CU21 - REGISTRAR SOLICITUD DE INSTALACIÓN (InstalacionesTecnicas)
 |--------------------------------------------------------------------------
 | Permisos RBAC:
@@ -398,3 +480,51 @@ Route::prefix('cu23/instalaciones')->group(function () {
         ->whereNumber('id')
         ->middleware(['auth:sanctum', 'permission:instalaciones.execute']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| CU26 - VISUALIZAR DASHBOARD ADMINISTRATIVO Y FINANCIERO
+|--------------------------------------------------------------------------
+| Permiso RBAC: reportes.view (Administrador y Secretaría)
+*/
+Route::prefix('cu26/dashboard')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [DashboardAdminFinancieroController::class, 'index'])
+        ->middleware('permission:reportes.view');
+    Route::get('/financiero', [DashboardAdminFinancieroController::class, 'financiero'])
+        ->middleware('permission:reportes.view');
+    Route::get('/operativo', [DashboardAdminFinancieroController::class, 'operativo'])
+        ->middleware('permission:reportes.view');
+    Route::get('/alertas', [DashboardAdminFinancieroController::class, 'alertas'])
+        ->middleware('permission:reportes.view');
+});
+
+/*
+|--------------------------------------------------------------------------
+| CU30 - PROCESAR INTENCIÓN DE VOZ CON IA (NLP)
+|--------------------------------------------------------------------------
+| Permiso RBAC: voz.nlp (disponible para admin, secretaría, soporte técnico)
+*/
+Route::prefix('cu30')->middleware(['auth:sanctum', 'permission:voz.nlp'])->group(function () {
+    Route::post('/procesar', [IntencionVozController::class, 'procesar']);
+    Route::get('/historial', [IntencionVozController::class, 'historial']);
+    Route::get('/catalogo', [IntencionVozController::class, 'catalogo']);
+    Route::post('/feedback', [IntencionVozController::class, 'feedback']);
+    Route::post('/ejecutar', [IntencionVozController::class, 'ejecutar']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| CU29 - CAPTURAR Y TRANSCRIBIR COMANDOS DE VOZ
+|--------------------------------------------------------------------------
+| Permite al Administrador dictar solicitudes y consultas mediante el micrófono
+| para convertirlas automáticamente en texto estructurado en tiempo real.
+| Actores: Administrador.
+| Permisos RBAC: reportes.view
+*/
+Route::prefix('cu29')->middleware(['auth:sanctum', 'permission:reportes.view'])->group(function () {
+    Route::post('/transcribir', [ComandoVozController::class, 'transcribir']);
+    Route::get('/historial', [ComandoVozController::class, 'historial']);
+    Route::post('/confirmar', [ComandoVozController::class, 'confirmar']);
+    Route::get('/ejemplos', [ComandoVozController::class, 'ejemplos']);
+});
+

@@ -24,16 +24,25 @@ import AsignarPlanView from './views/Paquetes/P3_ServiciosPlanes/CU17_AsignarCam
 import EquiposView from './views/Paquetes/P5_EquiposProveedoresInventario/CU18_RegistrarCatalogoEquipos/EquiposView';
 import AsignarEquipoComodatoView from './views/Paquetes/P5_EquiposProveedoresInventario/CU19_AsignarEquipoComodato/AsignarEquipoComodatoView';
 import EquipoReemplazoRetiroView from './views/Paquetes/P5_EquiposProveedoresInventario/CU20_ReemplazarRetirarEquipo/EquipoReemplazoRetiroView';
+import CompraRegistroView from './views/Paquetes/P5_EquiposProveedoresInventario/CU25_RegistrarCompraEquipo/CompraRegistroView';
+import ProveedoresView from './views/Paquetes/P5_EquiposProveedoresInventario/CU24_GestionarProveedores/ProveedoresView';
 import SolicitudInstalacionView from './views/Paquetes/P6_InstalacionesTecnicas/CU21_RegistrarSolicitudInstalacion/SolicitudInstalacionView';
 import ProgramarInstalacionView from './views/Paquetes/P6_InstalacionesTecnicas/CU22_ProgramarInstalacion/InstalacionesView';
 import InstalacionesView from './views/Paquetes/P6_InstalacionesTecnicas/CU23_RegistrarInstalacion/InstalacionesView';
+import IntencionVozView from './views/Paquetes/P7_DashboardReportesInteligenciaVoz/CU30_ProcesarIntencionVozIA/IntencionVozView';
+import DashboardAdminFinancieroView from './views/Paquetes/P7_DashboardReportesInteligenciaVoz/CU26_VisualizarDashboardAdminFinanciero/DashboardAdminFinancieroView';
+import CopiasSeguridadView from './views/Paquetes/P1_SeguridadAdministracion/CU28_GenerarRestaurarCopiasSeguridad/CopiasSeguridadView';
+import ReporteTradicionalView from './views/Paquetes/P7_DashboardReportesInteligenciaVoz/CU27_GenerarExportarReportesTradicionales/ReporteTradicionalView';
+import ComandoVozView from './views/Paquetes/P7_DashboardReportesInteligenciaVoz/CU29_CapturarTranscribirComandosVoz/ComandoVozView';
+import ReporteInteligenteView from './views/Paquetes/P7_DashboardReportesInteligenciaVoz/CU31_GenerarReporteInteligenteVoz/ReporteInteligenteView';
 
 // Iconos de cada módulo del panel
 import {
   Radio, LogOut, History, Users, MapPin,
   Wifi, Calendar,
   CreditCard, Clock, AlertTriangle, Scissors, RefreshCw, Lock,
-  Router, ArrowRightLeft, Package, Wrench, HardDrive, ClipboardList,
+  Router, ArrowRightLeft, Package, Wrench, HardDrive, ClipboardList, ShoppingCart,
+  Sparkles, Brain, LayoutDashboard, Database, BarChart3, Mic, FileBarChart,
 } from 'lucide-react';
 
 import { authService } from './models/Paquetes/P1_SeguridadAdministracion/CU01_IniciarCerrarSesion/authModel';
@@ -120,6 +129,7 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [activeCU, setActiveCU] = useState('CU06');
   const [corteServicioSelected, setCorteServicioSelected] = useState(null);
+  const [reporteVoiceFilter, setReporteVoiceFilter] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isAuthenticated = Boolean(currentUser);
@@ -206,6 +216,7 @@ export default function App() {
       items: [
         { id: 'CU02', label: 'Bitácora de Auditoría', icon: History },
         { id: 'CU03', label: 'Usuarios, Roles y Permisos', icon: Users },
+        { id: 'CU28', label: 'Copias de Seguridad (Backup)', icon: Database },
       ],
     },
     {
@@ -241,6 +252,8 @@ export default function App() {
         { id: 'CU18', label: 'Catálogo de Equipos e Inventario', icon: Package },
         { id: 'CU19', label: 'Asignar Equipo en Comodato', icon: HardDrive },
         { id: 'CU20', label: 'Reemplazar / Retirar Equipo', icon: Router },
+        { id: 'CU24', label: 'Gestión de Proveedores', icon: Users },
+        { id: 'CU25', label: 'Registrar Compra y Stock', icon: ShoppingCart },
       ],
     },
     {
@@ -249,6 +262,16 @@ export default function App() {
         { id: 'CU21', label: 'Solicitudes de Instalación', icon: ClipboardList },
         { id: 'CU22', label: 'Programar Instalaciones', icon: Calendar },
         { id: 'CU23', label: 'Órdenes de Instalación', icon: Wrench },
+      ],
+    },
+    {
+      title: 'P7: Dashboard, Reportes e Inteligencia por Voz',
+      items: [
+        { id: 'CU26', label: 'Dashboard General / Financiero', icon: LayoutDashboard },
+        { id: 'CU27', label: 'Reportes Tradicionales', icon: BarChart3 },
+        { id: 'CU29', label: 'Comandos de Voz', icon: Mic },
+        { id: 'CU30', label: 'Asistente de Voz con IA (NLP)', icon: Sparkles },
+        { id: 'CU31', label: 'Reporte Inteligente con Voz', icon: FileBarChart },
       ],
     },
     {
@@ -291,6 +314,8 @@ export default function App() {
         return <AuditoriaView />;
       case 'CU03':
         return <UsuariosView user={currentUser} onPermissionsUpdated={refreshCurrentUser} />;
+      case 'CU28':
+        return <CopiasSeguridadView user={currentUser} />;
       case 'CU04':
         return <ZonasCoberturaView user={currentUser} />;
       case 'CU05':
@@ -323,12 +348,38 @@ export default function App() {
         return <AsignarEquipoComodatoView user={currentUser} />;
       case 'CU20':
         return <EquipoReemplazoRetiroView user={currentUser} />;
+      case 'CU24':
+        return <ProveedoresView user={currentUser} />;
+      case 'CU25':
+        return <CompraRegistroView user={currentUser} />;
       case 'CU21':
         return <SolicitudInstalacionView user={currentUser} />;
       case 'CU22':
         return <ProgramarInstalacionView user={currentUser} />;
       case 'CU23':
         return <InstalacionesView user={currentUser} />;
+      case 'CU26':
+        return <DashboardAdminFinancieroView user={currentUser} onNavigate={(cu) => setActiveCU(cu)} />;
+      case 'CU27':
+        return (
+          <ReporteTradicionalView
+            initialTipo={reporteVoiceFilter?.tipo || 'clientes_zona'}
+            initialFilters={reporteVoiceFilter?.filtros || {}}
+          />
+        );
+      case 'CU29':
+        return (
+          <ComandoVozView
+            onIrAReporteTradicional={(tipo, params) => {
+              setReporteVoiceFilter({ tipo, filtros: params });
+              setActiveCU('CU27');
+            }}
+          />
+        );
+      case 'CU30':
+        return <IntencionVozView onNavigate={(targetCu) => setActiveCU(targetCu)} />;
+      case 'CU31':
+        return <ReporteInteligenteView user={currentUser} />;
       default:
         return <ClientesView user={currentUser} />;
     }

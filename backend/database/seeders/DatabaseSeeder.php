@@ -42,6 +42,8 @@ class DatabaseSeeder extends Seeder
     private function runUnitTestsFixture(): void
     {
         $tablasLimpieza = [
+            'CopiaSeguridad',
+            'IntencionVozIA',
             'DetallePago', 'Pago', 'Mensualidad', 'AsignacionEquipo', 'Instalacion',
             'SolicitudInstalacion', 'HistorialEstadoServicio', 'AccionServicio',
             'AsignacionPlan', 'ServicioInternet', 'Cliente', 'Zona', 'DetalleCompra',
@@ -107,6 +109,8 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'proveedores.manage', 'nombre' => 'Gestionar Proveedores', 'modulo' => 'PROVEEDORES', 'descripcion' => 'Gestión de proveedores.'],
             ['slug' => 'compras.manage', 'nombre' => 'Gestionar Compras', 'modulo' => 'COMPRAS', 'descripcion' => 'Gestión de compras.'],
             ['slug' => 'reportes.view', 'nombre' => 'Ver Reportes Gerenciales', 'modulo' => 'REPORTES', 'descripcion' => 'Reportes e indicadores.'],
+            ['slug' => 'voz.nlp', 'nombre' => 'Procesar Intenciones de Voz con IA (NLP)', 'modulo' => 'INTELIGENCIA_VOZ', 'descripcion' => 'Permite procesar comandos de voz y texto con el motor NLP e Inteligencia Artificial (CU30).'],
+            ['slug' => 'backups.manage', 'nombre' => 'Gestionar Copias de Seguridad', 'modulo' => 'CU28', 'descripcion' => 'Generar, descargar y restaurar copias de seguridad de la base de datos.'],
         ];
 
         $permisosIds = [];
@@ -281,6 +285,8 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Limpieza en orden inverso de claves foráneas para evitar conflictos
         $tablasLimpieza = [
+            'CopiaSeguridad',
+            'IntencionVozIA',
             'DetallePago',
             'Pago',
             'Mensualidad',
@@ -374,6 +380,8 @@ class DatabaseSeeder extends Seeder
             ['slug' => 'proveedores.manage', 'nombre' => 'Gestionar Proveedores', 'modulo' => 'PROVEEDORES', 'descripcion' => 'Catálogo de importadores y proveedores.'],
             ['slug' => 'compras.manage', 'nombre' => 'Gestionar Compras', 'modulo' => 'COMPRAS', 'descripcion' => 'Órdenes de compra e ingreso de insumos.'],
             ['slug' => 'reportes.view', 'nombre' => 'Ver Reportes Gerenciales', 'modulo' => 'REPORTES', 'descripcion' => 'Métricas e inteligencia de negocio.'],
+            ['slug' => 'voz.nlp', 'nombre' => 'Procesar Intenciones de Voz con IA (NLP)', 'modulo' => 'INTELIGENCIA_VOZ', 'descripcion' => 'Permite procesar comandos de voz y texto con el motor NLP e Inteligencia Artificial (CU30).'],
+            ['slug' => 'backups.manage', 'nombre' => 'Gestionar Copias de Seguridad', 'modulo' => 'CU28', 'descripcion' => 'Generar, descargar y restaurar copias de seguridad de la base de datos.'],
         ];
 
         $permisosIds = [];
@@ -616,6 +624,7 @@ class DatabaseSeeder extends Seeder
             'nombreZona'      => 'Zona Norte - Equipetrol / Sirari',
             'ciudad'          => 'Santa Cruz de la Sierra',
             'barrio'          => 'Equipetrol Norte / Sirari',
+            'sector'          => 'Sector Empresarial Norte',
             'tecnologia'      => 'FTTH GPON',
             'capacidadNodos'  => 500,
             'estado'          => true,
@@ -629,6 +638,7 @@ class DatabaseSeeder extends Seeder
             'nombreZona'      => 'Zona Este - Villa 1ro de Mayo / Plan 3000',
             'ciudad'          => 'Santa Cruz de la Sierra',
             'barrio'          => 'Villa 1ro de Mayo / Plan 3000',
+            'sector'          => 'Sector Comercial Este',
             'tecnologia'      => 'FTTH GPON',
             'capacidadNodos'  => 800,
             'estado'          => true,
@@ -642,6 +652,7 @@ class DatabaseSeeder extends Seeder
             'nombreZona'      => 'Zona Sur - Casco Viejo / Santos Dumont',
             'ciudad'          => 'Santa Cruz de la Sierra',
             'barrio'          => 'Casco Viejo / Santos Dumont',
+            'sector'          => 'Sector Residencial Sur',
             'tecnologia'      => 'FTTH GPON',
             'capacidadNodos'  => 600,
             'estado'          => true,
@@ -656,6 +667,7 @@ class DatabaseSeeder extends Seeder
             'nombreZona'      => 'Zona Norte - Troncal Tradicional',
             'ciudad'          => 'Santa Cruz de la Sierra',
             'barrio'          => 'Radial 26 / 4to Anillo',
+            'sector'          => 'Sector Troncal Periférica',
             'tecnologia'      => 'FTTH GPON',
             'capacidadNodos'  => 500,
             'estado'          => true,
@@ -673,6 +685,7 @@ class DatabaseSeeder extends Seeder
             'nombreCompleto' => 'Ing. Roberto Justiniano Suárez',
             'telefono'       => '+591 74055667',
             'especialidad'   => 'Fibra Óptica FTTH y Empalmes por Fusión',
+            'domicilio'      => 'Av. San Martín #450, Barrio Equipetrol',
             'activo'         => true,
         ], 'idTecnico');
 
@@ -680,6 +693,7 @@ class DatabaseSeeder extends Seeder
             'nombreCompleto' => 'Téc. Marco Antonio Vaca Céspedes',
             'telefono'       => '+591 75066778',
             'especialidad'   => 'Instalaciones Domiciliarias y Configuración ONT',
+            'domicilio'      => 'Calle René Moreno #230, Casco Viejo',
             'activo'         => true,
         ], 'idTecnico');
 
@@ -687,6 +701,7 @@ class DatabaseSeeder extends Seeder
             'nombreCompleto' => 'Téc. Fernando Aguilera Roca',
             'telefono'       => '+591 76077889',
             'especialidad'   => 'Mantenimiento de Red y Cortes Técnicos',
+            'domicilio'      => 'Av. Santos Dumont 4to Anillo #120',
             'activo'         => true,
         ], 'idTecnico');
 

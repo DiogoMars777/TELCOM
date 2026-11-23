@@ -31,6 +31,7 @@ const PERMISOS_ADMIN = [
   'equipos.view', 'equipos.manage', 'equipos.assign',
   'instalaciones.view', 'instalaciones.schedule', 'instalaciones.execute',
   'proveedores.manage', 'compras.manage', 'reportes.view',
+  'voz.nlp', 'backups.manage',
 ];
 
 const PERMISOS_SECRETARIA = [
@@ -152,6 +153,25 @@ test('hasPermission exige el permiso exacto', () => {
   assert.equal(hasPermission(secretaria, 'usuarios.manage'), false);
   assert.equal(hasPermission(secretaria, null), true); // sin permiso requerido
   assert.equal(hasPermission(null, 'clientes.view'), false);
+});
+
+test('CU28 es exclusivo del Administrador (backups.manage)', () => {
+  assert.equal(canAccessCu(admin, 'CU28'), true);
+  assert.equal(canAccessCu(secretaria, 'CU28'), false);
+  assert.equal(canAccessCu(tecnico, 'CU28'), false);
+  assert.equal(canAccessCu(sinPermisos, 'CU28'), false);
+  assert.equal(CU_PERMISSIONS.CU28, 'backups.manage');
+});
+
+test('CU24 exige proveedores.manage y solo está disponible al Administrador de la matriz real', () => {
+  assert.equal(CU_PERMISSIONS.CU24, 'proveedores.manage');
+  assert.ok(CU_ORDER.includes('CU24'));
+  assert.equal(canAccessCu(admin, 'CU24'), true);
+  for (const user of [secretaria, tecnico, sinPermisos, null, { permisos: ['compras.manage', 'equipos.manage'] }]) {
+    assert.equal(canAccessCu(user, 'CU24'), false);
+    assert.equal(filterCuIds(user, ['CU24']).length, 0);
+  }
+  assert.equal(firstAllowedCu({ permisos: ['proveedores.manage'] }), 'CU24');
 });
 
 test('El módulo inicial es el primero permitido del orden preferido', () => {
